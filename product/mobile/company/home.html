@@ -1,0 +1,93 @@
+$def with (cfgPara,jdksign)
+    <!doctype HTML>
+    <html>
+    <head>
+        <title>服务中心</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.9">
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="/static/stylesheets/iwaiter.css" />        
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+      
+    </head>
+    <style type="text/css">
+    </style>
+    <script>
+        var _openid  = "$cfgPara["openid"]";
+        var jdksign=$:jdksign;
+        var _role = "$cfgPara["role"]";
+        wx.config({
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                appId:     jdksign['appid'] , // 必填，公众号的唯一标识
+                timestamp: jdksign['timestamp'], // 必填，生成签名的时间戳
+                nonceStr:  jdksign['nonceStr'], // 必填，生成签名的随机串
+                signature: jdksign['signature'],// 必填，签名，见附录1
+                jsApiList: ['onMenuShareAppMessage','scanQRCode'] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            });
+    </script>
+
+    <body>
+        <div data-role="page" id="HomePage" class="background" >
+            <div data-role="header"  >
+                <table width="100%">
+                    <tr><td rowspan="2"><img src="$cfgPara['user']['headimgurl']" width="50" height="50"></td>
+                        <td width="70%" colspan="2">
+                            <strong style="font-size:120%">$cfgPara['user']["nickname"] </strong><br>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div role="main" class="ui-content jqm-content"  >
+                <br>
+                <div class="ui-grid-b" style="display:block" id="user-grid">
+                    $code:
+                        i = 0
+                    <!--div class="ui-block-a"><a href="/m/device?act=GET-DEVICES&openid=$cfgPara['openid']" target="_blank" style="font-size:80%" class="ui-shadow ui-btn ui-corner-all ui-btn-icon-top ui-icon-location">我的设备 </a></div-->
+                    $if cfgPara["grpStat"]["mgr"] > 0:
+                        <div class="ui-block-$cfgPara['grid'][i%3]"><a href="/tianwangshouhu/m/device?act=MANAGE-DEVICE-NOGROUP&openid=$cfgPara['openid']" target="_blank" style="font-size:80%" class="ui-shadow ui-btn ui-corner-all ui-btn-icon-top ui-icon-location table-b">我拥有的($cfgPara["grpStat"]["mgr"])</a></div>
+                        $code:
+                            i+=1
+                    <div class="ui-block-$cfgPara['grid'][i%3]"><a href="/tianwangshouhu/m/device?act=BIND-NEW-DEVICE&openid=$cfgPara['openid']" target="_blank" style="font-size:80%" class="ui-shadow ui-btn ui-corner-all ui-btn-icon-top ui-icon-plus table-b">绑定新设备</a></div>
+                    <!--div class="ui-block-a"><a href="/m/device?act=GET-DEVICES&openid=$cfgPara['openid']" target="_blank" style="font-size:80%" class="ui-shadow ui-btn ui-corner-all ui-btn-icon-top ui-icon-location">收藏夹</a></div-->
+                </div>
+
+            $if cfgPara["role"] in ["maintainer"]:
+                <br>
+                <strong >设备管理&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</strong>
+                <br>
+                <div class="ui-grid-b">
+                    <div class="ui-block-a"><a href="#" style="font-size:80%" class="ui-shadow ui-btn ui-corner-all ui-btn-icon-top ui-icon-plus table-b">录入新设备</a></div>
+                </div>
+
+            $if cfgPara["role"] in ["manager"]:
+                <br>
+                <strong >运营管理&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</strong>
+                <hr>
+                <div class="ui-grid-b" style="display:block">
+                    <div class="ui-block-a"><a href="/tianwangshouhu/m/person?act=REGEDIT-DISTRIBUTOR&openid=$cfgPara['openid']" target="_blank"  style="font-size:80%" class="ui-shadow ui-btn ui-corner-all ui-btn-icon-top ui-icon-edit table-b">分销商注册</a></div>
+                    <div class="ui-block-b"><a href="/tianwangshouhu/m/person?act=MANAGE-DISTRIBUTOR&openid=$cfgPara['openid']&range=$cfgPara['range']"  target="_blank" style="font-size:80%" class="ui-shadow ui-btn ui-corner-all ui-btn-icon-top ui-icon-user table-b">分销商管理</a></div>
+                    <div class="ui-block-c"><a href="/tianwangshouhu/m/person?act=SALE-STATUS-DISTRIBUTOR&openid=$cfgPara['openid']&range=$cfgPara['range']"  target="_blank" style="font-size:80%" class="ui-shadow ui-btn ui-corner-all ui-btn-icon-top ui-icon-bullets table-b">销售情况</a></div>
+                    <div class="ui-block-a"><a href="/tianwangshouhu/m/device?act=distributor-device&openid=$cfgPara['openid']" target="_blank" style="font-size:80%" class="ui-shadow ui-btn ui-corner-all ui-btn-icon-top ui-icon-cloud table-b">上线情况</a></div>
+                    
+                    <!--div class="ui-block-a"><a href="/m/device?act=ADD-NEW-DEVICE&openid=$cfgPara['openid']" target="_blank" style="font-size:80%" class="ui-shadow ui-btn ui-corner-all ui-btn-icon-top ui-icon-plus">录入新设备</a></div-->
+                </div>                
+
+
+            $if cfgPara["idCard"]!="":
+                <br>
+                <strong>销售管理&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</strong>
+                <hr>
+                <div class="ui-grid-b">
+                    <div class="ui-block-a"><a href="/tianwangshouhu/m/person?act=SALE-STATUS-DISTRIBUTOR&openid=$cfgPara['openid']" style="font-size:80%" class="ui-shadow ui-btn ui-corner-all ui-btn-icon-top ui-icon-bullets table-b">销售情况</a></div>
+                    <div class="ui-block-b"><a href="https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx9b557868bd752909&redirect_uri=http://gps.iwaiter.cn/tianwangshouhu/m/person?act2=update-DISTRIBUTOR_idCard_$cfgPara['idCard']&response_type=code&scope=snsapi_base&state=123#wechat_redirect" target="_blank"  style="font-size:80%" class="ui-shadow ui-btn ui-corner-all ui-btn-icon-top ui-icon-edit table-b">信息维护</a></div>
+                    <div class="ui-block-c"><a href="https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx9b557868bd752909&redirect_uri=http://gps.iwaiter.cn/tianwangshouhu/m/person?act2=cert-DISTRIBUTOR_idCard_$cfgPara['idCard']&response_type=code&scope=snsapi_base&state=123#wechat_redirect" target="_blank" style="font-size:80%" class="ui-shadow ui-btn ui-corner-all ui-btn-icon-top ui-icon-alert table-b">经销商证书</a></div>
+                </div>                
+            </div>
+        </div>            
+    </body>
+    </html>
+    
+    

@@ -1,0 +1,145 @@
+$def with (cfgPara,jdksign,sharePara)
+    <!doctype HTML>
+    <html>
+    <head>
+        <title>赛微VIP服务用户证</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.9">
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+    
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+        <style>
+            .certStyle h1, .certStyle h2, .certStyle h3, .certStyle h4, .certStyle h5, .certStyle h6, .certStyle dl, .certStyle dd, .certStyle ul, .certStyle ol, .certStyle form, .certStyle input, .certStyle p, .certStyle table, .certStyle tr, .certStyle td { margin:0; padding:0; font-family:Arial, Helvetica, sans-serif; font-family:"宋体";font-size: 12px}
+            .certStyle li{ list-style:none;}
+            .certStyle img{ border:none;}
+            .certStyle .clear{zoom:1;}
+            .certStyle .clear:after{content:"\20";display:block;clear:both;}
+            .dns-row{line-height:40px}
+            .w-row:after{content:".";display:block;height:0;clear:both;visibility:hidden}.w-row{zoom:1}
+            .w-row{padding:10px 0;line-height:25px}
+        </style>
+    <script>
+        var jdksign=$:jdksign;
+        wx.config({
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                appId:     jdksign['appid'] , // 必填，公众号的唯一标识
+                timestamp: jdksign['timestamp'], // 必填，生成签名的时间戳
+                nonceStr:  jdksign['nonceStr'], // 必填，生成签名的随机串
+                signature: jdksign['signature'],// 必填，签名，见附录1
+                jsApiList: ['onMenuShareAppMessage'] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            });
+        wx.ready(function(){
+            wx.onMenuShareAppMessage({
+                title  : '广西赛微特VIP服务用户证', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : "https://open.weixin.qq.com/connect/oauth2/authorize?appid=$cfgPara['appid']&redirect_uri=$cfgPara['homedomain']/m/company?act2=cert-company_id_$cfgPara['company'].company_id&response_type=code&scope=snsapi_base&state=123#wechat_redirect",   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    alert("请耐心等待用户确认")
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+        });  
+        \$(document).on("pagebeforeshow","#HomePage",function(e){
+            \$("#distributor-confirm").click(function(e){
+                \$.post("/m/company",
+                    {
+                        act      :"COMPANY-CONFIRM",
+                        openid   :"$cfgPara['openid']",
+                        company_id:'$cfgPara["company"].id'
+                    },
+                    function(data,status){
+                        if (data["result"]=="success"){
+                            \$("#cert").html('<img height="152" src="/static/img/gxsaiwei/gxsaiwei_seal.png" width="153">')
+                            d  = new Date();
+                            \$("#auth-date").html(d.format("yyyy-MM-dd"))
+                            alert("恭喜你成为:\n广西赛微科技投资特约经销商!")
+                            window.location.href="https://open.weixin.qq.com/connect/oauth2/authorize?appid=$cfgPara['appid']&redirect_uri=$cfgPara['homedomain']/m/company?act=home&response_type=code&scope=snsapi_base&state=123#wechat_redirect",target="_blank";
+                        } else {
+                            \$('#distributor-confirm').addClass("ui-state-disabled");
+                            alert("很遗憾，绑定失败!!")
+                        }
+                })
+            });
+        });        
+    </script>       
+    </head>
+    
+
+    <body>
+    <div data-role="page" id="HomePage" data-theme="a">
+        <div id="printArea" class="certStyle" style="height:100%;width: 100%">
+        <div id="Main_Type_1" style="width: 100%; position: relative;margin:0 auto">
+            <div style="position:absolute; left:0; top:0;"><img src="/static/img/gxsaiwei/vip_gold.gif" alt="" style="height:100%;width: 100%"></div>
+            <div style="position:absolute; left:0px;top:150px">
+                <table cellspacing="0" cellpadding="0" width="80%" align="center" background="" border="0" style="margin:0 auto;">
+                    <tbody>
+                    <tr>
+                    <td align="middle" colspan="3" ><br>
+                        <table cellspacing="0" cellpadding="0" width="100%" style="margin:0 auto;" border="0">
+                            <tbody>
+                            <tr style="text-align:left; font-weight:bold;font-size:24px; line-height:34px; font-family:'宋体';">
+                                <td>
+                                    <p style="padding-top:10px; color:#454545; padding-bottom:10px; font-size:18px;line-height:24px; ">
+                                        兹授权<font color="#0052e6"> <font face="Arial, Helvetica, sans-serif" id="name"> $cfgPara["company"].company </font>
+                                    </font>为 <span class="longstring"><font color="#0052e6">广西赛微科技投资有限公司 </font></span><font color="#0052e6" id="province"> $cfgPara["company"].province </font> <font color="#0052e6" id="city"> $cfgPara["company"].city </font><font color="#0052e6" id="district"> $cfgPara["company"].district </font>特约经销商，专业经营 <font color="#0052e6">等车网</font> 系列产品以及售后服务。
+                                    </p>
+                                </td>
+                            </tr>
+                            <tr style="text-align:left; font-weight:bold;font-size:24px; line-height:34px; font-family:'宋体';">
+                                <td>
+                                    <b style="font-size:16px;text-align:left;">专属授权二维码:</b><br>
+                                    &nbsp&nbsp<img height="152" id="cert-qrcode" src="$cfgPara['company'].qrcode_url" width="153">
+                                </td>
+                            </tr>
+                            <tr style="text-align:right; font-weight:bold;font-size:24px; line-height:34px; font-family:'宋体';">
+                                <td>
+                                    $if cfgPara["company"].confirmed_at is None:
+                                        <p style="font-size:20px;">授权日期:   <b style="font-size:12px;color:red" id="auth-date">有公章方有效</b></p>
+                                    $else:
+                                        <p style="font-size:20px;">授权日期:   <span id="auth-date">$cfgPara['company'].confirmed_at.strftime("%Y-%m-%d")<span></p>
+                                </td>
+                            </tr>
+                            <tr height="50" style="text-align:right; font-size:24px; color:#454545; line-height:50px;">
+                                <td>																				
+                                <div style="position:relative;">
+                                    <b style="font-size:20px;">广西赛微科技投资有限公司</b><br>
+                                    <div id="cert" style="position:absolute; right:-15px; bottom:-30px; z-index:3;">
+                                    $if (cfgPara['company'].confirmed_at is not None and cfgPara['company'].valid =="有效"):
+                                        <img height="152" src="/static/img/gxsaiwei/gxsaiwei_seal.png" width="153">
+                                    $if (cfgPara['company'].confirmed_at is not None and cfgPara['company'].valid =="待确认"):
+                                        <img height="152" src="/static/img/distributor/invalid-cert.png" width="153">
+                                    </div>
+                                </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        </div> 
+    <div data-role="footer" data-position="fixed" data-fullscreen="true">
+    $if cfgPara['company'].confirmed_at is None:
+        $if cfgPara['company'].regedit_openid != cfgPara['openid']:
+            <span style="color:red"><strong>扫一扫，完成最后确认</strong></span>
+        $else:
+            <span style="color:red"><strong>请将该页面分享给目标用户，跟踪完成最后确认<strong></span>
+    </div>        
+    </div>
+    </body>
+    </html>
+    
+    

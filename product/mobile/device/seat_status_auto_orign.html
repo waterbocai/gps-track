@@ -1,0 +1,223 @@
+$def with (cfgPara,jdksign,sharePara)
+    <!doctype HTML>
+    <html>
+    <head>
+        <title id="title">车辆座位状态</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.8">
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+    
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+          
+    </head>
+    
+    <script>
+        \$(document).on("pagebeforeshow","#HomePage",function(e){ // 当进入页面二时
+            setInterval(function(){
+                   \$.post("/m/device",
+                   {
+                       act      :"SEAT-STATUS-AUTO",
+                       imei     :'$cfgPara["imei"]',
+                       openid   :'$cfgPara["openid"]',
+                   },
+                   function(data,status){
+                       showGroupMember(data);
+                   });
+            },2000);
+            
+            function showGroupMember(data){
+                \$('#imei').html(data["imei"]);
+                \$('#time').html(data["time"]);
+                \$('#speed').html(data["speed"]);
+                \$('#addr').html(data["addr"]);
+                \$('#seated').html(data["sum"]['有人']);
+                \$('#unseated').html(data["sum"]['空座']);
+                \$('#unknown').html(data["sum"]['未知']);
+                \$('#outtime').html(data["sum"]['超时']);
+                
+                var seats = data["seats"];
+                \$('#group-member').empty();
+                \$('#group-member').append('<tr><td>编号</td><td>状态</td><td>电量</td><td>编号</td><td>状态</td><td>电量</td><td>编号</td><td>状态</td><td>电量</td></tr>')
+                for(var i = 0;i<20;i++)
+                {
+                    var tr ="<tr>";
+                    for(var j =0;j< 3;j++){
+                        if (typeof(seats[0])=="undefined" || i*3+j>seats.length) {
+                            continue;
+                        }
+                        tr+='<td  bgcolor="#F0F8FF">'+(i*3+j).toString()+'</td>'
+                        switch(seats[i*3 + j]){
+                            case "有人": 
+                                tr +='<td  bgcolor="#339933">'+seats[i*3 + j]+'</td>';
+                                break;
+                            case "未知":
+                                tr +='<td bgcolor="#C0C0C0">'+seats[i*3 + j]+'</td>';
+                                break;
+                            case "超时":
+                                tr +='<td bgcolor="#FF0000">'+seats[i*3 + j]+'</td>';
+                                break;
+                            default:
+                                tr +='<td>'+seats[i*3 + j]+'</td>'
+                        }
+                        
+                        tr +='<td bgcolor="#FFFFFF">'+seats[i*3 + j]+'</td>';
+                    }
+                    tr +="</tr>"
+                    \$('#group-member').append(tr);
+                }
+            }
+        })
+        var jdksign  = $:jdksign;
+        wx.config({
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                appId:     jdksign['appid'] , // 必填，公众号的唯一标识
+                timestamp: jdksign['timestamp'], // 必填，生成签名的时间戳
+                nonceStr:  jdksign['nonceStr'], // 必填，生成签名的随机串
+                signature: jdksign['signature'],// 必填，签名，见附录1
+                jsApiList: ['onMenuShareAppMessage',
+                            'onMenuShareTimeline',
+                            "onMenuShareQQ",
+                            "onMenuShareWeibo",
+                            "onMenuShareQZone"] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            });
+            
+        wx.ready(function(){
+            $if sharePara.has_key("title"):
+                wx.onMenuShareTimeline({
+                    title  : '赛微——智慧客运探路人', // 分享标题
+                    desc   : "赛微——赛出风格，微动世界", // 分享描述
+                    link   : '$sharePara["show_url"]',   //分享链接
+                    imgUrl : '$sharePara["logo_url"]', // 分享图标
+                    type   : '', // 分享类型,music、video或link，不填默认为link
+                    dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                    success: function () {
+                        // 用户确认分享后执行的回调函数
+                        },
+                        cancel: function () { 
+                            // 用户取消分享后执行的回调函数
+                            //alert("取消了分享")
+                        }
+                });
+            $else:
+                wx.onMenuShareAppMessage({
+                    title  : '你的朋友 $sharePara["user"] 给你分享了1个设备，注意确认！', // 分享标题
+                    desc   : "赛微——赛出风格，微动世界", // 分享描述
+                    link   : '$sharePara["share_url"]',   //分享链接
+                    imgUrl : '$sharePara["logo_url"]', // 分享图标
+                    type   : '', // 分享类型,music、video或link，不填默认为link
+                    dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                    success: function () {
+                        // 用户确认分享后执行的回调函数
+                        \$.post("/m/order",
+                        {
+                        act         :"GEN_SEATS_SHARE",
+                        openid      :'$sharePara["openid"]',
+                        imei        :'$sharePara["imei"]',
+                        out_trade_no:'$sharePara["out_trade_no"]',
+                        share_url   :'$sharePara["share_url"]', 
+                        
+                        },
+                        function(data,status){
+                            if (data["result"]=="success") {
+                                window.location.href ='$sharePara["share_url"]&trusting=yes';
+                            }
+                        });
+                    },
+                    cancel: function () { 
+                        // 用户取消分享后执行的回调函数
+                        //alert("取消了分享")
+                    }
+                });
+            wx.onMenuShareTimeline({
+                title  : '赛微——智慧客运探路人', // 分享标题
+                desc   : "赛微——赛出风格，微动世界", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQQ({
+                title  : '赛微——智慧客运探路人', // 分享标题
+                desc   : "赛微——赛出风格，微动世界", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareWeibo({
+                title  : '赛微——智慧客运探路人', // 分享标题
+                desc   : "赛微——赛出风格，微动世界", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQZone({
+                title  : '赛微——智慧客运探路人', // 分享标题
+                desc   : "赛微——赛出风格，微动世界", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+        }); 
+    </script>
+    <body>
+        <div data-role="page" id="HomePage" style="background-color:#fffffff"  >
+            <div data-role="header" >
+                <a id="DeviceBack" href="/m/bustrack?act=MINE_TRACK&openid=$cfgPara['openid']&imei=$cfgPara['imei']&company_id=$cfgPara['company_id']"  target='_blank' data-role="button" data-icon="back"  data-iconpos="left">当前位置</a>
+                <h1 id="arm-name" style="font-size:100%">$cfgPara['name'] 上座状态</h1>
+                $if sharePara["isOwner"]:
+                    <a href='/m/device?act=friend-manager&openid=$sharePara["openid"]&imei=$sharePara["imei"]' target="_blank" data-role="button" data-icon="grid"  data-iconpos="left">分享管理</a>
+
+            </div>
+
+            <div id="bar-member" class="ui-content">
+                <p style="font-size:120%"><strong>imei:</strong><span id='imei'></span></p>
+                <p style="font-size:120%"><strong>时间:</strong><span id='time'></span></p>
+                <p style="font-size:120%"><strong>速度:</strong><span id='speed'></span> 公里/小时</p>
+                <p style="font-size:120%"><strong>位置:</strong><span id='addr'></span></p>
+                <p style="font-size:120%"><strong>有人:</strong><span id='seated'></span>
+                                          <strong>空座:</strong><span id='unseated'></span>
+                                          <strong>未知:</strong><span id='unknown'></span>
+                                          <strong>超时:</strong><span id='outtime'></span></p>
+                <table width="100%" id='group-member'  border='1' cellspacing="0" style='font-size:100%;text-align:center'>
+                </table>
+            </div>
+        </div>  
+    </body>
+    </html>
+    
+    

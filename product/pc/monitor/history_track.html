@@ -1,0 +1,860 @@
+$def with (cfgPara,fixPara)
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>赛微，为智能客运而生</title>
+        <link rel="stylesheet" type="text/css" href="/easyui/jquery-easyui/themes/bootstrap/easyui.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/jquery-easyui/themes/icon.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/css/layout.css">
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.min.js"></script>
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.easyui.min.js"></script>
+        <script type="text/javascript" src="/easyui/script/tabify.js"></script>
+        <script type="text/javascript" src="/static/js/utility.js"></script>
+        <!--script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp&key=I7UBZ-KAVAP-VQCDT-V6GG7-7NE5O-GVBBG"></script-->
+        <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp&key=I7UBZ-KAVAP-VQCDT-V6GG7-7NE5O-GVBBG&libraries=drawing,geometry,autocomplete,convertor"></script>
+        <style type="text/css">
+        *{
+            margin:0px;
+            padding:0px;
+        }
+        body, button, input, select, textarea {
+            font: 12px/16px Verdana, Helvetica, Arial, sans-serif;
+        }
+        p{
+            width:603px;
+            padding-top:3px;
+            overflow:hidden;
+        }
+        .btn{
+            width:142px;
+        }
+        #container{
+            min-height:767px;
+        }
+    </style>
+    </head>
+    
+    <body id="content" class="easyui-layout" style="height:655px;">
+        <div data-options="region:'center'" style="height:60%;">
+            <div id="container"></div>
+        </div>
+        <div data-options="region:'south',split:true,collapsed:false,title:'运营统计',collapsed:true" style="height:40%;width:100%;padding:0px;">
+            <div id="tt" class="easyui-tabs" fit="true" border="false" pill="true">
+                <div title="停靠位置" style="padding:0px">
+                    <table id="history-sites" class="easyui-datagrid"  style="width:100%;height:auto" 
+                        data-options="singleSelect: true,
+                                        rownumbers:true,">
+                        <thead>
+                            <tr>
+                                <th data-options="field:'date',align:'center',width:'100px'">日期</th>
+                                <th data-options="field:'report_at',align:'center',width:'100px'">时间</th>
+                                <th data-options="field:'speed',align:'center',width:'100px'">速度</th>
+                                <th data-options="field:'duration',align:'center',width:'100px'">持续时长</th>
+                                <th data-options="field:'dist',align:'center',width:'100px'">里程(公里)</th>
+                                <th data-options="field:'addr',align:'left',width:'280px'">详细地址</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+                <div title="途径站点" style="padding:0px">
+                    <table id="line-site" class="easyui-datagrid"  style="width:100%;height:auto" 
+                            data-options="singleSelect:true,
+                                          rownumbers:true,
+                                          fitColumns:true">
+                        <thead>
+                            <tr>
+                                <th data-options="field:'name',align:'left',width:'100px'">站名</th>
+                                <th data-options="field:'address',align:'left',width:'100px'">地址</th>
+                                <th data-options="field:'is_end',align:'center',width:'100px'">终点？</th>
+                            </tr>
+                        </thead>
+                    </table>
+                    <!--div id="ls-mm" class="easyui-menu" style="width:120px;">
+                        <div data-options="iconCls:'icon-remove'" onclick="delRegion()">删除</div>
+                    </div-->
+                </div>
+                <div title="监控区域" style="padding:0px">
+                    <table id="monitor-region" class="easyui-datagrid"  style="width:100%;height:auto" 
+                            data-options="singleSelect:true,
+                                          rownumbers:true,
+                                          fitColumns:true">
+                        <thead>
+                            <tr>
+                                <th data-options="field:'from_name',align:'left',width:'100px'">开始位置</th>
+                                <th data-options="field:'to_name',align:'left',width:'100px'">截止位置</th>
+                                <th data-options="field:'gmileage',align:'center',width:'100px'">区间距离(公里)</th>
+                                <th data-options="field:'speed',align:'center',width:'100px'">平均车速(公里/小时)</th>
+                            </tr>
+                        </thead>
+                    </table>
+                    <div id="mr-mm" class="easyui-menu" style="width:120px;">
+                        <div data-options="iconCls:'icon-remove'" onclick="delRegion()">删除</div>
+                   </div>
+                </div>
+                
+            </div>
+        </div>
+        <div id="bus-camera" class="easyui-dialog" title="录像监控" style="width:1000px;height:620px;padding:5px"
+             data-options="iconCls:'icon-save',closed: true" >
+            <div id="camera-tabs" class="easyui-tabs" data-options="tabWidth:60,tabHeight:40" style="width:970px;height:560px">
+                <div title="<span class='tt-inner'><img src='/static/img/video.png'/><br>视频</span>" style="padding:2px">
+                    <p>正在获取车载视频，请耐心等候...</p>
+                </div>
+                <div title="<span class='tt-inner'><img src='/static/img/camera2.png'/><br>抓拍</span>" style="padding:2px">
+                    <p>正在获取车载照片，请耐心等候...</p>
+                </div>
+            </div>
+            <style scoped="scoped">
+                .tt-inner{
+                    display:inline-block;
+                    line-height:12px;
+                    padding-top:0px;
+                }
+                .tt-inner img{
+                    border:0;
+                }
+            </style>
+             <!--iframe src=""  id="iframe-camera" frameborder="0" scrolling="no" style="width:960px;height:540px;"></iframe-->
+             
+        </div>
+        <script id="monitor-region-script">
+            var _regionLine ={};
+            \$("#monitor-region").datagrid({
+                onRowContextMenu:function(e, rowIndex, rowData) {
+                    e.preventDefault();
+                    \$('#mr-mm').menu('show', {
+                        left: e.pageX,
+                        top: e.pageY
+                   });
+                },
+                onClickRow:function(index,row){
+                    var from_LatLng = new qq.maps.LatLng(row["from_qqLat"],row["from_qqLng"])
+                    var to_LatLng = new qq.maps.LatLng(row["to_qqLat"],row["to_qqLng"])
+                    var rowCenter = new qq.maps.LatLng((row["to_qqLat"]+row["from_qqLat"])/2,(row["to_qqLng"]+row["from_qqLng"])/2)
+                    var from_index = findSiteIndex(from_LatLng);
+                    var to_index = findSiteIndex(to_LatLng);
+                    if (_monitor_region_markers[row.id]==undefined){
+                        _monitor_region_markers[row.id]={}
+                    }
+                    var latLngs ={"start":from_LatLng,"end":to_LatLng}
+                    \$.each(latLngs,function(key,val){
+                        if (_monitor_region_markers[row.id][key]==undefined){
+                            _monitor_region_markers[row.id][key] = new qq.maps.Marker({
+                                map     : map,
+                                position: val,
+                                visible : true,
+                                draggable:true
+                            })
+                            _monitor_region_markers[row.id][key].setIcon(getMarkerIcon("red_"+key+"_30_23"));
+                        }
+                    })
+                    map.panTo(rowCenter);
+                    if (from_index<0 || to_index<0){
+                        _regionLine[row["id"]] = new qq.maps.Polyline({
+                            map: map,
+                            path: [from_LatLng,to_LatLng],
+                            editable: false,
+                        });
+                    } else {
+                        showMonitorRoute(from_index,to_index);
+                    }
+                    
+                }
+            })
+            
+            function delRegion(){
+                var mr =\$("#monitor-region").datagrid("getSelected")
+                \$.post("/pc/seat",
+                {
+                    act       :"del-monitor-region",
+                    openid    :cfgPara["openid"],
+                    monitor_region_id :mr["id"],
+                },
+                function(data,status){
+                    \$("#monitor-region").datagrid("loadData",data);
+                    _regionLine[mr["id"]].setVisible(false);
+                    _regionLine[mr["id"]].setMap(null);
+                    _regionLine[mr["id"]]=undefined;
+                    _monitor_region_markers[mr["id"]]["start"].setVisible(false);
+                    _monitor_region_markers[mr["id"]]["end"].setVisible(false);
+                    _monitor_region_markers[mr["id"]]["start"].setMap(null);
+                    _monitor_region_markers[mr["id"]]["end"].setMap(null);
+                    _monitor_region_markers[mr["id"]] =undefined;
+                    \$.messager.alert("温馨提醒","区域检测删除成功！");
+                })
+            }
+        </script>
+        <script name="add-site-btn-script">
+            \$(document).delegate("#add-site-btn","click",function(e){
+                
+                \$.post("/pc/seat",
+                {
+                    act       :"add-line-site",
+                    openid    :cfgPara["openid"],
+                    imei      :_hisData["dev"]["imei"],
+                    hispos_id :_hisData["pts"][_current_index]["id"],
+                },
+                function(data,status){
+                    if (data["result"]=="success"){
+                        \$.messager.alert("温馨提醒","站点添加成功");
+                    } 
+                    \$("#line-site").datagrid("loadData",data)
+                })
+                return;
+            })
+            function loadLineSite(){
+                \$.post("/pc/seat",
+                {
+                    act       :"get-line-site",
+                    openid    :cfgPara["openid"],
+                    imei      :_hisData["dev"]["imei"]
+                },
+                function(data,status){
+                    \$("#line-site").datagrid("loadData",data)
+                })
+            }
+            
+        </script>
+        <script type="text/javascript">
+            var cfgPara  = $:cfgPara;
+            var map;
+            var customAlarmDiv;
+            var myIcons = qqParseIcon('busmap');
+            var _click_markers={};
+            var _monitor_region_markers ={};
+            var _click_window ={};
+            var _drag_index = -1;
+            var _route      ={};
+            
+            var _markerImage = getMarkerIcon(cfgPara['dev']["arm_type"]);
+            var mapPts =[],pts,arm,openid,imei,_url;
+            var _hisData;
+            var _hismarkers={};
+            \$(document).ready(function () {
+                
+                var hisNo;
+                var center = new qq.maps.LatLng(cfgPara["centerQQLat"],cfgPara["centerQQLng"]);
+                map = new qq.maps.Map(document.getElementById('container'),{
+                    zoom: 13,
+                    center:center,
+                    mapTypeControlOptions: {
+                        position: qq.maps.ControlPosition.LEFT_TOP    //设置地图控件位置靠近顶部
+                    }
+                });
+                var mregion_data = {"rows":cfgPara["monitor_regions"],"total":cfgPara["monitor_regions"].length}
+                \$("#monitor-region").datagrid("loadData",mregion_data)
+                //线路信息
+                customAlarmDiv = document.createElement("div");  
+                endDatetime   = cfgPara["endTime"]
+                startDatetime =cfgPara["startTime"]
+                start_addr    =cfgPara["pts"][0]["addr"]
+                end_addr    =cfgPara["pts"][cfgPara["pts"].length-1]["addr"]
+                mileage     =cfgPara["pts"][cfgPara["pts"].length-1]["dist"]
+                var customAlarmControl = new CustomAlarmControl(customAlarmDiv,endDatetime,startDatetime,start_addr,end_addr,mileage);
+                map.controls[qq.maps.ControlPosition.RIGHT_TOP].push(customAlarmDiv);
+                initHistoryTrack(cfgPara);
+                \$("div").delegate("img","click",function(e) {
+                    if (e.target.name!="car-camera"){return}
+                    var no = parseInt(e.target.id.split("_")[1])
+                    var pt = _hisData["pts"][no];
+                    refreshCamera(pt);
+                })
+            });
+            window.onload = function () {
+                loadLineSite();
+            }
+            function CustomAlarmControl(controlDiv,endDatetime,startDatetime,start_addr,end_addr,mileage) {
+                //controlDiv.style.display = "none";
+                controlDiv.style.backgroundColor = "#FFFFFF";
+                controlDiv.style.border = "2px solid #86ACF2";
+                controlDiv.innerHTML = '\
+                    <div style="width:300px">\
+                        <div style="padding:5px 5px 5px 5px"><strong>历史轨迹</strong></div>\
+                        <div style="padding:5px 5px 5px 5px">\
+                            <table cellspacing="10" border="0">\
+                                <tr>\
+                                    <td>截止时间</td>\
+                                    <td><input type="datetime-local"  id = "end_time" value="'+endDatetime+'" style="width:180px"></td>\
+                                </tr>\
+                                <tr>\
+                                    <td>开始时间</td>\
+                                    <td><input type="datetime-local" id = "from_time" value="'+startDatetime+'" style="width:180px"></td>\
+                                </tr>\
+                                <tr>\
+                                    <td colspan="2" style="text-align:center"><button id="browser-history" >查看历史轨迹</button></td>\
+                                </tr>\
+                            </table>\
+                            <hr>\
+                            <table cellspacing="10" border="0">\
+                                <tr>\
+                                    <td width="50px">开始位置</td>\
+                                    <td id="start_addr">'+start_addr+'</td>\
+                                </tr>\
+                                <tr>\
+                                    <td>截止位置</td>\
+                                    <td id="end_addr">'+end_addr+'</td>\
+                                </tr>\
+                                 <tr>\
+                                    <td>行程</td>\
+                                    <td id="mileage">'+mileage+'公里</td>\
+                                </tr>\
+                            </table>\
+                        </div>\
+                    </div>\
+                ';
+                controlDiv.index = 1;//设置在当前布局中的位置
+     
+
+                function update(e) {
+                    var src,dst;
+                    if (e.target.id!="browser-history") {
+                        return
+                    }
+                    if (historyTimeIsValid()) {
+                        from_time = \$("#from_time").val().replace('T'," ")+":00";
+                        end_time = \$("#end_time").val().replace('T'," ")+":00";
+                        \$.post("/pc/monitor",
+                        {
+                            act      :"get-HISTORYTRACK",
+                            openid   :cfgPara["openid"],
+                            imei     :cfgPara["dev"]["imei"],
+                            startTime:from_time,
+                            endTime  :end_time
+                        },
+                        function(data,status){
+                            initHistoryTrack(data);
+                        });
+                    }
+                }
+                qq.maps.event.addDomListener(controlDiv, "click", update);
+            }
+            //检查时间的合法性
+            function historyTimeIsValid() {
+                from_time = \$("#from_time").val();
+                if (from_time==""){
+                    \$("#from_time").focus()
+                    return false
+                } else {
+                    from_time =from_time.replace('T'," ")+":00"
+                }
+                
+                end_time = \$("#end_time").val();
+                if (end_time=="") {
+                    \$("#end_time").focus()
+                    return false
+                } else {
+                    end_time = end_time.replace('T'," ")+":00"
+                }
+                var timediff = GetDateDiff(from_time,end_time,"minute")
+                if (timediff<0) {
+                    \$("#from_time").focus()
+                    return false
+                } else {
+                    return true
+                }
+                
+            }
+            function getCenter(points){
+                //设置新的map中点
+                var aLat = 0;
+                var aLng = 0;
+                for(var i=0;i<buses.length;i++){
+                    aLat +=points[i]["qqLat"];
+                    aLng +=points[i]["qqLng"];
+                }
+                aLat = aLat/points.length;
+                aLng = aLng/points.length;
+                
+                var center = new qq.maps.LatLng(aLat,aLng);
+                return center
+            }
+            //根据方向选择图标
+            function getDirectionCar(direction,color){
+                var car_no;
+                if (direction!=undefined) {
+                    car_no = parseInt((direction+22.5)/45)%8
+                } else {
+                    car_no = 0
+                }
+                png_name = color+"_car_"+car_no+"_30_30"
+                icon = getMarkerIcon(png_name)
+                return icon
+            }
+            //删除后，微信无法显示
+            function getMarkerIcon(name){   
+                if (name=="") {
+                    name = "car_blue"
+                }
+                if (name.indexOf("16_30")>0){
+                var icon= new qq.maps.MarkerImage(
+                    "/static/img/map/"+name+".png",
+                        new qq.maps.Size(30, 30),
+                    new qq.maps.Point(0, 0),
+                        new qq.maps.Point(15, 15)
+                    )
+                } else if (name.indexOf("30_16")>0) {
+                    var icon= new qq.maps.MarkerImage(
+                        "/static/img/map/"+name+".png",
+                        new qq.maps.Size(30, 30),
+                        new qq.maps.Point(0, 0),
+                        new qq.maps.Point(15, 15)
+                    )
+                } else if (name.indexOf("30_30")>0) {
+                    var icon= new qq.maps.MarkerImage(
+                        "/static/img/map/"+name+".png",
+                        new qq.maps.Size(30, 30),
+                        new qq.maps.Point(0, 0),
+                        new qq.maps.Point(15,15)
+                    )
+                } else {
+                    var icon= new qq.maps.MarkerImage(
+                        "/static/img/map/"+name+".png",
+                        new qq.maps.Size(23, 30),
+                        new qq.maps.Point(0, 0),
+                        new qq.maps.Point(12, 30)
+                )
+                }
+                return icon;
+            }
+
+            function initHistoryTrack(hisPara) {
+                //清除已有的图标
+                
+                init_monitor();//初始化监控
+                
+                \$("#history-sites").datagrid("loadData",hisPara["hisSites"])
+            
+                \$("#end_time").val(hisPara["endTime"])
+                \$("#from_time").val(hisPara["startTime"])
+                \$("#start_addr").html(hisPara["pts"][0]["addr"])
+                \$("#end_addr").html(hisPara["pts"][hisPara["pts"].length-1]["addr"])
+                \$("#mileage").html(hisPara["pts"][hisPara["pts"].length-1]["dist"]+"公里")
+                _hisData = hisPara;
+                pts = hisPara['pts'];
+                arm = hisPara['dev'];
+                openid = hisPara['openid']
+                imei = arm['imei'];
+                _url  = hisPara['url'];
+                
+     
+                var center = new qq.maps.LatLng(hisPara["centerQQLat"],hisPara["centerQQLng"]);
+                map.panTo(center)
+                
+                mapPts =[]
+                for (var i=0;i<pts.length;i++)
+                {
+                    mapPts.push(new qq.maps.LatLng(pts[i]['qqLat'],pts[i]['qqLng']));
+                }                
+                
+                
+                //showMarkers(hisPara["sites"]["auto"],map,"blue",1);
+                //showMarkers(hisPara["sites"]["manual"],map,"red",10);
+                \$("#hist-arm-name").html(arm['name']);
+                \$("#history-desc").html('<strong>始:</strong>'+hisPara["startTime"]+" "+pts[0]['addr']+"  <strong>终:</strong>"+''+hisPara["endTime"]+" "+pts[pts.length-1]['addr'] +"<br><strong>行程：</strong>"+pts[pts.length-1]['dist']+"公里")
+                setTimeout(runHistory, 50);
+            }
+            
+            function runHistory() {
+                \$.each(["start","end"],function(index,val) {
+                    var no = (index==1?pts.length-1:0)
+                    if (_hismarkers[val]==undefined) {
+                        _hismarkers[val] = new qq.maps.Marker({
+                            icon: myIcons[index][0],
+                            map: map,
+                            position:mapPts[no],
+                            zIndex:2})
+                    } else {
+                        _hismarkers["start"].setPosition(mapPts[no]);
+                    }
+                })
+                runMarker();
+                drawline(mapPts,'#1c29d8');                   
+            }
+            //添加显示板
+            function CustomZoomControl(controlDiv, map) {
+                controlDiv.style.padding = "5px";
+                controlDiv.style.backgroundColor = "#FFFFFF";
+                controlDiv.style.border = "2px solid #86ACF2";
+                //controlDiv.style.width ="70%"
+                controlDiv.style.textAlign ="left"
+        
+                controlDiv.index = 1;//设置在当前布局中的位置
+                updateMyControl(controlDiv);
+            } 
+            function updateMyControl(controlDiv) {
+                controlDiv.innerHTML = "<strong>时间:</strong>" + pts[hisNo]['gpsTime']+' <strong>速度:</strong>'+pts[hisNo]["speed"]+'公里/小时<strong>行程：</strong>'+pts[hisNo]["dist"]+'公里<br><strong>位置:</strong>'+pts[hisNo]["addr"];
+                qq.maps.event.trigger(controlDiv, "resize");
+            }
+            
+            function runMarker() {
+                hisNo = 0;
+                //var customZoomDiv = document.createElement("div");
+                //var customZoomControl = new CustomZoomControl(customZoomDiv, map);
+                //if (map.controls[qq.maps.ControlPosition.TOP_LEFT].length==0){
+                //    map.controls[qq.maps.ControlPosition.TOP_LEFT].push(customZoomDiv);
+                //}
+                if (_hismarkers["run"]==undefined){
+                    _hismarkers["run"] = new qq.maps.Marker({
+                        icon: getDirectionCar(pts[0]["direction"],"blue"),
+                        map: map,
+                        position:mapPts[0]});
+                } else {
+                    _hismarkers["run"].setIcon(getDirectionCar(pts[0]["direction"],"blue"));
+                    _hismarkers["run"].setPosition(mapPts[0]);
+                }
+                
+                var label_content = "<strong>时间:</strong>" + pts[hisNo]['gpsTime']+' <strong>速度:</strong>'+pts[hisNo]["speed"]+'公里/小时<strong>行程：</strong>'+pts[hisNo]["dist"]+'公里<br><strong>位置:</strong>'+pts[hisNo]["addr"]
+                if (_hismarkers["car_label"]==undefined) {
+                    _hismarkers["car_label"] = new qq.maps.Label({
+                        position: mapPts[0],
+                        map: map,
+                        content:label_content,
+                        visible:true,
+                        style:{color:"#000",fontSize:"10px",fontWeight:"normal"},
+                        offset:new qq.maps.Size(5,5),
+                    });
+                } else {
+                    _hismarkers["car_label"].setPosition(mapPts[0]);
+                    _hismarkers["car_label"].setContent(label_content);
+                }
+                
+                var intObj =setInterval(function(){
+                    _hismarkers["run"].setIcon(getDirectionCar(pts[hisNo]["direction"],"blue"))
+                    _hismarkers["run"].setPosition(mapPts[hisNo]);
+                    _hismarkers["car_label"].setPosition(mapPts[hisNo]);
+                    _hismarkers["car_label"].setContent("<strong>时间:</strong>" + pts[hisNo]['gpsTime']+' <strong>速度:</strong>'+pts[hisNo]["speed"]+'公里/小时<strong>行程：</strong>'+pts[hisNo]["dist"]+'公里<br><strong>位置:</strong>'+pts[hisNo]["addr"])
+                    //updateMyControl(customZoomDiv);                    
+                    hisNo+=1;
+                    if (hisNo>=mapPts.length){
+                        clearInterval(intObj);
+                        //customZoomDiv.style.display="none"
+                    }
+                },300);
+            }
+
+            function drawline(mapPts,color)
+            {
+                var polyline = new qq.maps.Polyline({
+                    path: mapPts,
+                    strokeColor: color,
+                    strokeWeight: 5,
+                    editable:false,
+                    map: map
+                });
+                qq.maps.event.addListener(polyline, 'click', function(e) {
+                    var ptIndex = findSiteIndex(e.latLng)
+                    if (ptIndex<0){return;}
+                    _current_index = ptIndex;
+                    updateMarker(ptIndex)
+                    //_click_window[ptIndex].setContent(getInfoWindowContent(ptIndex);
+                    _click_window[ptIndex].open();
+                });
+                return polyline;
+            }
+                    //显示站点信息
+            function showMarkers(monitors,map,color,zIndex) {
+                var monitorPoints={}
+                var icon;
+                //用户当前位置
+                for(var i=0;i<monitors.length;i++){
+                    (function(n){
+                        var pos = new qq.maps.LatLng(sites[n]["qqLat"],sites[n]["qqLng"]);
+                        var title = "监控点";
+                        monitorPoints[n] = new qq.maps.Marker({
+                                icon    : getMarkerIcon("video_red1_40_30"),
+                                map     : map,
+                                position: pos,
+                                title   : title,
+                                zIndex  : zIndex});
+                        //添加到提示窗
+                        var info = new qq.maps.InfoWindow({
+                            map: map
+                        });
+                        //获取标记的点击事件
+                        //content = sites[i]["address"]+"<br>id:"+sites[i]["id"]
+                        qq.maps.event.addListener(monitorPoints[n], 'click', function(e) {
+                            //是自动站点
+                            //是设定的站点，恢复为自动站点
+                            refreshCamera(monitors[n])
+                        });
+                    })(i)
+                }
+            }
+            function init_monitor() {
+                if (_click_markers[_monitor_end_index]!=undefined) {
+                    _click_markers[_monitor_end_index].setMap(null)
+                    _click_markers[_monitor_end_index]=undefined
+                    _click_window[_monitor_end_index].setMap(null)
+                    _click_window[_monitor_end_index]=undefined
+                    _monitor_end_index = -1
+                    
+                } 
+                if (_click_markers[_monitor_start_index]!=undefined) {
+                    _click_markers[_monitor_start_index].setMap(null)
+                    _click_markers[_monitor_start_index]=undefined
+                    _click_window[_monitor_start_index].setMap(null)
+                    _click_window[_monitor_start_index]=undefined
+                    _monitor_start_index = -1
+                }
+                if (_monitor_line!=undefined){
+                    _monitor_line.setVisible(false);
+                    _monitor_line.setMap(null)
+                }
+                _monitor_line = undefined
+            }
+            var _monitor_start_index=-1;
+            var _monitor_end_index=-1;
+            var _current_index    =-1;
+            var _monitor_line;
+            function updateMarker(ptIndex){
+                var pt = _hisData["pts"][ptIndex];
+                var pos =new qq.maps.LatLng(pt["qqLat"],pt["qqLng"])
+                _click_markers[ptIndex] = new qq.maps.Marker({
+                        map     : map,
+                        position: pos,
+                        visible : false,
+                        draggable:true});
+                _click_window[ptIndex] = new qq.maps.InfoWindow({
+                    map: map
+                });
+                var content = getInfoWindowContent(ptIndex)
+                //获取标记的点击事件
+                //content = sites[i]["address"]+"<br>id:"+sites[i]["id"]
+                _click_window[ptIndex].setContent(content);
+                _click_window[ptIndex].setPosition(pos)
+                _click_window[ptIndex].open();
+                
+                qq.maps.event.addListener(_click_markers[ptIndex], 'click', function(e) {
+                    _click_window[ptIndex].setContent(getInfoWindowContent(_current_index))
+                    _click_window[ptIndex].open();
+                });
+                qq.maps.event.addListener(_click_markers[ptIndex], 'dragstart', function(e) {
+                    _drag_index =ptIndex;
+                    _click_window[ptIndex].close();
+                    //_click_window[ptIndex].setMap(null);
+                });
+                qq.maps.event.addListener(_click_markers[ptIndex], 'dragend', function(e) {
+                    var ptIndex = findSiteIndex(e.latLng)
+                    if (ptIndex<0){return;}
+                    var icon = _click_markers[_drag_index].getIcon();
+                    if (icon.url.indexOf("start")<0){
+                        _monitor_end_index   = ptIndex; 
+                    } else {
+                        _monitor_start_index = ptIndex; 
+                    }
+                    updateMarker(ptIndex);
+                    _click_markers[_drag_index].setMap(null)
+                    _click_markers[_drag_index]=null;
+                    
+                    _click_markers[ptIndex].setIcon(icon);
+                    _click_markers[ptIndex].setVisible(true);
+                    showMonitorRoute(-1,-1);
+                });
+                
+            }
+            function getInfoWindowContent(ptIndex){
+                var monitor_btn;
+                var dist  =0;//起始距离，单位公里
+                var speed =0;//平均速度
+                var monitor_content;
+                var pt = _hisData["pts"][ptIndex];
+                if (_monitor_start_index<0 || _monitor_end_index<0){
+                    monitor_btn= _monitor_start_index<0?'起点':'终点';
+                    monitor_content = '<td>抽检区域:<button id="monitor-btn">'+monitor_btn+'</button></td>';
+                } else {
+                    var start_latlng = new qq.maps.LatLng(_hisData["pts"][_monitor_start_index]["qqLat"], _hisData["pts"][_monitor_start_index]["qqLng"])
+                    var end_latlng = new qq.maps.LatLng(_hisData["pts"][_monitor_end_index]["qqLat"], _hisData["pts"][_monitor_end_index]["qqLng"])
+                    dist =(qq.maps.geometry.spherical.computeDistanceBetween(start_latlng,end_latlng)/1000.0).toFixed(0);
+                    var from_index,to_index;
+                    if (_monitor_start_index<_monitor_end_index){
+                        from_index = _monitor_start_index;
+                        to_index   = _monitor_end_index;
+                    } else {
+                        to_index = _monitor_start_index;
+                        from_index   = _monitor_end_index;
+                    }
+                    var speed_num = 0
+                    for(var i=from_index;i<=from_index;i++){
+                        if (_hisData["pts"][i]["speed"]>0) {
+                            speed+=_hisData["pts"][i]["speed"]
+                            speed_num +=1
+                        }
+                    }
+                    speed =(speed/speed).toFixed(0)
+                    monitor_content = '<td style="border-right:#cccccc solid 1px;">抽检区域:&nbsp&nbsp&nbsp&nbsp&nbsp<button id="monitor-btn" style="padding:3px 3px">'+"添加"+'</button><br>-距离:'+dist+'公里,速度:'+speed+'公里/小时</td>';
+                }
+                //获取标记的点击事件
+                //content = sites[i]["address"]+"<br>id:"+sites[i]["id"]
+                var content = '<div style="font-size:95%;font-weight:normal;width:250px;word-wrap:break-word;padding-bottom:5px;">'
+                if (pt["img_path"]!="" || pt["video_path"]!=""){
+                    content+= '<img id="car-monitor-'+ptIndex+'" src="/static/img/bus_camera.png" style="width:40px;height:40px;float:right;position:relative;right:20px"></img>'
+                }
+                content+='<h3>'+ _hisData["dev"]["name"]+'</h3><dl>'
+                content +='<dt>速度:<span>'+pt["speed"]+"</span>公里/小时"+"</dt>"
+                content +='<dt>定位<span>'+pt["gpsTime"]+"</span></dt>" +
+                          '<dt>地址<span>'+pt["addr"]+"</span></dt></div>";
+                content +='<hr>';
+                content +='<div><table style="width:100%;cellpadding:40px;color:blue" border="0"><tr>'
+                content +=monitor_content;  
+                content +='<td><button id="add-site-btn" style="padding:5px 5px">添加站点</button></td></tr></table></div>';
+                return content;
+            }
+            \$(document).delegate("#monitor-btn","click",function(e){
+                if (_monitor_start_index>0 && _monitor_end_index>0){
+                    \$.post("/pc/seat",
+                    {
+                        act       :"add-monitor-region",
+                        openid    :cfgPara["openid"],
+                        imei      :_hisData["dev"]["imei"],
+                        from_historytrack_id :_hisData["pts"][_monitor_start_index]["id"],
+                        to_historytrack_id   :_hisData["pts"][_monitor_end_index]["id"],
+                    },
+                    function(data,status){
+                        \$("#monitor-region").datagrid("loadData",data)
+                        \$.messager.alert("温馨提醒","区域检测已经添加成功！");
+                    })
+                    return;
+                } else {
+                    var flag = "start";
+                    if (_monitor_start_index<0){
+                        _monitor_start_index = _current_index;
+                        flag = "start";
+                    } else {
+                        flag = "end";
+                        _monitor_end_index = _current_index;
+                        showMonitorRoute(-1,-1)
+                    }
+                }
+                _click_markers[_current_index].setIcon(getMarkerIcon("red_"+flag+"_30_23"));
+                _click_markers[_current_index].setVisible(true);
+            })
+            function showMonitorRoute(from_index,to_index) {
+                var routeType;
+                if (from_index<0) {
+                    if (_monitor_start_index<_monitor_end_index){
+                        from_index= _monitor_start_index;
+                        to_index = _monitor_end_index;
+                    } else {
+                        to_index= _monitor_start_index;
+                        from_index = _monitor_end_index;
+                    }
+                    
+                    routeType = "global";
+                } else {
+                    
+                    if (from_index>to_index) {
+                        var temp = from_index;
+                        to_index = from_index;
+                        to_index = temp;
+                    }
+                    routeType = "local";
+                }
+                var pts=[]
+                for(var i =from_index;i<=to_index;i++){
+                    pts.push(new qq.maps.LatLng(_hisData["pts"][i]["qqLat"],_hisData["pts"][i]["qqLng"]));
+                } 
+                if (routeType=="global") {
+                    if (_monitor_line==undefined) {
+                        _monitor_line = drawline(pts,"red");
+                    } else {
+                        _monitor_line.setPath(pts);
+                    }
+                } else {
+                    if (_route[from_index]==undefined) {
+                        _route[from_index]={}
+                    }
+                    _route[from_index][to_index]=drawline(pts,"red"); 
+                }
+            }
+            
+            
+            function findSiteIndex(latLng) {
+                var minDist  = 1000;
+                var minIndex =-1;//记录停靠点的索引
+                var dir=-0.01;//方位
+                if (_monitor_start_index>0){//起点已定，终点方位与起点要保持一致
+                     dir =   _hisData["pts"][_monitor_start_index]["direction"]         
+                } 
+                for(var i=0;i<_hisData["pts"].length;i++){
+                    if (_hisData["pts"][i]["qqLat"]<=0 ||  _hisData["pts"][i]["qqLng"]<=0) {continue;}
+                    var armPt = new qq.maps.LatLng(_hisData["pts"][i]["qqLat"], _hisData["pts"][i]["qqLng"])
+                    var dist =qq.maps.geometry.spherical.computeDistanceBetween(latLng,armPt)/1000.0;
+                    var dirDiff = Math.abs(_hisData["pts"][i]["direction"]-dir)
+                    if ((dir<0 || (dir>0 && dirDiff <=180)) && dist <minDist){
+                        minDist = dist;
+                        minIndex = i;
+                    }
+                }
+                return minIndex
+                 
+            }
+            //显示站点信息
+            function showMarkers(sites,map,color,zIndex) {
+                var markers={}
+                var icon;
+                var clr = (color=="red"? "red":"");
+                //用户当前位置
+                for(var i=0;i<sites.length;i++){
+                    (function(n){
+                        var site_id = sites[n]['site_id']
+                        var pos = new qq.maps.LatLng(sites[n]["qqLat"],sites[n]["qqLng"]);
+                        var title = sites[n]["seated_num"]+"人,上客:"+sites[n]["num_change"]+"\r\n"+sites[n]["name"]
+                        if (n<20) {
+                            _markers[site_id] = new qq.maps.Marker({
+                                icon    : getMarkerIcon(clr+(n+1).toString()),
+                                map     : map,
+                                position: pos,
+                                title   : title,
+                                zIndex  : zIndex});
+                        } else {
+                            _markers[site_id] = new qq.maps.Marker({
+                                position: pos,
+                                title   : title,
+                                map: map
+                            });                
+                        }
+                        //添加到提示窗
+                        var info = new qq.maps.InfoWindow({
+                            map: map
+                        });
+                        //获取标记的点击事件
+                        //content = sites[i]["address"]+"<br>id:"+sites[i]["id"]
+                        qq.maps.event.addListener(_markers[site_id], 'click', function(e) {
+                            //是自动站点
+                            //是设定的站点，恢复为自动站点
+                            var icon = _markers[site_id].getIcon();
+                            if (icon!=null && _markers[site_id].getIcon()["url"].indexOf("site.png")>=0){
+                                _markers[site_id].setIcon(getMarkerIcon("plane"));
+                                updateSiteType(site_id,"auto")
+                            } else { 
+                                
+                                
+                                if (icon==null || (icon!=null && icon["url"].indexOf("red")==-1)){
+                                    _markers[site_id].setIcon(getMarkerIcon("site"));
+                                    _markers[site_id].setZIndex(10);
+                                    updateSiteType(site_id,"manual")
+                                }
+                            }
+                        });
+                    })(i)
+                }
+            }
+                
+        </script>
+        <script name="car-camera">
+            function refreshCamera(pt){
+                
+                \$("#bus-camera").dialog({title:"视频监控"})
+                var tab = \$('#camera-tabs').tabs('getTab',0);
+                tab.panel('refresh', pt["video_path"]);
+                var tab = \$('#camera-tabs').tabs('getTab',1);
+                tab.panel('refresh', pt["img_path"]);
+                \$('#bus-camera').dialog('open')   
+            }
+        </script>
+
+    </body>
+    </html>
+    

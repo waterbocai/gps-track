@@ -1,0 +1,51 @@
+$def with (cfgPara,fixPara)
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>赛微，为智能客运而生</title>
+        <link rel="stylesheet" type="text/css" href="/easyui/jquery-easyui/themes/bootstrap/easyui.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/jquery-easyui/themes/icon.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/css/layout.css">
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.min.js"></script>
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.easyui.min.js"></script>
+        <script type="text/javascript" src="/easyui/script/tabify.js"></script>
+        <script type="text/javascript" src="/static/js/utility.js"></script>
+        <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp"></script>
+
+    </head>
+    
+    <body id="content" class="easyui-layout" style="height:767px;">
+        <div data-options="region:'center',split:true,collapsed:false" style="height:70%;padding:10px;">
+            <table id="history-sites" class="easyui-datagrid"  style="width:100%;height:auto" data-options="
+                singleSelect: true,
+                rownumbers:true">
+                <thead>
+                    <tr>
+                        <th data-options="field:'from_time',width:180,align:'left',editor:'textbox'">开始时间</th>
+                        <th data-options="field:'to_time',width:180,align:'left',editor:'textbox'">截止时间</th>
+                        <th data-options="field:'duration_time',width:80,align:'left',editor:'textbox'">时长</th>
+                        <th data-options="field:'site_name',width:120,align:'left',editor:'textbox'">地名</th>
+                        <th data-options="field:'address',align:'left',editor:'textbox'">详细地址</th>
+                        <th data-options="field:'from_seated_num',align:'left',editor:'textbox'">停靠前乘客数</th>
+                        <th data-options="field:'to_seated_num',align:'left',editor:'textbox'">出发后乘客数</th>
+                        <th data-options="field:'num_change',align:'left',editor:'textbox'">乘客数变化</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+        <script type="text/javascript">
+            var cfgPara  = $:cfgPara;
+            \$(document).ready(function () {
+                
+               \$("#history-sites").datagrid("loadData",cfgPara["sites"])
+
+            });
+
+                
+        </script>
+
+    </body>
+    </html>
+    

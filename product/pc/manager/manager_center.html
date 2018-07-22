@@ -1,0 +1,440 @@
+$def with (cfgPara,fixPara)
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="keywords" content="gxsaiwei,saiwei,gps,座位检测">
+        <title>慧特科技，互联网+服务专家</title>
+        <link rel="stylesheet" type="text/css" href="/easyui/themes/bootstrap/easyui.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/themes/icon.css">
+        <!--link rel="stylesheet" type="text/css" href="/easyui/css/layout.css"-->
+        <link rel="stylesheet" type="text/css" href="/easyui/css/kube.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/css/main.css">
+        
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.min.js"></script>
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.easyui.min.js"></script>
+       
+        
+        <!--script type="text/javascript" src="/easyui/script/tabify.js"></script-->
+        <script type="text/javascript" src="/static/js/utility.js"></script>
+        <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp"></script>   
+    </head>
+    <body class="easyui-layout" >
+        <div id="header" class="group wrap header">
+            <div class="content">
+                <div class="navigation-toggle" data-tools="navigation-toggle" data-target="#navbar-1">
+                    <span>EasyUI</span>
+                </div>
+                <div id="elogo" class="navbar navbar-left">
+                    <ul>
+                        <li>
+                             <a href="http://www.iwaiter.cn"><img src="/static/img/tianwangshouhu/logo.png" alt="jQuery EasyUI"/></a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="navbar navbar-left" ><h3 style="color:#F0F0F0">深圳市慧特科技有限公司</h3></div>
+                <div id="navbar-1" class="navbar navbar-right">
+                    <ul>
+                        <li><a id="nav-home" href="http://www.iwaiter.cn">首页</a></li>
+                        <li><a id="nav-login" href="/pc/user?act=login" target='_blank'>登录</a></li>
+                        <li><img id="headimgurl" width="50px" height="50px" src="#" style="border-radius:5px;" alt="jQuery EasyUI"/></li>
+                    </ul>
+                    <div id="login_container"> </div>
+                </div>
+                <div style="clear:both"></div>
+  
+            </div>
+            <script type="text/javascript">
+                function setNav(){
+                    var demosubmenu = \$('#demo-submenu');
+                    if (demosubmenu.length){
+                        if (\$(window).width() < 450){
+                            demosubmenu.find('a:last').hide();
+                        } else {
+                            demosubmenu.find('a:last').show();
+                        }
+                    }
+                    if (\$(window).width() < 767){
+                        \$('.navigation-toggle').each(function(){
+                            \$(this).show();
+                            var target = \$(this).attr('data-target');
+                            \$(target).hide();
+                            setDemoNav();
+                        });
+                    } else {
+                        \$('.navigation-toggle').each(function(){
+                            \$(this).hide();
+                            var target = \$(this).attr('data-target');
+                            \$(target).show();
+                        });
+                    }
+                }
+                function setDemoNav(){
+                    \$('.navigation-toggle').each(function(){
+                        var target = \$(this).attr('data-target');
+                        if (target == '#navbar-demo'){
+                            if (\$(target).is(':visible')){
+                                \$(this).css('margin-bottom', 0);
+                            } else {
+                                \$(this).css('margin-bottom', '2.3em');
+                            }
+                        }
+                    });
+                }
+                \$(function(){
+                    setNav();
+                    \$(window).bind('resize', function(){
+                        setNav();
+                    });
+                    \$('.navigation-toggle').bind('click', function(){
+                        var target = \$(this).attr('data-target');
+                        \$(target).toggle();
+                        setDemoNav();
+                    });
+                })
+            </script>        
+        </div>
+        <div class="easyui-layout" data-options="fit:true" style="width:100%;height:800px;">
+            <div data-options="region:'west',split:true,split:false" title="地域分布" style="width:400px;" >
+                <div data-options="region:'north',split:true" title="区域客户" fit="true" style="width:100%;height:250px;">
+                    <ul id="region-tree" class="easyui-tree" data-options="
+                        lines:true,
+                        singleSelect: true,
+                        animate:true,
+                        formatter:function(node){
+                                var s = node.text;
+                                if (node.children){
+                                    s += '&nbsp;<span style=\'color:blue\'>(' + node.children.length + ')</span>';
+                                }
+                                return s;
+                            }">
+                    </ul>
+                </div>
+                <div data-options="region:'center',split:true" style="width:100%;height:65%;position:relative;bottom:60px;">
+                    <table id="company" class="easyui-datagrid" fit="true" title="客运企业" style="width:90%;height:100%;display:block"
+                            data-options="
+                                singleSelect: true,
+                                fit:true,
+                                rownumbers:true,
+                                remoteSort:false,
+                                multiSort:true,
+                                idField:'imei',
+                            ",
+                            >
+                        <thead>
+                            <tr>
+                                <th data-options="field:'company',align:'left'"  sortable="true" style="width:35%" sortable="true">名称</th>
+                                <th data-options="field:'name',align:'center'"  sortable="true" style="width:30%" sortable="true">责任人</th>
+                                <th data-options="field:'line_sum',align:'center'" sortable="true" style="width:15%" sortable="true">线路数</th>
+                                <th data-options="field:'bus_sum',align:'center'" sortable="true"  style="width:20%" sortable="true">车辆数</th>
+                            </tr>
+                        </thead>
+                    </table>
+                    
+                    <!--div id="bus-tb" style="height:auto">
+                        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-save',plain:true" onclick="move2group">移动</a>
+                    </div-->
+                   <!-- <div id="company-mm" class="easyui-menu" style="width:120px;">
+                        <div data-options="iconCls:'icon-sum'" onclick="gotoCompany()">公司服务</div>
+                        div data-options="iconCls:'icon-reload'" onclick="openMoveDev2GroupDlg()">移动分组</div
+                    </div>-->
+                </div>
+            </div>
+            <div data-options="region:'center'" style="height:767px;width:auto;">
+                <div id="tt" class="easyui-tabs" fit="true" border="false" plain="true">
+                    <div title="客户分布" id="container">
+                        <p id="info" style="margin-top:10px;"></p>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <script type="text/javascript">
+            var cfgPara  = $:cfgPara;
+            var _markers =[],_mapInfoWin=[];
+            var _newcenter  = true;
+            var _companies=cfgPara["company"]["rows"]
+            var map,_lastMakerIndex = -1;
+            
+            var path_data={};//记录点击过的节点，避免重复点击
+            \$(document).ready(function () {
+                \$('#headimgurl').attr("src",cfgPara["user"]["headimgurl"]);
+                \$("#region-tree").tree("loadData",cfgPara["regions"])
+                \$("#company").datagrid("loadData",cfgPara["company"])
+                map = new qq.maps.Map(document.getElementById('container'),{
+                    zoom: 5,
+                    mapTypeControlOptions: {
+                        position: qq.maps.ControlPosition.TOP_CENTER    //设置地图控件位置靠近顶部
+                    }
+                });
+                
+                companyOnMap(cfgPara["locations"]);
+            });
+            
+            function getCenter(buses){
+                //设置新的map中点
+                var aLat = 0;
+                var aLng = 0;
+                for(var i=0;i<buses.length;i++){
+                    aLat +=buses[i]["qqLat"];
+                    aLng +=buses[i]["qqLng"];
+                }
+                aLat = aLat/buses.length;
+                aLng = aLng/buses.length;
+                
+                var center = new qq.maps.LatLng(aLat,aLng);
+                return center
+            }
+            function companyOnMap(locations){
+                if (locations.length==0) {return;}
+                //清除已有的节点
+                for(var i=0;i<_markers.length;i++){
+                    _markers[i].setMap(null);
+                    _mapInfoWin[i].setMap(null);
+                }
+                _markers = []
+                _mapInfoWin = []
+                if (_newcenter==true){
+                    var center = getCenter(locations);
+                    map.panTo(center);
+                    _newcenter = false;
+                }
+                //用户当前位置
+                for(var i=0;i<locations.length;i++){
+                    
+                    (function(n){
+                        company =locations[n]["company"];
+                        var pos = new qq.maps.LatLng(locations[n]["qqLat"],locations[n]["qqLng"]);
+                        _markers[n] = new qq.maps.Marker({
+                                icon    : getMarkerIcon("store_30_29"),
+                                map     : map,
+                                position: pos,
+                                title   : company["company"]});
+                        _mapInfoWin[n] = new qq.maps.InfoWindow({
+                            map: map
+                        });
+                        
+                        //获取标记的点击事件
+                        _mapInfoWin[n].setContent('<div style="width:160px;padding-top:0px;">'+
+                                '<h3>'+ company["company"]+"</h3><dl>"+
+                                '<a href="/pc/monitor?act=car-online&openid='+cfgPara["openid"]+"&company_id="+company["id"]+'" target="_blank"><img id="car-postion" src="/static/img/map/search_map_44_40.png" style="float:right"></img></a>'+
+                                '<dt><strong>责任人：</strong><span>'+company["name"]+"</span></dt>"+
+                                '<dt><strong>线路数：</strong><span>'+company["line_sum"]+"</span></dt>"+
+                                '<dt><strong>班车数：</strong><span>'+company["bus_sum"]+"</span></dt>"+
+                                "</div>");
+                        _mapInfoWin[n].setPosition(pos)
+                        qq.maps.event.addListener(_markers[n], 'click', function(e) {
+                            openMapInfoWin(n);
+                        });
+                    })(i)
+                }
+                
+                if (_markers.length==1){
+                    _lastMakerIndex=0
+                } else if (_lastMakerIndex==-1) {
+                    _lastMakerIndex = 0
+                }
+                if (_lastMakerIndex>=0){
+                    _mapInfoWin[_lastMakerIndex].open();
+                }  
+            }
+            
+            function openMapInfoWin(n){
+                if (_lastMakerIndex>-1){_mapInfoWin[_lastMakerIndex].close()}
+                   
+                _mapInfoWin[n].open()
+                _lastMakerIndex = n;
+            }
+            //删除后，微信无法显示
+            function getMarkerIcon(name){   
+                if (name=="") {
+                    name = "car_blue"
+                }
+                if (name.indexOf("16_30")>0){
+                    var icon= new qq.maps.MarkerImage(
+                        "/static/img/map/"+name+".png",
+                        new qq.maps.Size(16, 30),
+                        new qq.maps.Point(0, 0),
+                        new qq.maps.Point(8, 15)
+                    )
+                } else if (name.indexOf("30_29")>0) {
+                    var icon= new qq.maps.MarkerImage(
+                        "/static/img/map/"+name+".png",
+                        new qq.maps.Size(29, 30),
+                        new qq.maps.Point(0, 0),
+                        new qq.maps.Point(15, 15)
+                    )
+                } else {
+                    var icon= new qq.maps.MarkerImage(
+                        "/static/img/map/"+name+".png",
+                        new qq.maps.Size(23, 30),
+                        new qq.maps.Point(0, 0),
+                        new qq.maps.Point(12, 30)
+                    )
+                }
+                return icon;
+            }
+
+        </script>
+        <script id="region-tree-script">
+            
+            \$('#region-tree').tree({
+                onClick: function(node){
+                    if (node==undefined){return;}
+                    var children = \$("#region-tree").tree("getChildren",node.target)
+                    var path = getRegionPath(node);
+                    
+                    if (path_data[path]==undefined){
+                        appendNodeChildren(node,path)  
+                    } else {
+                        if (path_data[path]["locations"].length>0) {
+                            companyOnMap(path_data[path]["locations"]);
+                            \$("#company").datagrid("loadData",path_data[path]["company"])
+                        }
+                    }
+                }
+            })
+            
+            function getRegionPath(node){
+                var path ={"country":"","province":"","city":"","district":""};
+                nodeT = node;
+                while(nodeT!=undefined){
+                    path[nodeT.region] = nodeT.name
+                    nodeT = \$('#region-tree').tree("getParent",nodeT.target)
+                }
+                var path_key = path["country"]+"-"+path["province"]+"-"+path["city"]+"-"+path["district"];
+                return path_key;
+            }
+            
+            function appendNodeChildren(node,path) {
+                var _path = path.split("-")
+                \$.post("/pc/manager",
+                    {
+                        act       :"GET-MANAGER-CENTER",
+                        openid    :cfgPara["openid"],
+                        country :_path[0],
+                        province:_path[1],
+                        city    :_path[2],
+                        district:_path[3],
+                    },
+                    function(data,status){
+                        if (data["company"].length==0){
+                            path_data[path]={"locations":[],"company":{}}
+                        } else{
+                            path_data[path]={"locations":data["locations"],"company":data["company"]}
+                            \$("#company").datagrid("loadData",data["company"])
+                            if (data["regions"].length>0){
+                                \$("#region-tree").tree("append",{
+                                    parent: node.target,
+                                    data: data["regions"]});
+                            }
+                            if (data["locations"].length>0) {
+                                companyOnMap(data["locations"]);
+                            }
+                        }
+                    })
+            }
+        </script>
+        <script id="tt-script">
+            function addFunTab(href,title){
+                if (\$('#tt').tabs('exists',title)){
+                    var tab = \$('#tt').tabs('close', title);
+                }
+                //var content = '<iframe scrolling="no" frameborder="0"  src="'+href+'" style="width:100%;height:100%;"></iframe>';  
+                
+                var content = '<iframe src="'+href+'"  id="iframe-devices" frameborder="0" scrolling="no" style="width:100%;height:100%;"></iframe>'
+
+                \$('#tt').tabs('add',{
+                    title:title,
+                    content:content,
+                    closable:true,
+                });
+            }
+            var _tab_title="当前位置";//记录当前显示的tab
+            var _tab_fired_locked =false;//避免陷入死循环，对原始促发进行标记
+            \$('#tt').tabs({
+                onSelect:function(title,index){
+                    //ajaxLoading();
+                    _tab_title = title;
+                    if(_tab_fired_locked){return;}
+                    switch(title){
+                        case "设备管理":
+                        case "用户管理":
+                            onGroupSeleted();
+                            break;
+                        case "历史轨迹":
+                            onHistorySelect();
+                            break;
+                        case "当前位置":
+                            showBusPostion();
+                            break;
+                        default:
+                            ;
+                    }
+                    
+                }
+            })
+            
+            function onHistorySelect() {
+                _tab_fired_locked = true
+                \$("#buses").datagrid("clearSelections")
+                \$("#buses").datagrid("selectRow",_dg_last_index)
+                var row =\$("#buses").datagrid("getSelected")
+                
+                from_time = \$("#from_time").val().replace('T'," ")+":00";
+                end_time = \$("#end_time").val().replace('T'," ")+":00";
+                addHistoryTab(row['imei'],row['name'],from_time,end_time)
+                _tab_fired_locked = false
+                //ajaxLoadEnd();
+            }
+            
+            //当选中设备时促发
+            function onBusSeleted(){
+                
+                _tab_fired_locked = true
+                switch(_tab_title) {
+                    case "历史轨迹":
+                        onHistorySelect()
+                        break;
+                    default://当前位置
+                        \$('#tt').tabs('select', "当前位置");
+                        showBusPostion();
+                }
+                _tab_fired_locked = false
+                //ajaxLoadEnd();
+            }
+            //当选中设备时促发
+            function onGroupSeleted(groupid){
+                _tab_fired_locked = true
+                switch(_tab_title) {
+                    case "用户管理":
+                        rightManageButton();
+                        break;
+                    case "设备管理":
+                        showDevicesTableButton();
+                        break;
+                    default://当前位置
+                        \$('#tt').tabs('select', "当前位置");
+                        reloadDgData(groupid);
+                }
+                _tab_fired_locked = false
+                //ajaxLoadEnd();
+            }
+        </script>
+        <script type="text/javascript" src="/easyui/datagrid-filter.js"></script>
+        <script id="company-script">
+            \$("#company").datagrid({
+                onDblClickRow: function (rowIndex, rowData) {
+                    gotoCompany();                
+                }
+            })
+            function gotoCompany() {
+                var company =\$("#company").datagrid("getSelected")
+                window.location.href="/pc/monitor?act=car-online&openid="+cfgPara["openid"]+"&company_id="+company["id"],target="_blank"
+            }
+        </script>
+    </body>
+    </html>
+    

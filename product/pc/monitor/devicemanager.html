@@ -1,0 +1,154 @@
+$def with (cfgPara,fixPara)
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>唯天网 守护更贴心</title>
+        <link rel="stylesheet" type="text/css" href="/easyui/jquery-easyui/themes/bootstrap/easyui.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/jquery-easyui/themes/icon.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/css/layout.css">
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.min.js"></script>
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.easyui.min.js"></script>
+        <script type="text/javascript" src="/static/js/utility.js"></script>
+        <script type="text/javascript" src="/easyui/datagrid-filter.js"></script>
+        <style type="text/css">
+        *{
+            margin:0px;
+            padding:0px;
+        }
+        body, button, input, select, textarea {
+            font: 12px/16px Verdana, Helvetica, Arial, sans-serif;
+        }
+        p{
+            width:603px;
+            padding-top:3px;
+            overflow:hidden;
+        }
+        .btn{
+            width:142px;
+        }
+        #container{
+            min-height:767px;
+        }
+    </style>
+    </head>
+    
+    <body id="content" class="easyui-layout" style="height:100%;">
+        <div data-options="region:'center',split:true,collapsed:false" style="height:100%;padding:0px;position:relative;bottom:60px;">
+            <table id="devicesdg" title="设备列表"  class="easyui-datagrid"  style="width:100%;height:100%;" 
+                data-options="singleSelect: true,
+                              rownumbers:true,
+                              remoteSort:false,
+                              multiSort:true,
+                              toolbar: '#devicesdg-tb',"
+                sortName='expired_days',sortOrder="asc">
+                <thead>
+                    <tr>
+                        <th data-options="field:'imei',align:'center'"  style="width:130px" sortable="true">设备号(IMEI)</th>
+                        <th data-options="field:'name',align:'center',editor:'textbox'" style="width:100px" sortable="true">车牌号</th>
+                        <th data-options="field:'phone',align:'center',editor:'textbox'" style="width:100px" sortable="true">SIM卡号</th>
+                        <th data-options="field:'time_remark',align:'center'" style="width:60px" sortable="true">离线时间</th>
+                        $if fixPara["isMgr"]:
+                            <th data-options="field:'service_start',align:'center',
+                                              editor:{type:'datebox',
+                                                      options:{
+                                                        required:true,
+                                                        formatter:myformatter,
+                                                        parser:myparser
+                                                       }}" style="width:90px" sortable="true">开通时间</th>
+                            <th data-options="field:'expired_at',align:'center',
+                                              editor:{
+                                                type:'datebox',
+                                                options:{
+                                                    required:true,
+                                                    formatter:myformatter,
+                                                    parser:myparser
+                                                }}" style="width:90px" sortable="true">到期时间</th>
+                        $else:
+                            <th data-options="field:'service_start',align:'center'" style="width:90px" sortable="true">开通时间</th>
+                            <th data-options="field:'expired_at',align:'center'" style="width:90px" sortable="true">到期时间</th>
+                        <th data-options="field:'expired_days',align:'left'" style="width:80px" sortable="true">剩余服务天数</th>
+                        <th data-options="field:'addr',align:'left'" sortable="true">当前位置</th>
+                    </tr>
+                </thead>
+            </table>
+            <div id="devicesdg-tb" style="height:auto;">
+                <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-save',plain:true" onclick="exportHistat2xls()">导出</a>
+            </div>
+        </div>
+        <script type="text/javascript" id="datebox">
+            function myformatter(date){
+                var y = date.getFullYear();
+                var m = date.getMonth()+1;
+                var d = date.getDate();
+                return y+'-'+(m<10?('0'+m):m)+'-'+(d<10?('0'+d):d);
+            }
+            function myparser(s){
+                if (!s) return new Date();
+                var ss = (s.split('-'));
+                var y = parseInt(ss[0],10);
+                var m = parseInt(ss[1],10);
+                var d = parseInt(ss[2],10);
+                if (!isNaN(y) && !isNaN(m) && !isNaN(d)){
+                    return new Date(y,m-1,d);
+                } else {
+                    return new Date();
+                }
+            }
+        </script>
+        <script type="text/javascript">
+            var cfgPara  = $:cfgPara;
+            \$(document).ready(function () {
+                
+                var buses = \$('#devicesdg').datagrid();
+                buses.datagrid('enableFilter', [{
+                    field:'expired_days',
+                    type:'numberbox',
+                    options:{precision:1},
+                    op:['equal','notequal','less','greater']
+                }]);
+                \$("#devicesdg").datagrid("loadData",cfgPara["devices"])
+            });
+        </script>
+        <script id="devicesdg">
+            var editIndex = undefined;
+            \$('#devicesdg').datagrid({
+                onClickRow:function(index,row) {
+                    updateDevice()
+                    \$('#devicesdg').datagrid("endEdit", editIndex);
+                },
+                onDblClickRow:function(index,row){
+                    \$('#devicesdg').datagrid("beginEdit", index);
+                    editIndex = index;
+                },
+                onEndEdit:function(index,row,changes){
+                    updateDevice();
+                }
+            })
+            function updateDevice(){
+                var rows = \$('#devicesdg').datagrid('getChanges')
+                if (editIndex == undefined || rows.length==0){
+                    return;
+                }
+                \$.post('/m/device',
+                {
+                    act      :'UPDATE-DEVICE-CFG',
+                    openid   :cfgPara['openid'],
+                    imei     :rows[0]["imei"],
+                    name     :rows[0]["name"],
+                    phone    :rows[0]["phone"],
+                    service_start :rows[0]["service_start"],
+                    expired_at    :rows[0]["expired_at"],
+                },
+                function(data,status){
+                    \$.messager.alert('提醒','更新成功！');;
+                    \$('#devicesdg').datagrid("acceptChanges")
+                })
+            }
+             
+        </script>
+
+    </body>
+    </html>
+    

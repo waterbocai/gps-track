@@ -1,0 +1,255 @@
+$def with (cfgPara,jdksign,fixPara)
+    <!doctype HTML>
+    <html>
+    <head>
+        <title id="title"></title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/jqm/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="/static/stylesheets/iwaiter.css" />
+        <link rel="stylesheet" href="/weui/weui.min.css"/> 
+        <script type="text/javascript" src="/jqm/jquery.min.js"></script>
+        <script src="/jqm/jquery.mobile-1.4.5.min.js"></script>
+        <link rel="stylesheet" href="/static/stylesheets/iwaiter.css" />
+        <script src="/static/js/utility.js"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+      
+    </head>
+    <style type="text/css">
+
+    </style>
+    <script>
+        var cfgPara  = $:cfgPara;
+        var jdksign  = $:jdksign;
+        wx.config({
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                appId:     jdksign['appid'] , // 必填，公众号的唯一标识
+                timestamp: jdksign['timestamp'], // 必填，生成签名的时间戳
+                nonceStr:  jdksign['nonceStr'], // 必填，生成签名的随机串
+                signature: jdksign['signature'],// 必填，签名，见附录1
+                jsApiList: ['onMenuShareAppMessage',
+                            'onMenuShareTimeline',
+                            "onMenuShareQQ",
+                            "onMenuShareWeibo",
+                            "onMenuShareQZone"] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            });
+            
+        wx.ready(function(){
+            wx.onMenuShareAppMessage({
+                title  : '$fixPara["share_app_title"]', // 分享标题
+                desc   : '$fixPara["advertising_word"]', // 分享描述
+                link   : '$fixPara["share_app_link"]',   //分享链接
+                imgUrl : '$fixPara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                    alert("分享成功，等待对方确认")
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareTimeline({
+                title  : '$fixPara["catchword"]', // 分享标题
+                desc   : '$fixPara["advertising_word"]', // 分享描述
+                link   : "$fixPara["show_url"]",   //分享链接
+                imgUrl : '$fixPara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQQ({
+                title  : '$fixPara["catchword"]', // 分享标题
+                desc   : '$fixPara["advertising_word"]', // 分享描述
+                link   : "$fixPara["show_url"]",   //分享链接
+                imgUrl : '$fixPara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareWeibo({
+                title  : '$fixPara["catchword"]', // 分享标题
+                desc   : '$fixPara["advertising_word"]', // 分享描述
+                link   : "$fixPara["show_url"]",   //分享链接
+                imgUrl : '$fixPara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQZone({
+                title  : '$fixPara["catchword"]', // 分享标题
+                desc   : '$fixPara["advertising_word"]', // 分享描述
+                link   : "$fixPara["show_url"]",   //分享链接
+                imgUrl : '$fixPara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+        });  
+        \$(document).ready(function(){ 
+            \$("#title").html(cfgPara['company']['company']+"运营线路")
+            \$("#head_img").attr("src",cfgPara['user']['headimgurl'])
+            \$("#head_name").html(cfgPara['company']['company']+"运营线路")
+            showDevice(cfgPara["items"])
+            //setInterval(function(){
+            //    \$.post("/m/device",
+            //        {
+            //            openid   : cfgPara["openid"],
+            //            act      : "manage-device-nogroup",
+            //        },
+            //        function(data,status){
+            //            showDevice(data["devs"]["items"])
+            //    });
+            //},2000);
+            \$("#receiver").empty();
+            var html = []
+            html.push("<caption>消息接收人员</caption>");
+            for(var i = 0;i<parseInt((cfgPara["employee"].length+1)/2);i++){
+                html.push("<tr><td>"+cfgPara["employee"][2*i]["remark"]+"</td>");
+                if ((2*i+1)<cfgPara["employee"].length){
+                    html.push("<td>"+cfgPara["employee"][2*i+1]["remark"]+"</td></tr>");
+                } else {
+                    html.push("</tr>")
+                }
+            }
+            \$("#receiver").append(html.join("\r\n"))
+            
+            \$('#busline').delegate("table","click",function(e){
+                var busline_id ="";
+                switch(e.target.tagName){
+                    case "TD":
+                        busline_id = e.target.offsetParent.id.split("-")[1];
+                        break;
+                    case "TABLE":
+                        busline_id = e.target.id.split("-")[1]
+                        break;
+                    case "IMG":
+                        busline_id = e.target.offsetParent.offsetParent.id.split("-")[1];
+                        break;
+                    default:
+                        busline_id =""
+                }
+                if ( typeof(busline_id)=="undefined" || busline_id=="add_line_bus"||busline_id=="") {
+                    window.location.href="/m/manager?act=design-line-site-qq&openid="+cfgPara["openid"]+"&company_id="+cfgPara["company"]["id"],target="_blank";
+                } else {
+                    window.location.href="/m/manager?act=line-buses&openid="+cfgPara["openid"]+"&busline_id="+busline_id+"&company_id="+cfgPara["company"]["id"],target="_blank";
+                }
+            })
+            \$("#send-msg").click(function(e){
+                msg = \$("#msg").val()
+                if (msg==""){
+                    \$("#msg").focus();
+                    return;
+                }
+                \$.post("/m/manager",
+                {
+                    act      :"SEND-MSG-COMPANY",
+                    openid   :cfgPara["openid"],
+                    company_id  :cfgPara["company"]["id"],
+                    msg      :msg 
+                },function(data,status){
+                    alert("发送成功!")                    
+                });  
+            
+            })
+        })
+        
+        var tdWidth = "33%";//控制图标显示宽度
+        function showDevice(items) {
+            var num = items.length;
+            //if (num<3){
+            //    tdWidth="100px";
+            //}
+            var ret =[];
+            for(var i=0;i<(items.length+1)/3;i++){
+                ret.push("<tr>")
+                for(var j=0;j<3;j++) {
+                    index = i* 3 + j
+                    if (index < num) {
+                        ret.push(assumeDevice(items[index]));
+                    } else if (index ==num) {
+                        ret.push(addNewDeviceHtml());
+                    }
+                    
+                }
+                ret.push("</tr>")
+            }
+            \$("#busline").empty()
+            \$("#busline").append(ret.join("\r\n"));
+            
+        }
+        function addNewDeviceHtml() {
+            var msg = [];
+            msg.push('<td class="round1" width="'+tdWidth+'">');
+            msg.push('<table id="add_line_bus"  class="table-b" >');
+            msg.push('<tr><td style="text-align:center"><img width="40" height="25" src="/static/img/busline/busline.png"/></tr>');
+            msg.push('<tr><td style="text-align:center;font-size:%100;color:red"><strong>添加线路</strong>&nbsp&nbsp&nbsp</td></tr>');
+            msg.push('</table>');
+            msg.push('</td>');
+            return msg.join("\r\n");
+        }
+        function assumeDevice(item){
+            var msg = [];
+            msg.push('<td class="round" width="'+tdWidth+'">');
+            msg.push('<table id="busline_id-'+item['id']+'"  class="table-b"  >');
+            msg.push('<tr><td style="text-align:center">'+item['from_name']+'</td>');
+            msg.push('<td><img width="20" height="25" src="/static/img/change.png"></img></td>');
+            msg.push('<td style="text-align:center">'+item['to_name']+'</td><tr></table>');
+            msg.push('</td>');
+            return msg.join("\r\n");
+        }
+    </script>
+
+    <body>
+        <div data-role="page" id="HomePage" class=""  >
+            <div data-role="header"  >
+                <a data-role="none"><img id="head_img" src="" width="40" height="40"></a>
+                <h1 style="font-size:100%" id="head_name"></h1>
+            </div>
+            <br>
+            <!--div role="main" class="ui-content jqm-content" -->
+                <table id ="busline" width="100%" cellspacing="0" style="font-size:80%" >
+                </table>
+            <div data-role="popup" id="kf-msg-dlg" data-overlay-theme="a" style="font-size:90%"><div data-role="header" data-theme="a"><h1>微信客服消息</h1></div><div role="main" class="ui-content"><label for="textarea-6"></label><textarea id="msg" style="height:80px;" cols="40" rows="16" name="textarea-6" id="textarea-6" placeholder="文本消息。。。"></textarea><table><tr><td><a id="send-msg" style="height:12px;position:relative;left:150px;" data-rel="back" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-inline">发送</a></td><td><a id="send-cancel" data-rel="back" style="height:12px;position:relative;left:150px;" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-inline">取消</a></td></tr></table><div ><table id="receiver" style="width:100%;text-align:left" frame="above"></table></div></div>
+            </div>
+            $if fixPara["manager"] != None:
+                <div id="ifooter" data-role="footer" data-position="fixed" data-fullscreen="false">
+                    <div data-role="navbar" id ="ifooter-navbar">
+                        <ul>
+                            <li><a id="company-page" href="/m/company?act=manager-home&openid=$fixPara['openid']"  target="_blank"  class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-grid">公司运营</a></li>
+                            <li><a href="#kf-msg-dlg" data-rel="popup" data-position-to="window" data-transition="slidedown" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-grid">客服消息</a></li>
+                        </ul>
+                    </div>
+                </div><!-- /footer -->
+        </div>
+       
+    </body>
+    </html>
+    
+    

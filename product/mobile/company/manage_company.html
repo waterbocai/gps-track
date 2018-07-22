@@ -1,0 +1,41 @@
+$def with (cfgPara)
+    <!doctype HTML>
+    <html>
+    <head>
+        <title>客运公司管理</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.9">
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+    
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>        
+    </head>
+   
+    <body>
+    <div data-role="page" id="HomePage" data-theme="a">
+        <div data-role="header">
+            <a id="DeviceBack" href="/m/company?act=manager-home&openid=$cfgPara['openid']" data-role="button" data-icon="back"  data-iconpos="left">公司运营管理</a>
+            <h1 style="font-size:100%">客运公司管理</h1>
+        </div><!-- /header -->
+        <div role="main" class="ui-content"> 
+            <strong>总共:<font id="sum" style="color:red;font-size:120%">$len(cfgPara["stat"])</font>人</strong>
+            <table width="100%" border="1" cellspacing="0" cellpadding="10" style="text-align:center;font-size:90%">
+            <caption>客运公司状态</caption>
+                <tr><th style="width:25%">公司名</th><th>地域</th><th>状态</th></tr>
+                $for company in cfgPara["stat"]:
+                    <tr><td><a href='$company["url"]'>$company["company"]</a></td><td>$company["province"] $company["district"] $company["city"]</td>
+                    $if company["valid"]!='有效':
+                        <td style="color:red">$company["valid"]</td>
+                    $else:
+                        <td>$company["valid"]</td>
+                    </tr>
+            </table>
+        </div><!-- /content -->      
+    </div><!-- /page two -->    
+    </body>
+    </html>
+    
+    

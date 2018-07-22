@@ -1,0 +1,596 @@
+$def with (cfgPara,jdksign,fixPara)
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=0.9, minimum-scale=0.9, maximum-scale=0.9, user-scalable=no" />
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+    
+    <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>  
+    <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp"></script>  
+    <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="/static/js/utility.js"></script>
+    <style type="text/css">  
+map {
+  position: relative;
+  bottom: 100px;
+}    
+    </style>
+
+
+    <title>线路规划</title>
+    <script type="text/javascript">
+        var _cfgPara = $:cfgPara;
+        var _openid =_cfgPara["openid"];      
+        var _sites  = _cfgPara["sites"]["manual"];
+        var _user   = _cfgPara["user"];
+        var _busline_id = _cfgPara["busline"]["id"];
+        var _del_sites = [];
+        
+        var _from_name  = _cfgPara["busline"]["from_name"]; 
+        var _to_name    = _cfgPara["busline"]["to_name"]; 
+        var _userPos;
+        var markers={};
+        var showDevice_event = false;//标志是显示设备列表
+        //当前位置页面
+        \$(document).on("pagebeforeshow","#HomePage",function(e){
+            var _site_seq = _sites.length+1;//站点序号
+            _userPos = new qq.maps.LatLng(_user["qqLat"],_user["qqLng"]);
+            \$("#site_seq").val(_site_seq)
+            if (_busline_id>0){
+                \$("#site-plan").show();
+            }
+            //_userPos = new qq.maps.LatLng(_user["qqLat"],_user["qqLng"]);
+            map = new qq.maps.Map(document.getElementById('allmap'),{
+                center: _userPos,
+                zoom: 18,
+                zoomControl: false,
+            });
+            
+            //线路信息
+            var customAlarmDiv = document.createElement("div");   
+            var customAlarmControl = new CustomAlarmControl(customAlarmDiv, map);
+            map.controls[qq.maps.ControlPosition.LEFT_TOP].push(customAlarmDiv);
+            
+            
+            var customNowDiv = document.createElement("div");
+            var deleteLineControl = new DeleteLineControl(customNowDiv, map);
+            map.controls[qq.maps.ControlPosition.LEFT_TOP].push(customNowDiv);
+            //导航条
+            var customBeforeDiv = document.createElement("div");
+            var beforeControl = new BeforeControl(customBeforeDiv, map);
+            map.controls[qq.maps.ControlPosition.BOTTOM_LEFT].push(customBeforeDiv);
+            
+            var customNextDiv = document.createElement("div");
+            var nextControl = new NextControl(customNextDiv, map);
+            map.controls[qq.maps.ControlPosition.BOTTOM_RIGHT].push(customNextDiv);
+
+            showMarkers();
+            showMarker(_sites.length);
+            
+            showDevice();
+            
+            function refreshMinePosition() {
+                \$.post("/m/manager",
+                    {
+                        act      :"USER-POS",
+                        openid   :_openid
+                    },
+                    function(data,status){
+                        markers[_sites.length].setPosition(new qq.maps.LatLng(data["user"]["qqLat"],data["user"]["qqLng"]));
+                        //_userPos=new qq.maps.LatLng(data["user"]["qqLat"],data["user"]["qqLng"]);
+                        //showMarker(_sites.length);
+                    });
+            };
+            
+            function showMarkers() {
+                //marker初始化
+                for (var key  in markers) {
+                    markers[key].setMap(null);
+                }
+                markers={}
+                var path =[];
+                
+                //用户当前位置
+                for(var i=0;i<_sites.length;i++){
+                    var pos = new qq.maps.LatLng(_sites[i]["qqLat"],_sites[i]["qqLng"]);
+                    path.push(pos);
+                    markers[i] = new qq.maps.Marker({
+                        icon    : getMarkerIcon((i+1).toString()),
+                        map     : map,
+                        position: pos,
+                        title   : _sites[i]["name"]});
+                }
+                markers[_sites.length] = new qq.maps.Marker({
+                        icon    : getMarkerIcon("me"),
+                        map     : map,
+                        position: _userPos,
+                        title   :"我的位置"});
+                for (var key in markers) {
+                    (function(name){
+                        qq.maps.event.addListener(markers[name], 'click', function() {
+                            showMarker(name);
+                        })
+                    })(key); 
+                }
+                
+                //绘制线路
+                var polyline = new qq.maps.Polyline({
+                    path: path,
+                    strokeColor: '#6495ED',
+                    strokeWeight: 5,
+                    editable:false,
+                    map: map
+                });
+            }
+            
+            var current_site;//记录当前的节点序号
+            function showMarker(name) {
+                //将目标marker显示在上面
+                if (typeof(current_site)!="undefined" && current_site<_sites.length) {
+                    markers[current_site].setZIndex(1);
+                }
+                if  (name==_sites.length){//刷新当前位置
+                    refreshMinePosition();
+                }
+                markers[name].setZIndex(10);
+                map.panTo(markers[name].getPosition());
+                //markers[strName] = new qq.maps.Marker({
+                //    icon    : getMarkerIcon(strName),
+                //    map     : map,
+                //    position: _userPos});
+                
+                var index = parseInt(name)
+                var addr,site_name,seq
+                current_site =index;
+                if (index == _sites.length){
+                    addr      = _user["address"];
+                    //site_name = "";
+                } else {
+                    addr      = _sites[index]["address"];
+                    site_name = _sites[index]["name"];
+                    \$("#site_name").val(site_name);
+                }
+                
+                if (current_site==_sites.length){
+                    \$("set-site").val("添加站点").button("refresh");
+                    \$("del-site").parent("div").css('display','none');
+                } else {
+                    \$("set-site").val("更新站点").button("refresh");
+                    \$("del-site").show();
+                }                
+                \$("#no").html(current_site+1); 
+                
+                \$("#site_seq").val(current_site+1);
+                \$("#addr").html("位置:"+addr);
+            }
+            
+            //地图上的导航图标
+            function NextControl(controlDiv, map) {
+                controlDiv.innerHTML = '<img id="power" height="30"  height="30"  src="/static/img/map/next.png"/>';
+                controlDiv.index = 2;//设置在当前布局中的位置
+                function update(e) {
+                    var name = (current_site+1)%(_sites.length+1);
+                    showMarker(name)
+                }
+                qq.maps.event.addDomListener(controlDiv, "click", update);
+            }
+            function BeforeControl(controlDiv, map) {
+                controlDiv.innerHTML  = '<img id="power" height="30"  height="30"  src="/static/img/map/before.png"/>';
+                controlDiv.index = 10;//设置在当前布局中的位置
+                function update(e) {
+                    var name = (current_site+_sites.length)%(_sites.length+1);
+                    showMarker(name)
+                }
+                qq.maps.event.addDomListener(controlDiv, "click", update);
+            }
+            function DeleteLineControl(controlDiv, map) {
+                //controlDiv.style.backgroundColor = "#FFFFFF";
+                //controlDiv.style.border = "2px solid #86ACF2";
+                controlDiv.innerHTML = '<input type="button" data-icon="delete" data-iconpos="left" value="删除线路">'
+                controlDiv.index = 2;//设置在当前布局中的位置
+                function update(e) {
+                    deleteLine();
+                }
+                qq.maps.event.addDomListener(controlDiv, "click", update);
+            }
+            function CustomAlarmControl(controlDiv, map) {
+                //controlDiv.style.padding = "5px";
+                controlDiv.style.backgroundColor = "#FFFFFF";
+                controlDiv.style.border = "2px solid #86ACF2";
+                controlDiv.innerHTML = '<table ><tr><td>出发地:</td><td ><input type="text" id = "src" value="'+_from_name+'" style="width:70px"></td></tr><tr><td>目的地:</td><td><input type="text" id="dst" value="'+_to_name+'" style="width:70px"></td></tr></table><div style="text-align:center"><button id="set-line-name">设置线路名</button></div>';
+                controlDiv.index = 1;//设置在当前布局中的位置
+                function update(e) {
+                    var src,dst;
+                    if (e.target.id!="set-line-name") {
+                        return
+                    }
+                    src = \$("#src").val();
+                    if (src==""){
+                        \$("#src").focus()
+                    }
+                    
+                    dst = \$("#dst").val();
+                    if (dst=="") {
+                        \$("#dst").focus()
+                    }
+                    
+                    \$.post("/m/manager",
+                        {
+                        act        :"SET-LINE-NAME",
+                        openid     : _openid,
+                        busline_id :_busline_id,
+                        src        : src,
+                        dst        : dst,
+                        company_id :_cfgPara["company_id"]
+                        },
+                        function(data,status){
+                            alert(data["result"]);
+                            _busline_id = data["busline_id"]
+                            \$("#site-plan").show();
+                    });
+                }
+                qq.maps.event.addDomListener(controlDiv, "click", update);
+            }
+            
+            \$("#set-site").click(function(e){
+                \$.post("/m/manager",
+                    {
+                        act        :"SET-LINE-SITE",
+                        openid     : _openid,
+                        busline_id :_busline_id,
+                        name       :\$("#site_name").val(),
+                        changeType :"add-new"                     
+                    },
+                    function(data,status){
+                        _sites  = data["sites"]["manual"]
+                        showMarkers();
+                        showDevice();
+                        showMarker(_sites.length);
+                });
+            })
+            \$("#del-site").click(function(e){
+                
+            })
+            //删除线路
+            \$("#delete-line").click(function(e) {
+                deleteLine();
+            })
+            function deleteLine() {
+                \$.post("/m/manager",
+                    {
+                        act        :"DELETE-LINE",
+                        openid     :_openid,
+                        busline_id :_busline_id
+                    },
+                    function(data,status){
+                        alert(data["msg"]);
+                        if (data["result"]=="success"){
+                            window.location.href="/m/manager?act2=home_companyid_$fixPara['company_id']&openid=$fixPara['openid']",target="_blank"
+                        } 
+                });
+            }
+
+            \$('#sites').delegate("[name='delete']","click",function(e){
+                //alert(e.target.id)
+                var temp,id;
+                if (e.target.tagName!="A"){
+                    return
+                }
+                id = e.target.id;
+                if (id==""){
+                    return
+                }
+                temp = id.split("-");
+                var type = temp[0];
+                var site_seq   = parseInt(temp[1]);
+                //if (type=="del"){//标志删除
+                //   _del_sites.push(_sites[site_seq])
+                //   site_seq.splice(site_seq,1)
+                //}
+                
+                del_site(site_seq);
+                showDevice();
+                showMarkers();
+                showMarker(_sites.length);
+            })
+            \$("#update-line").click(function(e) {
+                var name_change =[];
+                var end_change  =[]
+                var end_num  =0;
+                
+                for(var i =0;i<_sites.length;i++){
+                    if (typeof(_sites[i]["old_name"])!="undefined") {
+                        name_change.push(_sites[i]["site_id"].toString()+":"+_sites[i]["name"])
+                    }
+                    if (typeof(_sites[i]["old_is_end"])!="undefined"){
+                        end_change.push(_sites[i]["seq"].toString()+":"+_sites[i]["is_end"])
+                    }
+                    if (_sites[i]["is_end"]=="yes"){
+                        end_num+=1
+                    }
+                }
+                if (end_num!=2){
+                    alert("终点站没有2个，请重新设定")
+                    return;
+                }
+                \$.post("/m/manager",
+                    {
+                        act        :"UPDATE-LINE-SITE",
+                        openid     : _openid,
+                        busline_id :_busline_id,
+                        name_change :name_change.join(";"),
+                        end_change :end_change.join(";")
+                    },
+                    function(data,status){
+                        _sites = data["sites"]["manual"];
+                        showMarkers();
+                        showDevice();
+                        showMarker(_sites.length);
+                        alert("更新成功!")
+                });
+            })
+            \$('#sites').delegate("td","change",function(e){
+                if(showDevice_event==true){//是显示设备，不用处理
+                    return
+                }
+                if (e.target.tagName!="INPUT"){
+                    return
+                }
+                
+                var temp;
+                temp = e.target.id.split("-");
+                var type = temp[0];
+                var site_seq   = parseInt(temp[1]);
+                
+                if (type=="site_name"){//名称修改
+                    _sites[site_seq]["old_name"]=_sites[site_seq]["name"]
+                    _sites[site_seq]["name"]    =e.target.value
+                } else if (type=="end"){
+                    _sites[site_seq]["old_is_end"]=_sites[site_seq]["is_end"]
+                    if (e.target.checked==true) {
+                        _sites[site_seq]["is_end"]    ="yes"
+                    } else {
+                        _sites[site_seq]["is_end"]    ="no"
+                    }
+                }
+                \$('#update-line').removeClass("ui-state-disabled");                
+            })
+            
+            var del_lock = false;//防止频繁点击
+            function del_site(site_seq) {
+                var confirmed=confirm("确认要删除 "+_sites[site_seq]["name"]);
+                if (confirmed==false){return;}
+                if (del_lock==true) {
+                    alert("请耐心等待上次删除完成^_^")
+                    return;
+                }
+                del_lock=true;
+                \$.post("/m/manager",
+                    {
+                        act        :"DEL-LINE-SITE",
+                        openid     : _openid,
+                        busline_id :_busline_id,
+                        site_seq    :_sites[site_seq]["seq"]
+                    },
+                    function(data,status){
+                        _sites = data["sites"]["manual"];
+                        showMarkers();
+                        showDevice();
+                        showMarker(_sites.length);
+                        del_lock = false;//解锁
+                });
+            }
+            function showDevice() {
+                var ret =[];
+                ret.push('<tr><th width="8%" style="text-align:center">no</th><th colspan="1"  style="text-align:center">终点</th><th width="15%" >站名</th><th>地址</th><th colspan="1"  style="text-align:center">操作</th></tr>')
+                for(var i=0;i<_sites.length;i++){
+                    ret.push(assumeDevice(i))
+                }
+                \$("#sites").empty()
+                \$("#sites").append(ret.join("\r\n"));
+                showDevice_event = true;//标记设备显示事件
+                //设置check状态
+                for(var i=0;i<_sites.length;i++){
+                    if (_sites[i]["is_end"]=="yes"){
+                        flag = true;
+                    }else{
+                        flag = false;
+                    }
+                    \$('#end-'+i.toString()).attr('checked',flag);
+                    \$('#end-'+i.toString()).prop('checked',flag);
+                }
+                showDevice_event = false;
+            }
+    
+            function assumeDevice(i){
+                var msg = [];
+                msg.push('<tr>')
+                //msg.push('<td style="text-align:center"><input type="tel" name="site-name" id="site_seq-'+i.toString()+'" value="'+(i+1).toString()+'" style="width:40px;height:25px"></td>');
+                msg.push('<td style="text-align:center">'+(i+1).toString()+'</td>');
+                msg.push('<td style="text-align:center"><input name="endcheck" id="end-'+i.toString()+'" type="checkbox"></td>');
+                msg.push('<td><input type="text" name="site" id="site_name-'+i.toString()+'" value="'+_sites[i]['name']+'" style="width:70px;height:25px" ></td>');
+                msg.push('<td>'+_sites[i]['address']+'</td>');
+                //msg.push('<td id="down-'+i.toString()+'" style="text-align:center"><a class="ui-btn ui-shadow ui-corner-all ui-icon-arrow-d ui-btn-icon-notext"></a></td>');
+                //msg.push('<td id="up-'+i.toString()+'" style="text-align:center"><a class="ui-btn ui-shadow ui-corner-all ui-icon-arrow-u ui-btn-icon-notext"></a></td>');
+                msg.push('<td style="text-align:center"><a name="delete" id="del-'+i.toString()+'" class="ui-btn ui-shadow ui-corner-all ui-icon-delete ui-btn-icon-notext"></a></td>');
+                msg.push('</tr>')
+                return msg.join("\r\n");
+            }
+        });    
+        //删除后，微信无法显示
+        function getMarkerIcon(name){   
+            if (name=="") {
+                name = "motor"
+            }
+            var icon= new qq.maps.MarkerImage(
+                "/static/img/map/"+name+".png",
+                new qq.maps.Size(31, 40),
+                new qq.maps.Point(0, 0),
+                new qq.maps.Point(16, 40)
+            )
+            return icon;
+        }
+        
+        var jdksign  = $:jdksign;
+        wx.config({
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                appId:     jdksign['appid'] , // 必填，公众号的唯一标识
+                timestamp: jdksign['timestamp'], // 必填，生成签名的时间戳
+                nonceStr:  jdksign['nonceStr'], // 必填，生成签名的随机串
+                signature: jdksign['signature'],// 必填，签名，见附录1
+                jsApiList: ['onMenuShareAppMessage',
+                            'onMenuShareTimeline',
+                            "onMenuShareQQ",
+                            "onMenuShareWeibo",
+                            "onMenuShareQZone"] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            });
+            
+        wx.ready(function(){
+            $if fixPara.has_key("title"):
+                wx.onMenuShareTimeline({
+                    title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                    desc   : "唯天网 守护更贴心", // 分享描述
+                    link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                    imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                    type   : '', // 分享类型,music、video或link，不填默认为link
+                    dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                    success: function () {
+                        // 用户确认分享后执行的回调函数
+                        },
+                        cancel: function () { 
+                            // 用户取消分享后执行的回调函数
+                            //alert("取消了分享")
+                        }
+                });
+            $else:
+                wx.onMenuShareAppMessage({
+                    title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                    desc   : "唯天网 守护更贴心", // 分享描述
+                    link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                    imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                    type   : '', // 分享类型,music、video或link，不填默认为link
+                    dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                    success: function () {
+                        // 用户确认分享后执行的回调函数
+                        },
+                        cancel: function () { 
+                            // 用户取消分享后执行的回调函数
+                            //alert("取消了分享")
+                        }
+                });
+            wx.onMenuShareTimeline({
+                title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQQ({
+                title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareWeibo({
+                title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQZone({
+                title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+        });         
+    <!-------------------------------------------固定框架-----修改开始位置--------------------------------------------------------------->            
+    </script>     
+    </head>
+
+    <body >
+    <!-- 当前位置展示 -->
+    <div data-role="page" id="HomePage" data-theme="a">
+       
+        <div data-role="header" >
+            <a id="DeviceBack" href="/m/manager?act2=home_companyid_$fixPara['company_id']&openid=$fixPara['openid']" target="_blank" data-role="button" data-icon="back"  data-iconpos="left">服务中心</a>
+                <h1 id="arm-name" style="font-size:100%">线路规划</h1>  
+            
+        </div>
+        <!-------------------------------------------固定框架-----修改开始位置--------------------------------------------------------------->
+        
+        <div data-role="content" id="allmap"  style="height:300px">	
+        </div>
+        <table id="site-plan" width="100%" style="display:none">
+                <tr><!--td  width="50px"><strong>序号</strong></td-->
+                        <!--td><a  id="down" class="ui-btn ui-shadow ui-corner-all ui-icon-arrow-d ui-btn-icon-notext"></a></td>
+                        <td><a  id="up" class="ui-btn ui-shadow ui-corner-all ui-icon-arrow-u ui-btn-icon-notext"></a></td-->
+                    <!--td><input type="tel" id="site_seq" value="" width="10px" disabled="disabled"></td-->
+                    <td width="10%">站名</td>
+                    <td><input type="text" id="site_name" value=""  ></td>
+                    <td width="100px" style="text-align:center"><button id="set-site" data-role="none"   data-corners="false" >添加站点</button></td>
+                </tr>
+               <tr><td colspan="5" id='addr'></td>
+                   <!--td width="100px" style="text-align:center"><button id="del-site" data-role="none"   data-corners="false" >删除站点</button></td-->
+                </tr>
+        </table>
+        <table id ="sites" width="100%" cellspacing="0" border="1" style="font-size:80%" >
+                    
+        </table>
+        
+        
+        $if fixPara["busline"]["id"] > 0:
+            <div data-role="footer" data-position="fixed"  data-fullscreen="false" data-tap-toggle="false">
+                <div data-role="navbar" >
+                <ul >
+                    <li><a href='/m/manager?act=LINE-BUSES&openid=$fixPara["openid"]&busline_id=$fixPara["busline"]["id"]&company_id=$fixPara["company_id"]' target="_blank" style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-grid">班车车队</a></li>
+                    <!--li><a id='line-price' href="/m/manager?act=design-line-price&openid=$fixPara['openid']&busline_id=$fixPara['busline']['id']&company_id=$fixPara["company_id"]"  target="_blank" style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-bars">价格规划</a></li-->
+                    <li><a id='update-line' style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-state-disabled ui-icon-refresh">更新线路</a></li>
+                    <!--li><a id='delete-line' style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-delete">删除线路</a></li-->
+                </ul>
+                </div>
+            </div><!-- /footer -->
+    </div>
+    
+
+    </body>
+ </html>

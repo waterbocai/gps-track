@@ -1,0 +1,218 @@
+$def with (cfgPara,jdksign,fixPara)
+    <!doctype HTML>
+    <html>
+    <head>
+        <title id="title">$fixPara["company_name"] 运营车辆</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="/static/stylesheets/iwaiter.css" />
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+      
+    </head>
+    <style type="text/css">
+
+    </style>
+    <script>
+        var cfgPara  = $:cfgPara;
+        var jdksign  = $:jdksign;
+        wx.config({
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                appId:     jdksign['appid'] , // 必填，公众号的唯一标识
+                timestamp: jdksign['timestamp'], // 必填，生成签名的时间戳
+                nonceStr:  jdksign['nonceStr'], // 必填，生成签名的随机串
+                signature: jdksign['signature'],// 必填，签名，见附录1
+                jsApiList: ['onMenuShareAppMessage',
+                            'onMenuShareTimeline',
+                            "onMenuShareQQ",
+                            "onMenuShareWeibo",
+                            "onMenuShareQZone"] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            });
+            
+        wx.ready(function(){
+            wx.onMenuShareAppMessage({
+                title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareTimeline({
+                title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQQ({
+                title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareWeibo({
+                title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQZone({
+                title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+        }); 
+        \$(document).ready(function(){ 
+            \$("#title").html(cfgPara["line_name"])
+            \$("#busline").attr("href",'/m/manager?act2=busline-home_comanyid_$fixPara["company_id"]&openid='+cfgPara["openid"])
+            \$("#head_img").attr("src",cfgPara['user']['headimgurl'])
+            showDevice(cfgPara["devs"]["items"])
+            setInterval(function(){
+                \$.post("/m/manager",
+                    {
+                        openid      : cfgPara["openid"],
+                        company_id  : cfgPara["company"]["id"],
+                        act         : "COMPANY-BUSES",
+                    },
+                    function(data,status){
+                        showDevice(data["devs"]["items"])
+                });
+            },2000);
+
+            \$('#device').delegate("table","click",function(e){
+                var imei ="";
+                if (e.target.tagName=="TD"){
+                    imei = e.target.offsetParent.id
+                }
+                if (e.target.tagName=="TABLE"){
+                    imei = e.target.id
+                }
+                if (imei=="add-new-device"||imei=="" ) {
+                    window.location.href="/m/device?act=BIND-NEW-DEVICE&openid="+cfgPara["openid"]+"&busline_id="+cfgPara["busline_id"]+"&company_id="+cfgPara["company_id"],target="_blank";
+                } else {
+                    window.location.href="/m/bustrack?act=MINE_TRACK&openid="+cfgPara["openid"]+"&imei="+imei+"&company_id="+cfgPara["company_id"],target="_blank";
+                }
+            })
+        })
+        
+        var tdWidth = "33%";//控制图标显示宽度
+        function showDevice(items) {
+            var num = items.length;
+            //if (num<3){
+            //    tdWidth="100px";
+            //}
+            var ret =[];
+            for(var i=0;i<(items.length+1)/3;i++){
+                ret.push("<tr>")
+                for(var j=0;j<3;j++) {
+                    index = i* 3 + j
+                    if (index < num) {
+                        ret.push(assumeDevice(items[index]));
+                    } else if (index ==num) {
+                        ret.push(addNewDeviceHtml());
+                    }
+                    
+                }
+                ret.push("</tr>")
+            }
+            \$("#device").empty()
+            \$("#device").append(ret.join("\r\n"));
+            
+        }
+        function addNewDeviceHtml() {
+            var msg = [];
+            msg.push('<td class="round1" width="'+tdWidth+'">');
+            msg.push('<table id="add-new-device"  class="table-b" >');
+            msg.push('<tr><td style="text-align:center"><img width="40" height="25" src="/static/img/bus.png"/></tr>');
+            msg.push('<tr><td style="text-align:center;font-size:%100;color:red"><strong>添加班车</strong>&nbsp&nbsp&nbsp</td></tr>');
+            msg.push('</table>');
+            msg.push('</td>');
+            return msg.join("\r\n");
+        }
+        function assumeDevice(item){
+            var msg = [];
+            msg.push('<td class="round" width="'+tdWidth+'">');
+            msg.push('<table id="'+item['imei']+'"  class="table-b"  >');
+            msg.push('<tr><td colspan="2" style="text-align:center">'+item['name']+'</td></tr>');
+            msg.push('<tr><td rowspan="2" width="40%"><img width="20" height="25" src="/static/img/'+item["arm_type"]+'.png"/></td><td  style="font-size:75%">'+item["speed"]+'KM/h</td></tr>');
+            msg.push('<tr><td style="font-size:75%">'+item['addr'].substr(0,5)+'</td></tr>');
+            msg.push('</table>');
+            msg.push('</td>');
+            return msg.join("\r\n");
+        }
+    </script>
+
+    <body>
+        <div data-role="page" id="HomePage" class="background"  >
+            <div data-role="header"  >
+                <a data-role="none"><img id="head_img" src="" width="40" height="40"></a>
+                <h1 id="arm-name" style="font-size:100%">$fixPara["company_name"] 运营车辆</h1> 
+                <a id="busline" href='' target="_blank" data-role="button" data-icon="bars"  data-iconpos="left">线路管理</a>
+            </div>
+            <br>
+            <!--div role="main" class="ui-content jqm-content" -->
+                <table id ="device" width="100%" cellspacing="0" style="font-size:80%" >
+                    
+                </table>
+
+            $if fixPara["manager"] != None:
+                <div id="ifooter" data-role="footer" data-position="fixed" data-fullscreen="true">
+                    <div data-role="navbar" id ="ifooter-navbar">
+                        <ul>
+                            <li><a id="company-page" href="/m/company?act=manager-home&openid=$fixPara['openid']"  target="_blank" style="font-size:100%;" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-grid">公司运营</a></li>
+                        </ul>
+                    </div>
+                </div><!-- /footer -->
+        </div>
+       
+    </body>
+    </html>
+    
+    

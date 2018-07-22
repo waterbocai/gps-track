@@ -1,0 +1,292 @@
+$def with (cfgPara,fixPara)
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>赛微，为智能客运而生</title>
+        <link rel="stylesheet" type="text/css" href="/easyui/jquery-easyui/themes/bootstrap/easyui.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/jquery-easyui/themes/icon.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/css/layout.css">
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.min.js"></script>
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.easyui.min.js"></script>
+        <script type="text/javascript" src="/static/js/utility.js"></script>
+        <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp"></script>
+
+    </head>
+    
+    <body id="content" class="easyui-layout" style="height:650px;">
+        <div data-options="region:'center',split:true,collapsed:false" style="height:200px;width:100%">
+            <table id="travels" class="easyui-datagrid"  style="width:100%;height:auto" data-options="
+                singleSelect: true,
+                fitColumns: true,
+                rownumbers: true,
+                toolbar: '#tb',
+                showFooter: true,
+                fitColumns:true">
+                <thead>
+                    <tr>
+                        <th data-options="field:'from_time',align:'center'">开始时间</th>
+                        <th data-options="field:'to_time',align:'center'">截止时间</th>
+                        <th data-options="field:'from_name',align:'center'">起点站</th>
+                        <th data-options="field:'to_name',align:'center'">终点站</th>
+                        <th data-options="field:'duration_time',align:'center'">耗时</th>
+                        <th data-options="field:'duration_gmileage',align:'center'">行程(公里)</th>
+                        <th data-options="field:'num_seated',align:'center'">统计人数</th>
+                        <th data-options="field:'fee',align:'center'">统计票价</th>
+                        <th data-options="field:'seated_checked',align:'center',editor:'numberbox'">核对人数</th>
+                        <th data-options="field:'fee_checked',align:'center',editor:'numberbox'">核对票价</th>
+                        
+                    </tr>
+                </thead>
+            </table>
+            <div id="tb" style="height:auto">
+                从:<input id="from_time" type="text" class="easyui-datetimebox" data-options="formatter:myformatter,parser:myparser" required="required" style="padding:5px;">
+                到:<input id="to_time" type="text" class="easyui-datetimebox" data-options="formatter:myformatter,parser:myparser" required="required" style="padding:5px;">
+                <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-mini-refresh',plain:true" onclick="updateChange()">查询</a>
+                <!--a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-large-chart',plain:true" onclick="checkResult()">核对结果</a-->
+            </div>
+        </div>
+        <div  style="height:440px;padding:5px;" 
+             data-options="region:'south',
+                           split:true,
+                           collapsed:false,
+                           title:'统计报表'">
+            <div id="tt" class="easyui-tabs" fit="true" border="false" pill="true">
+                <div title="区间检测" style="padding:0px">
+                    <table id="monitor-result" class="easyui-datagrid"  style="width:100%;height:100%" data-options="
+                        singleSelect: true,
+                        fitColumns: true,
+                        rownumbers: true,
+                        fitColumns:true,
+                        ">
+                        <thead>
+                            <tr>
+                                <th data-options="field:'from_time',align:'center'">开始时间</th>
+                                <th data-options="field:'from_name',align:'center'">开始位置</th>
+                                <th data-options="field:'to_time',align:'center'">截止时间</th>
+                                <th data-options="field:'to_name',align:'center'">截止位置</th>
+                                <th data-options="field:'duration_gmileage',align:'center'">行程(公里)</th>
+                                <th data-options="field:'num_seated',align:'center'">平均车速(公里/小时)</th>
+                                <th data-options="field:'fee',align:'center'">乘客数</th>
+                                <th data-options="field:'seated_checked',align:'center',editor:'numberbox'">核对人数</th>
+                            </tr>
+                        </thead>
+                    </table>
+                    <!--id="mr-tb" style="height:auto">
+                        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-mini-refresh',plain:true" onclick="updateChange()">更新数据</a>
+                    </div-->
+                </div>
+                <div title="乘客报表" style="padding:0px">
+                </div>
+                <div title="停靠位置" style="padding:0px">
+                </div>
+                <div title="行程轨迹" style="padding:0px">
+                </div>
+                <div title="座位状态" style="padding:0px">
+                </div>
+
+            </div>
+        </div>
+        <!--div id="stat-tb" style="height:auto">
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="statStatusDithering()">座位统计</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-remove',plain:true" onclick="travelSite()"></a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-sum',plain:true" onclick="historyTrack()"></a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-sum',plain:true" onclick="statStatus()"></a>
+        </div-->
+        <script type="text/javascript">
+            var cfgPara  = $:cfgPara;
+            var _openid =cfgPara["openid"];
+            \$(document).ready(function () {
+                \$("#from_time").datetimebox("setValue",cfgPara["from_time"])
+                \$("#to_time").datetimebox("setValue",cfgPara["to_time"])
+                \$("#travels").datagrid("loadData",cfgPara)
+
+            });
+        </script>
+        <!--script type="text/javascript" src="/easyui/datagrid-cellediting.js"></script-->
+        <script id="travels-datagrid-script">
+            var selectRow;
+            var editIndex;
+            var _travel_stat_table=["乘客报表","停靠位置","行程轨迹","座位状态"]
+            \$("#tt").tabs({
+                onClick:function(title,index){
+                    refreshTabbyTitle(title)
+                }
+            })
+            
+
+            function statStatusDithering(){
+                var href = "/pc/seat?act=get-seat-status-dithering&travel_id="+selectRow["id"]+"&openid="+_openid;
+                addStatTab("在位状态",href)
+            }
+            function statStatus(){
+                var href = "/pc/seat?act=get-seat-status&travel_id="+selectRow["id"]+"&openid="+_openid;
+                addStatTab("座位状态",href)
+            }
+            function travelSite(){
+                var href = '/pc/seat?act=get-travel-site&travel_id='+selectRow["id"]+"&openid="+_openid;
+                addStatTab("停靠位置",href)
+            }
+            function historyTrack(){
+                var href = '/pc/monitor?act=get-historytrack-only&startTime='+selectRow["from_time"]+'&endTime='+selectRow["to_time"]+'&imei='+selectRow["imei"]+"&openid="+_openid;
+                addStatTab("行程轨迹",href)
+            }
+            function addStatTab(name,href){
+                
+                //var content = '<iframe scrolling="no" frameborder="0"  src="'+href+'" style="width:100%;height:100%;"></iframe>';  
+                var content = '<iframe src="'+href+'"  id="iframepage" frameborder="0" scrolling="no" style="width:100%;height:100%;"></iframe>'
+				\$('#tt').tabs('add',{
+					title:name,
+					content:content,
+					closable:true,
+				});
+			} 
+            function refreshTabbyTitle(title){
+                var href;
+                var row = \$("#travels").datagrid("getSelected");
+                if (row==undefined) {
+                    \$("#travels").datagrid("selectRow",0);
+                }
+                row = \$("#travels").datagrid("getSelected");
+                if (row==undefined && _travel_stat_table.indexOf(title)>=0 ){
+                    return;
+                }
+                switch(title){
+                    case "乘客报表":
+                        href = "/pc/seat?act=get-seat-status-dithering&travel_id="+row["id"]+"&openid="+_openid;
+                        break;
+                    case "座位状态":
+                        href ="/pc/seat?act=get-seat-status&travel_id="+row["id"]+"&openid="+_openid;
+                        break;
+                    case "停靠位置":
+                        href ='/pc/seat?act=get-travel-site&travel_id='+row["id"]+"&openid="+_openid;
+                        break;
+                    case "行程轨迹":
+                        href ='/pc/monitor?act=get-historytrack-only&startTime='+row["from_time"]+'&endTime='+row["to_time"]+'&imei='+row["imei"]+"&openid="+_openid;
+                        break;
+                    case "区间检测":
+                        loadMonitorRegionData();
+                        return;
+                        break;
+                    default:
+                        return;
+                }
+                updateTab(title,href)
+            }
+            function updateTab(name,href){
+                var content = '<iframe src="'+href+'"  id="iframe-devices" frameborder="0" scrolling="no" style="width:100%;height:100%;"></iframe>'
+                var tab = \$('#tt').tabs('getTab',name);
+                \$('#tt').tabs('update', {
+                    tab: tab,
+                    options: {
+                        content: content  // the new content URL
+                    }
+                });
+			}
+            
+            function loadMonitorRegionData(){
+                var from_time = \$("#from_time").datetimebox("getValue");
+                var to_time = \$("#to_time").datetimebox("getValue");
+                \$.post("/pc/seat",
+                {
+                    act       :"get-monitor-region-result",
+                    openid    :cfgPara["openid"],
+                    imei      :cfgPara["imei"],
+                    from_time :from_time,
+                    to_time   :to_time,
+                },
+                function(data,status){
+                    \$("#monitor-region").datagrid("loadData",data)
+                })
+            }
+            
+            function updateChange(){
+                \$('#travels').datagrid("endEdit", editIndex);
+                var changeRows = \$('#travels').datagrid("getChanges")
+                if (editIndex == undefined || changeRows.length==0){return;}
+                row = changeRows[0];
+                \$.post("/pc/seat",
+                {
+                    act        :"update-checked-travel",
+                    openid     : cfgPara["openid"],
+                    travel_id  : row["id"],
+                    fee_checked: row["fee_checked"],
+                    seated_checked: row["seated_checked"],
+                    from_time:cfgPara["from_time"],
+                    to_time  :cfgPara["to_time"],
+                    imei     :cfgPara["imei"]
+                },function(data,status){
+                    \$("#travels").datagrid("loadData",data)
+                    \$('#travels').datagrid("endEdit", editIndex);
+                    \$('#travels').datagrid("acceptChanges")
+                    editIndex = undefined;
+                });
+            }
+            function checkResult(){
+                var changes = \$('#travels').datagrid("getChanges")
+                alert(changes.length)
+            }
+            
+            function onLoadSuccess(data){
+                \$('#travels').datagrid("selectRow",0)
+                selectRow = \$('#travels').datagrid("getSelected")
+            }
+
+        </script>
+        <script id="travels-script">
+            \$("#travels").datagrid({
+                onLoadSuccess:function(data){
+                    var travel_stat_table=["乘客报表","停靠位置","行程轨迹","座位状态"]
+                    if (data.rows.length==0){
+                        \$.each(travel_stat_table,function(index,val){
+                            \$("#tt").tabs("disableTab",val)
+                        })
+                        refreshTabbyTitle("区间检测");
+                    }
+                }
+            
+            })
+            function onDbClickTravel(index,row){
+                updateChange();
+                editIndex = index;
+                \$('#travels').datagrid("beginEdit", index);
+            }
+            
+            function onClickTravel(index,row){
+                selectRow = row;
+                updateChange();
+            }
+        </script>
+        <script type="text/javascript">
+            function myformatter(datetime){
+                var y = datetime.getFullYear();
+                var m = datetime.getMonth()+1;
+                var d = datetime.getDate();
+                var H = datetime.getHours();
+                var M = datetime.getMinutes();
+                //var S = datetime.getSeconds();
+                
+                return y+'-'+(m<10?('0'+m):m)+'-'+(d<10?('0'+d):d) +" "+(H<10?('0'+H):H)+":"+(M<10?('0'+M):M);
+            }
+            function myparser(s){
+                if (!s) return new Date();
+                var ss0 = (s.split(' '));
+                var ss = (ss0[0].split('-'));
+                var y = parseInt(ss[0],10);
+                var m = parseInt(ss[1],10);
+                var d = parseInt(ss[2],10);
+                var ss = (ss0[1].split(':'));
+                var H = parseInt(ss[0],10);
+                var M = parseInt(ss[1],10);
+                //var S = parseInt(ss[2],10);
+                if (!isNaN(y) && !isNaN(m) && !isNaN(d) && !isNaN(H) && !isNaN(M)){
+                    return new Date(y,m-1,d,H,M,0);
+                } else {
+                    return new Date();
+                }
+            }
+        </script>
+    </body>
+    </html>
+    

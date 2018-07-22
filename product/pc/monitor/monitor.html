@@ -1,0 +1,588 @@
+$def with (cfgPara,fixPara)
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>慧特,互联网+服务专家</title>
+        <link rel="stylesheet" type="text/css" href="/easyui/jquery-easyui/themes/bootstrap/easyui.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/jquery-easyui/themes/icon.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/css/layout.css">
+        <style type="text/css" media="screen">
+            .mytabs { padding: 3px; clear: both; }
+            .mytabs li { display: inline; }
+            .mytabs li a { background: #fafafa; padding: 12px; float:left; text-decoration: none; color: #009dd7; font-weight: bold;}
+            .mytabs li.active a { background: #f86602; color:#fff }
+            .content { float: left; clear: both; border: 2px; border-top: 2px solid #f86602; border-left: none; background: #fafafa; padding: 0; width: 100%; }
+        </style>
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.min.js"></script>
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.easyui.min.js"></script>
+        <script type="text/javascript" src="/easyui/script/tabify.js"></script>
+        <script type="text/javascript" src="/static/js/utility.js"></script>
+        <style type="text/css">
+            *{
+                margin:0px;
+                padding:0px;
+            }
+            button, input, select, textarea {
+                font: 12px/16px Verdana, Helvetica, Arial, sans-serif;
+            }
+            #container{
+                min-width:600px;
+                min-height:767px;
+            }
+        </style>
+        <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp"></script>
+        
+        <script type="text/javascript">
+            \$.extend({
+                getUrlVars: function () {
+                    var vars = {};
+                    var index = window.location.href.indexOf('?');
+                    if (index == -1) return vars;
+    
+                    var values = window.location.href.slice(index + 1).split('&');
+                    for (var i = 0; i < values.length; i++) {
+                        var items = values[i].split('=');
+                        vars[items[0]] = items[1];
+                    }
+                    return vars;
+                },
+                getUrlVar: function (name) {
+                    return \$.getUrlVars()[name];
+                }
+            });
+        </script>
+        <script type="text/javascript">
+            //function createDataGrid(dg) {
+            //	dg.datagrid({
+            //		isField:"num",  
+            //	    fitColumns:false, 
+            //	    singleSelect:true,
+            //	    striped:true,
+            //	    showHeader:false,
+            //	    
+            //	    columns:[[     
+            //	              {field:'num',title:'编号',width:'80%'},     
+            //	              {field:'status',title:'状态',width:'20%'},      
+            //	            ]],
+            //	    onClickRow:function(index,data) {
+            //	    	var num = data.num;
+            //	    }
+            //	});
+            //}
+            //
+            //\$(function () {  
+            //	createDataGrid(\$('#dgAll'));
+            //	createDataGrid(\$('#dgOnline'));
+            //	createDataGrid(\$('#dgOffline'));
+            //});   
+        </script>
+            
+        <script type="text/javascript">
+            function loadUserData(data) {
+                if (data["status"] != "success") {
+                    return [];
+                }
+                
+                var users = []
+                var distributor = data["distributor"];
+                users.push({"name":distributor["name"]});
+                return users;
+            }
+        </script>
+    </head>
+    <body class="easyui-layout" >
+        <div data-options="region:'north',border:false" style="height:55px;background:#6698da;">
+            <img class="left" src="/easyui/images/caronline.png" style="margin:0px"></img>
+            <div id="login" class="right" style="color:#fff;margin-top:18px;margin-right:15px">
+                <a class="left" href="user?act=login" style="color:#fff"><h3>登录</h3></a> 
+            </div>
+            <div id="logout" class="right">
+                <img id="img" class="left" style="width:32px;height:32px;margin-top:12px;"></img>      
+                <h3 id="user" class="left" style="color:#fff;margin-top:18px;margin-right:15px"></h3>
+                <h3 class="left" style="color:#fff;margin-top:18px;margin-right:15px">|</h3>
+                <a class="left" href="caronline.html" style="color:#fff;margin-top:19px;margin-right:5px"><h4>退出</h4></a> 
+            </div>
+        </div>
+        <div style="background:#fafafa" data-options="region:'center'">
+            <ul id="mytabs" class="mytabs">
+                <li class="active" style="margin-left:15px"><a href="#1">定位监控</a></li>
+                <li><a href="#2">统计报表</a></li>
+                <li><a href="#3">设备管理</a></li>
+            </ul>
+            <div id="1" class="content">
+                <div class="easyui-layout" data-options="fit:true" style="width:100%;height:800px;">
+                    <div data-options="region:'west',split:false" style="width:280px;">
+                        <div class="easyui-layout" data-options="fit:true" style="width:100%;height:100%;">
+                            <div data-options="region:'north',split:true" title="班车线路" style="width:90%;height:45%;">
+                                <table id="dg" class="easyui-datagrid"  style="width:100%;height:auto"
+                                        data-options="
+                                            singleSelect: true,
+                                            toolbar: '#tb',
+                                            onClickRow: onClickBusLine,
+                                            onDblClickRow: onDblClickBusLine
+                                        ">
+                                    <thead>
+                                        <tr>
+                                            <th data-options="field:'no',width:30">序号</th>
+                                            <th data-options="field:'from_name',width:80,align:'center',editor:'textbox'">起点</th>
+                                            <th data-options="field:'to_name',width:80,align:'center',editor:'textbox'">终点</th>
+                                            <th data-options="field:'mileage',width:100">全程(公里)</th>
+                                            <!--th data-options="field:'no',width:100">耗时(小时)</th-->
+                                        </tr>
+                                    </thead>
+                                </table>
+                            
+                                <div id="tb" style="height:auto">
+                                    <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="addLine()">添加</a>
+                                    <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-remove',plain:true" onclick="removeLine()">删除</a>
+                                    <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-undo',plain:true" onclick="price_design()">价格</a>
+            
+                                </div>
+                            </div>
+                            <div data-options="region:'center',split:true" style="width:90%;height:55%;">
+                                <div class="easyui-layout" data-options="fit:true" style="width:100%;height:100%;">
+                                    <!--div data-options="region:'north',split:false,border:false" style="height:42px">
+                                        <div style="text-align:center;margin:8px">
+                                            <input class="easyui-textbox" style="width:95%;height:25px;padding:5px" data-options="prompt:'请输入设备名/IMEI号',iconCls:'icon-search',iconWidth:36">
+                                        </div>
+                                    </div-->
+                                    <div data-options="region:'center',split:false,border:false">
+                                        <table id="buses" class="easyui-datagrid" title="线路车队" style="width:100%;height:auto"
+                                                data-options="
+                                                    singleSelect: true,
+                                                    toolbar: '#bus-tb',
+                                                    onClickRow: onClickBus,
+                                                    onDblClickRow:onDbClickBus,
+                                                ">
+                                            <thead>
+                                                <tr>
+                                                    <th data-options="field:'no',width:30">序号</th>
+                                                    <th data-options="field:'name',width:80,align:'center',editor:'textbox'">车牌</th>
+                                                    <th data-options="field:'imei',width:180,align:'center',editor:'textbox'">IMEI</th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    
+                                        <div id="bus-tb" style="height:auto">
+                                            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-save',plain:true" onclick="history()">更新</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div data-options="region:'center'" title="">
+                        <div id="tt" class="easyui-tabs" fit="true" border="false" plain="true">
+                            <div title="地理位置" id="container"></div>
+                                <p id="info" style="margin-top:10px;"></p>
+                            </body>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            <div id="seat-stat" class="content">
+                
+            </div>
+            <div id="3" class="content">
+                <div></div>
+            </div>
+        </div>
+        <div id="dlg-bus" class="easyui-dialog"  closed="true"   title="车辆信息" style="width:400px;height:400px;padding:10px;" data-options="
+				iconCls: 'icon-reload',
+				buttons: [{
+					text:'保存',
+					iconCls:'icon-ok',
+					handler:function(){renewBusConfig()}
+				},{
+					text:'取消',
+					handler:function(){
+						\$('#dlg-bus').dialog('close');
+					}
+				}]
+			">
+            <table id="tb-bus" class="easyui-propertygrid" style="width:100%" data-options="columns: mycolumns">
+            </table>
+        </div>
+        <script>
+            function renewBusConfig(){
+                var rows = \$('#tb-bus').propertygrid('getChanges');
+                var buscfg = bus["rows"] 
+                if(rows.length>=1){
+                    \$.post('/m/device',
+                    {
+                        act      :'UPDATE-DEVICE',
+                        openid   :cfgPara['openid'],
+                        imei     :buscfg[0]['value'],
+                        busline_id:_sel_busline_id,
+                        name     :buscfg[1]['value'],
+                        phone    :buscfg[2]['value'],
+                        seat_type:buscfg[5]['value'],
+                    },
+                    function(data,status){
+                        alert('更新成功');
+                        \$('#dlg-bus').datagrid("acceptChanges")
+                        \$('#dlg-bus').dialog('close');
+                    })
+                } else {
+                    \$('#dlg-bus').dialog('close');
+                }
+			} 
+            var mycolumns = [[
+                {field:'name',title:'属性',width:80,sortable:true},
+                {field:'value',title:'值',width:120,resizable:false}
+            ]];
+        </script>
+        <script type="text/javascript">
+            var cfgPara  = $:cfgPara;
+            var _markers =[];
+            var _bus_type="company_id";
+            var _sel_busline_id = -1;
+            var map;
+            var customAlarmDiv;
+            \$(document).ready(function () {
+                \$('#mytabs').tabify();
+                \$('#dlg-bus').dialog({ autoOpen: false });
+                \$('#iframepage2').attr("src","/pc/monitor?act=get-seat-layout&openid="+cfgPara["openid"])
+                
+                var center = getCenter(cfgPara["buses"]["rows"])
+                map = new qq.maps.Map(document.getElementById('container'),{
+                    center: center,
+                    zoom: 13,
+                    mapTypeControlOptions: {
+                        position: qq.maps.ControlPosition.TOP_CENTER    //设置地图控件位置靠近顶部
+                    }
+                });
+                
+                busOnMap(cfgPara["buses"]["rows"]);
+                
+                \$("#dg").datagrid("loadData",cfgPara["buslines"])
+                _bus_value = cfgPara["company_id"];
+                setInterval(function(){
+                    getBusPostion();
+                },10000);
+                //线路信息
+                customAlarmDiv = document.createElement("div");   
+                var customAlarmControl = new CustomAlarmControl(customAlarmDiv, map);
+                map.controls[qq.maps.ControlPosition.RIGHT_TOP].push(customAlarmDiv);
+                function CustomAlarmControl(controlDiv) {
+                    var endDatetime= new Date();
+                    var _hour = 15;
+                    startDatetime=addDate2(endDatetime,parseInt('-'+_hour),'hour');
+                    
+                    controlDiv.style.display = "none";
+                    controlDiv.style.backgroundColor = "#FFFFFF";
+                    controlDiv.style.border = "2px solid #86ACF2";
+                    controlDiv.innerHTML = '\
+                        <div>\
+                            <div style="padding:10px 10px 10px 10px"><strong>历史轨迹</strong></div>\
+                            <div style="padding:10px 10px 10px 10px">\
+                                <table cellspacing="10" border="0">\
+                                    <tr>\
+                                        <td>截止时间</td>\
+                                        <td><input type="datetime-local"  id = "end_time" value="'+endDatetime.format("yyyy-MM-ddThh:mm")+'" style="width:180px"></td>\
+                                    </tr>\
+                                    <tr>\
+                                        <td>开始时间</td>\
+                                        <td><input type="datetime-local" id = "from_time" value="'+startDatetime.format("yyyy-MM-ddThh:mm")+'" style="width:180px"></td>\
+                                    </tr>\
+                                    <tr>\
+                                        <td colspan="2" style="text-align:center"><button id="browser-history" >查看历史轨迹</button></td>\
+                                    </tr>\
+                                </table>\
+                            </div>\
+                        </div>\
+                    ';
+                    controlDiv.index = 1;//设置在当前布局中的位置
+     
+                    //\$("#end_time").val(endDatetime)
+                    //\$("#from_time").val(startDatetime)
+                    function update(e) {
+                        var src,dst;
+                        if (e.target.id!="browser-history") {
+                            return
+                        }
+                        if (historyTimeIsValid()) {
+                            var row =\$('#buses').datagrid('getSelected')
+                            from_time = \$("#from_time").val().replace('T'," ")+":00";
+                            end_time = \$("#end_time").val().replace('T'," ")+":00";
+                            addHistoryTab(row['imei'],row['name'],from_time,end_time)
+                        }
+                    }
+                    qq.maps.event.addDomListener(controlDiv, "click", update);
+                }
+                //检查时间的合法性
+                function historyTimeIsValid() {
+                    from_time = \$("#from_time").val();
+                    if (from_time==""){
+                        \$("#from_time").focus()
+                        return false
+                    } else {
+                        from_time =from_time.replace('T'," ")+":00"
+                    }
+                    
+                    end_time = \$("#end_time").val();
+                    if (end_time=="") {
+                        \$("#end_time").focus()
+                        return false
+                    } else {
+                        end_time = end_time.replace('T'," ")+":00"
+                    }
+                    var timediff = GetDateDiff(from_time,end_time,"minute")
+                    if (timediff<0) {
+                        \$("#from_time").focus()
+                        return false
+                    } else {
+                        return true
+                    }
+                    
+                }
+            });
+            
+            function getCenter(buses){
+                //设置新的map中点
+                var aLat = 0;
+                var aLng = 0;
+                for(var i=0;i<buses.length;i++){
+                    aLat +=buses[i]["qqLat"];
+                    aLng +=buses[i]["qqLng"];
+                }
+                aLat = aLat/buses.length;
+                aLng = aLng/buses.length;
+                
+                var center = new qq.maps.LatLng(aLat,aLng);
+                return center
+            }
+            function busOnMap(buses){
+                if (buses.length==0) {return;}
+                //清除已有的节点
+                for(var i=0;i<_markers.length;i++){
+                    _markers[i].setMap(null);
+                }
+                _markers = []
+                var center = getCenter(buses)
+                map.panTo(center)
+                //用户当前位置
+                for(var i=0;i<buses.length;i++){
+                    (function(n){
+                        var title = "车速："+buses[n]["speed"]+"公里/小时\r\n"+buses[n]["addr"]
+                        var pos = new qq.maps.LatLng(buses[n]["qqLat"],buses[n]["qqLng"]);
+                        _markers[n] = new qq.maps.Marker({
+                                icon    : getMarkerIcon("blue_bus"),
+                                map     : map,
+                                position: pos,
+                                title   : title});
+
+                        //获取标记的点击事件
+                        //content = sites[i]["address"]+"<br>id:"+sites[i]["id"]
+                        qq.maps.event.addListener(_markers[n], 'click', function(e) {
+                           //add
+                        });
+                    })(i)
+                }
+            }
+            function getBusPostion(){
+                \$.post("/pc/monitor",
+                {
+                    act      :"BUS-POSITION",
+                    openid   :cfgPara["openid"],
+                    bus_type :_bus_type,
+                    value    :_bus_value
+                },
+                function(data,status){
+                    busOnMap(data["buses"]["rows"]);
+                });
+            }
+            //删除后，微信无法显示
+            function getMarkerIcon(name){   
+                if (name=="") {
+                    name = "motor"
+                }
+                var icon= new qq.maps.MarkerImage(
+                    "/static/img/map/"+name+".png",
+                    new qq.maps.Size(31, 40),
+                    new qq.maps.Point(0, 0),
+                    new qq.maps.Point(16, 40)
+                )
+                return icon;
+            }
+            function addTab(ftype,fname){
+				if (\$('#tt').tabs('exists',fname)){
+					\$('#tt').tabs('select', plugin);
+				} else {
+					\$('#tt').tabs('add',{
+						title:plugin,
+						href:plugin+'.php',
+						closable:true,
+						bodyCls:'content-doc',
+						extractor:function(data){
+							data = \$.fn.panel.defaults.extractor(data);
+							var tmp = \$('<div></div>').html(data);
+							data = tmp.find('#content').html();
+							tmp.remove();
+							return data;
+						}
+					});
+				}
+			}
+            function addHistoryTab(imei,busno,startTime,endTime){
+                var href = '/pc/monitor?act=get-historytrack&startTime='+startTime+'&endTime='+endTime+'&imei='+imei;
+                //var content = '<iframe scrolling="no" frameborder="0"  src="'+href+'" style="width:100%;height:100%;"></iframe>';  
+                var content = '<iframe src="'+href+'"  id="iframepage" frameborder="0" scrolling="no" style="width:100%;height:100%;"></iframe>'
+				\$('#tt').tabs('add',{
+					title:busno+" 历史轨迹",
+					content:content,
+					closable:true,
+				});
+                //\$('#tt').tabs('add',{
+				//	title:busno+" 历史轨迹",
+				//	href:href,
+				//	closable:true,
+                //    bodyCls:'content-doc',
+				//	extractor:function(data){
+				//		data = \$.fn.panel.defaults.extractor(data);
+				//		var tmp = \$('<div></div>').html(data);
+				//		data = tmp.find('#content').html();
+				//		tmp.remove();
+				//		return data;
+				//	}
+				//});
+			}
+            function iFrameHeight() {   
+                var ifm= document.getElementById("iframepage");   
+                var subWeb = document.frames ? document.frames["iframepage"].document : ifm.contentDocument;   
+                if(ifm != null && subWeb != null) {
+                    //ifm.height = subWeb.body.scrollHeight;
+                    //ifm.width = subWeb.body.scrollWidth;
+                }   
+            }
+            \$("#seat-stat").click(function(e){
+                var tab =\$('#tt').tabs("getSelected")
+                var tab = \$('#tt').tabs('getSelected');  // get selected panel
+                tab.panel('refresh', "/pc/monitor?act=get-seat-layout&openid="+cfgPara["openid"]);
+            })
+        </script>
+        <script type="text/javascript">
+            var editIndex = undefined;
+            var bus;
+            function onClickBusLine(index){
+                getLineBus(cfgPara["buslines"]["rows"][index]["busgroupid"])
+                _bus_type  ="busline_id";
+                _bus_value =cfgPara["buslines"]["rows"][index]["id"];
+                _sel_busline_id = _bus_value;
+                getBusPostion();
+                acceptBusline();
+                customAlarmDiv.style.display = "none";
+            }
+            
+            function onDblClickBusLine(index){
+                var busline_id = cfgPara["buslines"]["rows"][index]["id"];
+                acceptBusline();
+                
+                \$('#dg').datagrid("beginEdit", index);
+                editIndex = index;
+                
+            }
+            
+            
+            function addLine(){
+                acceptBusline();
+                \$('#dg').datagrid('appendRow',{status:'P'});
+                editIndex = \$('#dg').datagrid('getRows').length-1;
+                
+                \$('#dg').datagrid('selectRow', editIndex)
+                         .datagrid('beginEdit', editIndex);
+            }
+            function removeLine(){
+                var row = \$('#dg').datagrid('getSelected')
+                var index = \$('#dg').datagrid('getRowIndex',row)
+                var busline_id = cfgPara["buslines"]["rows"][index]["id"];
+                \$.post("/m/manager",
+                    {
+                        act        :"DELETE-LINE",
+                        openid     :cfgPara["openid"],
+                        busline_id :busline_id
+                    },
+                    function(data,status){
+                        alert(data["msg"]);
+                });
+                \$('#dg').datagrid('cancelEdit', index)
+                         .datagrid('deleteRow', index);
+            }
+            function acceptBusline(){
+                if (editIndex == undefined || \$('#dg').datagrid('getChanges').length==0){return;}
+                \$('#dg').datagrid('acceptChanges');
+                var src  = cfgPara["buslines"]["rows"][editIndex]["from_name"];
+                var dst  = cfgPara["buslines"]["rows"][editIndex]["to_name"];
+                if (src=="" || dst==""){return;}
+                var busline_id = cfgPara["buslines"]["rows"][editIndex]["id"];
+                
+                if (busline_id==undefined){
+                    busline_id = -1
+                }
+                
+                \$.post("/m/manager",
+                    {
+                    act        :"SET-LINE-NAME",
+                    openid     : cfgPara["openid"],
+                    busline_id : busline_id,
+                    src        : src,
+                    dst        : dst,
+                    company_id : cfgPara["company_id"]
+                    },
+                    function(data,status){
+                        \$("#dg").datagrid("loadData",data["buslines"])
+                        \$('#dg').datagrid("endEdit", editIndex);
+                        \$('#dg').datagrid("acceptChanges")
+                        editIndex = undefined;
+                        alert(data["result"]);
+                });
+                
+                
+            }
+            function price_design(){
+                alert(editIndex)
+            }
+           function getLineBus(busgroupid){
+                \$.post("/pc/monitor",
+                    {
+                        act       :"GET-LINEBUS",
+                        openid    :cfgPara["openid"],
+                        busgroupid:busgroupid,
+                    },
+                    function(data,status){
+                        \$("#buses").datagrid("loadData",data["linebuses"]);
+                })
+            }
+        </script>
+        <script id="buses-script">
+            
+            function onClickBus(index){
+                _bus_type  ="imei";
+                _bus_value =\$('#buses').datagrid('getRows')[index]["imei"];
+                getBusPostion();
+                customAlarmDiv.style.display = "block";
+            }
+            function onDbClickBus(index){
+                var imei =\$('#buses').datagrid('getRows')[index]["imei"];
+                \$.post("/pc/monitor",
+                    {
+                        act       :"GET-BUSCFG",
+                        openid    :cfgPara["openid"],
+                        imei      :imei,
+                    },
+                    function(data,status){
+                        bus = data
+                        \$("#tb-bus").datagrid("loadData",data);
+                })
+                
+                
+                \$('#dlg-bus').dialog('open')
+            }
+
+        </script>
+    </body>
+    </html>
+    

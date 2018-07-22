@@ -1,0 +1,202 @@
+$def with (cfgPara,jdksign,sharePara)
+    <!doctype HTML>
+    <html>
+    <head>
+        <title id="title"></title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.9, minimum-scale=0.9, maximum-scale=0.9, user-scalable=no" />
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="/static/stylesheets/iwaiter.css" />        
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+      
+    </head>
+    <style type="text/css">
+.td{border:solid 1px #add9c0;} 
+    </style>
+    <script>
+        var cfgPara= $:cfgPara;
+        var jdksign=$:jdksign;
+        wx.config({
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                appId:     jdksign['appid'] , // 必填，公众号的唯一标识
+                timestamp: jdksign['timestamp'], // 必填，生成签名的时间戳
+                nonceStr:  jdksign['nonceStr'], // 必填，生成签名的随机串
+                signature: jdksign['signature'],// 必填，签名，见附录1
+                jsApiList: ['onMenuShareAppMessage',
+                            'onMenuShareTimeline',
+                            "onMenuShareQQ",
+                            "onMenuShareWeibo",
+                            "onMenuShareQZone"] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            });
+            
+        wx.ready(function(){
+            wx.onMenuShareAppMessage({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : '$sharePara["advertising_word"]', // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareTimeline({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQQ({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareWeibo({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQZone({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+        }); 
+        \$(document).ready(function(){
+            //\$("#DeviceBack").attr("href","/m/device?act=home-device-nogroup&openid="+cfgPara["openid"]);
+            //\$("#device-page").attr("href","/m/device?act=about&openid="+cfgPara["openid"]+"&imei="+cfgPara["imei"]);
+            //\$("#security-page").attr("href","/security?act=home&openid="+cfgPara["openid"]+"&imei="+cfgPara["imei"]);
+            \$("#DeviceBack").attr("href","/m/bustrack?act=MINE_TRACK&openid="+cfgPara["openid"]+"&imei="+cfgPara["imei"]+"&company_id="+cfgPara["company_id"]);
+  
+            \$("#title").html("能看到-"+cfgPara["devName"]+"-的朋友");
+            //填写表格内容
+            fullDeviceTable(cfgPara["items"])
+            var ghd_act ="";
+            \$('#device').delegate("select","change",function(e){
+                updateghdId = parseInt(e.target.id.split("_")[1]);
+                updatePara(updateghdId)
+                
+            })
+            \$('#device').delegate("a","click",function(e){
+                updateghdId = parseInt(e.target.id.split("_")[1]);
+                ghd_act = "delete";
+                updatePara(updateghdId)
+            })
+            //\$('#device td').click(function(){ 
+            //    alert("click....")
+            //    window.location.href="#leftpanel3";
+            //})
+            function updatePara(ghdId){
+                privilege=\$("#visible_"+ghdId.toString()).val();
+                \$.post("/m/device",
+                    {
+                       act      :"UPDATE-SHARE-PRIVILEGE",
+                       openid   :cfgPara["openid"],
+                       imei     :cfgPara["imei"],
+                       ghdId    :ghdId,
+                       privilege :privilege,
+                       ghd_act   :ghd_act,
+                    },
+                    function(data,status){
+                        fullDeviceTable(data["items"])                     
+                });
+            }
+            
+            function fullDeviceTable(items) {
+                \$('#device').empty();
+                //\$("#device").append('<th><td>名称</td><td style="font-size:60%">接受时间</td><td style="font-size:60%">最近浏览时间</td><td  style="font-size:60%">浏览次数</td><td>可视权限</td></th>')
+                \$("#device").append('<tr><th>序号</th><th>名称</th><th style="font-size:60%">接受时间</th><th>可视权限</th><th>删除</th></tr>')
+                for(var i=0;i<items.length;i++) {
+                    item =items[i]
+                    var trMsg ="";
+                    trMsg +='<tr><td>'+(i+1).toString()+'</td>';
+                    trMsg +='<td>'+item["nickname"]+'</td>';
+                    trMsg +='<td style="font-size:60%">'+item["received_at"]+'</td>';
+                    trMsg +='<td><select id="visible_'+item['ghdId']+'"  data-role="slider">';
+                    if (item["privilege"] =="visible") {
+                        trMsg +='<option value="invisible"  style="font-size:50%;" >不可见</option><option value="visible" style="font-size:50%;"  selected = "selected">可见</option></select></td>';
+                    } else {
+                        trMsg +='<option value="invisible"  style="font-size:50%;" selected = "selected">不可见</option><option value="visible" style="font-size:50%;" >可见</option></select></td>';
+                    }
+                    trMsg +='<td  style="text-align:center" ><a id="delete_'+item['ghdId']+'" data-mini="true" class="ui-btn ui-icon-delete ui-btn-icon-notext" ></a></td></tr>';
+                    \$("#device").append(trMsg)
+                }
+            }
+        })
+        
+    </script>
+
+    <body>
+        <div data-role="page" id="HomePage" class="background" >
+            <div data-role="header" >
+                <a id="DeviceBack" href='' target="_blank" data-role="button" data-icon="location"  data-iconpos="left">当前位置</a>
+                <h1 id="arm-name" style="font-size:100%"></h1>
+                <!--a id="help" href='http://mp.weixin.qq.com/s?__biz=MzA5NTYxMTY3NA==&mid=210651125&idx=1&sn=d9292d40291a264633ec0ebee78e7609#rd' target="_blank" data-role="button" data-icon="info"  data-iconpos="right">帮助</a-->
+            </div>
+            <table id ="device" width="100%" border="1"  bordercolor="#0099CC" cellpadding="10" style="font-size:80%;text-align:center;background-color:#FFFFFC" >
+            </table>
+            <!--
+            <div data-role="footer" data-position="fixed" data-fullscreen="false" data-tap-toggle="false" >
+                <span style='font-size:80%' id='history-desc'></span>
+                <div data-role="navbar">
+                    <ul>
+                        <li><a id="device-page" href=""  target="_blank" style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-camera">设备管理</a></li>
+                        <li><a id="security-page" href=""   target="_blank" style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-clock">双向防盗</a></li>
+                        <li><a id="location-page" href=""    target="_blank" style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-location">当前位置</a></li>
+                    </ul>
+                </div>
+            </div> 
+            --> 
+        </div>
+     
+    </body>
+    </html>
+    
+    

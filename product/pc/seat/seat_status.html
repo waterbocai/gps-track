@@ -1,0 +1,67 @@
+$def with (cfgPara,fixPara)
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>赛微，为智能客运而生</title>
+        <link rel="stylesheet" type="text/css" href="/easyui/jquery-easyui/themes/bootstrap/easyui.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/jquery-easyui/themes/icon.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/css/layout.css">
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.min.js"></script>
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.easyui.min.js"></script>
+        <script type="text/javascript" src="/easyui/script/tabify.js"></script>
+        <script type="text/javascript" src="/static/js/utility.js"></script>
+        <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp"></script>
+
+    </head>
+    
+    <body id="content" class="easyui-layout" style="height:767px;">
+        <div data-options="region:'center',split:true,collapsed:false" style="height:70%;padding:10px;">
+            <table id="seat-status" class="easyui-datagrid"  style="width:100%;height:auto" data-options="
+                singleSelect: true,
+                onLoadSuccess:onLoadSuccess">
+                <thead>
+                    <tr>
+                        <th data-options="field:'seat_name'">座位号</th>
+                        <th data-options="field:'seat_state_ch',align:'left'">座位状态</th>
+                        <th data-options="field:'from_time',width:180,align:'left'">开始时间</th>
+                        <th data-options="field:'to_time',width:180,align:'left'">截止时间</th>
+                        <th data-options="field:'from_name',width:80,align:'left'">起点站</th>
+                        <th data-options="field:'to_name',width:120,align:'left'">终点站</th>
+                        <th data-options="field:'duration_gmileage',align:'left'">行程(公里)</th>
+                        <th data-options="field:'price',align:'left'">票价</th>
+                        <th data-options="field:'dithering_num',align:'left',editor:'textbox'">抖动次数</th>
+                        <th data-options="field:'dither_km',align:'left',editor:'textbox'">行程/抖动次数</th>
+                        <th data-options="field:'gmileage_sites_percent',align:'left'">在位里程/站点距离</th>
+                        <th data-options="field:'seated_vote',align:'left'">有效结论</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+        <script type="text/javascript">
+            var cfgPara  = $:cfgPara;
+            var _seats   = cfgPara["seats"]
+            \$(document).ready(function () {
+                
+               \$("#seat-status").datagrid("loadData",cfgPara["seats"])
+
+            });
+
+                
+        </script>
+        <script>
+            function onLoadSuccess(data){
+                for(var i=0; i<_seats["merges"].length; i++){
+                    \$(this).datagrid('mergeCells',{
+                        index: _seats["merges"][i].index,
+                        field: 'seat_name',
+                        rowspan: _seats["merges"][i].rowspan
+                    });
+                }
+            }
+        </script>
+
+    </body>
+    </html>
+    

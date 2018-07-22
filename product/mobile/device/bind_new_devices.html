@@ -1,0 +1,312 @@
+$def with (cfgPara,jdksign)
+    <!doctype HTML>
+    <html>
+    <head>
+        <title>添加新班车</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.9">
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+        <link rel="stylesheet" href="/static/stylesheets/iwaiter.css" />    
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+        <style type="text/css"> 
+
+        div#device-info.ui-grid-a .ui-block-a { width: 40% }
+        div#device-info.ui-grid-a .ui-block-b { width: 60% }
+        div#share-group.ui-grid-a .ui-block-a { width: 40% }
+        div#share-group.ui-grid-a .ui-block-b { width: 60% } 
+        div#group-select.ui-grid-b .ui-block-a { width: 20% }
+        div#group-select.ui-grid-b .ui-block-b { width: 35% }
+        div#group-select.ui-grid-b .ui-block-c { width: 45% }        
+        </style>   
+    <style id="custom-size-flipswitch">
+        /* Custom indentations are needed because the length of custom labels differs from
+           the length of the standard labels */
+        .custom-size-flipswitch.ui-flipswitch .ui-btn.ui-flipswitch-on {
+        	text-indent: -6.9em;
+        }
+        .custom-size-flipswitch.ui-flipswitch .ui-flipswitch-off {
+        	text-indent: 0em;
+        }
+        /* Custom widths are needed because the length of custom labels differs from
+           the length of the standard labels */
+        .custom-size-flipswitch.ui-flipswitch {
+        	width: 8.875em;
+        }
+        .custom-size-flipswitch.ui-flipswitch.ui-flipswitch-active {
+        	padding-left: 7em;
+        	width: 1.875em;
+        }
+        @media (min-width: 28em) {
+        	/*Repeated from rule .ui-flipswitch above*/
+        	.ui-field-contain > label + .custom-size-flipswitch.ui-flipswitch {
+        		width: 1.875em;
+        	}
+        }
+	</style>        
+    </head>
+    
+    <script>
+        var cfgPara  =$:cfgPara;
+        var _openid  =cfgPara["openid"];
+        var sltNo;
+        var deviceChecked=[];
+        var jdksign  = $:jdksign;
+        wx.config({
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                appId:     jdksign['appid'] , // 必填，公众号的唯一标识
+                timestamp: jdksign['timestamp'], // 必填，生成签名的时间戳
+                nonceStr:  jdksign['nonceStr'], // 必填，生成签名的随机串
+                signature: jdksign['signature'],// 必填，签名，见附录1
+                jsApiList: ['onMenuShareAppMessage',
+                            'onMenuShareTimeline',
+                            "onMenuShareQQ",
+                            "onMenuShareWeibo",
+                            "onMenuShareQZone","scanQRCode"] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            });
+            
+        wx.ready(function(){
+            wx.onMenuShareAppMessage({
+                title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareTimeline({
+                title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQQ({
+                title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareWeibo({
+                title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQZone({
+                title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+        });         
+
+        //设备信息
+        var _phone="init"
+        var _name="init";        
+        \$(document).on("pagebeforeshow","#HomePage",function(e){
+            var _newImei;
+            \$("#back").attr("href",'/m/manager?act=line-buses&openid='+cfgPara["openid"]+'&busline_id='+cfgPara['busline']['id']+'&company_id='+cfgPara['busline']['company_id'])
+            \$('#scan-imei').click(function(e) {
+                wx.scanQRCode({
+                    needResult: 1, // 默认为0，扫描结果由微信处理，1则直接返回扫描结果，
+                    scanType: ["qrCode","barCode"], // 可以指定扫二维码还是一维码，默认二者都有
+                    success: function (res) {
+                        var _newImei = res.resultStr.split(",")[1]
+                        \$('#new-imei').val(_newImei);
+                        //var result = res.resultStr; // 当needResult 为 1 时，扫码返回的结果
+                        getImei(_newImei);
+                    }
+                });
+            });
+            \$('#new-imei').blur(function(e) {
+                if (Trim(\$('#new-imei').val())=="") {
+                    \$('#new-name').attr("value","");
+                    \$('#new-phone').attr("value","");
+                    \$('#new-imei').focus()
+                } else {
+                    getImei(_newImei);
+                }
+            });
+            function getImei(imei){
+                \$.post("/m/device",
+                    {
+                        act      :"ABOUT",
+                        openid   :_openid,
+                        imei     :\$('#new-imei').val(),
+                    },
+                    function(data,status){
+                        if (data["result"]=="failed") {
+                            \$('#new-name').attr("value","");
+                            \$('#new-type').html("");
+                            \$('#new-phone').attr("value","");
+                            \$('#seat_type').html("");
+                            \$("#navbar-bind-user").hide();
+                            alert("该序列号对应的设备还没有验证入库,不能进行绑定！")
+                        } else {      
+                            _phone = data['phone'];
+                            _name = data['name'];
+                            \$('#new-name').attr("value",data['name']);
+                            \$('#new-type').html(data['devType']);
+                            \$('#new-phone').attr("value",data['phone']);
+                            \$('#seat_type').html(data['seat_type']);
+                            \$("#navbar-bind-user").show();
+                            //alert(data['owner'])
+                        }
+                    }
+                );            
+            }
+            
+            \$("#new-phone").change(function(e){
+                //alert(\$("#new-phone").val())
+                \$("#navbar-bind-user").show();
+            })
+            \$('#new-name').change(function(e){
+                //alert(\$("#new-name").val())
+                \$("#navbar-bind-user").show();
+            })
+            
+            //\$('#seat_type').change(function(e){
+            //    var seat_type = e.target.val()
+            //    
+            //})
+            
+            \$("#bind-user").click(function(e){
+                //首先完成参数校验
+                if (\$("#new-phone").val()==""){
+                    \$("#new-phone").focus();
+                     return;
+                }
+                if (\$("#new-name").val()==""){
+                    \$("#new-name").focus();
+                    return;
+                }
+                //将该设备移入该用户指定组下，如果没有对应的组，则新建
+                \$.post("/m/device",
+                    {
+                        act      :"BIND-NEW-DEVICE",
+                        openid   :_openid,
+                        imei     :\$('#new-imei').val(),
+                        busline_id  :cfgPara['busline']['id'],
+                        phone    :\$("#new-phone").val(),
+                        name     :\$("#new-name").val(),
+                        seat_type:\$('#seat_type').html(),
+                        company_id:cfgPara['busline']['company_id']
+                    },
+                    function(data,status){
+                        if (data["result"]=="success") {
+                            //window.location.href="/m/manager?act=LINE-BUSES&openid="+_openid+"&busline_id="+cfgPara['busline']['id']+"&company_id="+cfgPara['busline']['company_id'],target="_blank"; 
+                            window.location.href="/m/device?act=about&openid="+_openid+"&imei="+\$('#new-imei').val(),target="_blank"; 
+                        }
+                })
+            })
+        })
+        
+
+    </script>
+    <body>
+    
+    <!-- Start of second page: #two -->
+    <div data-role="page" id="HomePage" data-theme="a" style="background-color:#fffffff">
+        <div data-role="header">
+            <a id="back" href="#"  target="_blank" data-role="button" data-icon="back"  data-iconpos="left">班车队</a>
+            <h1 style="font-size:100%">添加班车</h1>
+        </div><!-- /header -->
+        <div role="main" class="ui-content"> 
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr> 
+                  <td><div class="ui-bar ui-bar-a" style="text-align:left">IMEI</div></td>
+                  <td><input type="tel" data-clear-btn="false" data-mini="true"  name="number-4" id="new-imei" value=""  placeholder="设备的15位 IMEI 编码" ></td>
+                  <td><a id="scan-imei" data-mini="true" class="ui-btn ui-icon-camera ui-btn-icon-notext">No text</a></td>
+                </tr>
+                <tr> 
+                  <td><div class="ui-bar ui-bar-a" style="text-align:left">车牌号</div></td>
+                  <td colspan="2">
+                    <input type="text" data-clear-btn="false" data-mini="true"  name="number-4" id="new-name" value="" >
+                  </td>
+                </tr>
+                <tr> 
+                  <td><div class="ui-bar ui-bar-a" style="text-align:left">GPS SIM卡号</div></td>
+                  <td colspan="2">
+                        <input type="tel" data-clear-btn="false" data-mini="true"  name="number-4" id="new-phone" value=""  placeholder="是设备的SIM卡号，不是自己手机号" >
+                  </td>
+                </tr>
+                <tr> 
+                    <td><div class="ui-bar ui-bar-a" style="text-align:left">坐卧类型</div></td>
+                    <td colspan="2" id="seat_type">
+                        
+                        <!--
+                            <select id="seat_type" >
+                                <option value="mid_bus" style="font-size:50%;" selected = "selected">中巴</option>
+                                <option value="bed"     style="font-size:50%;" >卧铺</option>
+                                <option value="seat39"  style="font-size:50%;">39座</option>
+                                <option value="seat53"  style="font-size:50%;">53座</option>
+                            </select>
+                        -->
+                    </td>
+                    
+                </tr>
+            </table>
+        </div><!-- /content -->
+        <div data-role="footer" data-position="fixed">
+          <div data-role="navbar" id="navbar-bind-user" style="display:none">
+            <ul> 
+              <li><a id='bind-user' style="font-size:100%"  class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-star">绑定该设备</a>
+              </li>
+              <!--li><button id='history-stat2' style="font-size:110%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-grid">管理共享</button>
+              </li-->
+            </ul>
+          </div>
+        </div>         
+    </div><!-- /page two --> 
+
+  
+    </body>
+    </html>
+    
+    

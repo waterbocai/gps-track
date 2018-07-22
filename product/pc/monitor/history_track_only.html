@@ -1,0 +1,350 @@
+$def with (cfgPara,fixPara)
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>赛微，为智能客运而生</title>
+        <link rel="stylesheet" type="text/css" href="/easyui/jquery-easyui/themes/bootstrap/easyui.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/jquery-easyui/themes/icon.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/css/layout.css">
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.min.js"></script>
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.easyui.min.js"></script>
+        <script type="text/javascript" src="/easyui/script/tabify.js"></script>
+        <script type="text/javascript" src="/static/js/utility.js"></script>
+        <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp"></script>
+        <style type="text/css">
+        *{
+            margin:0px;
+            padding:0px;
+        }
+        body, button, input, select, textarea {
+            font: 12px/16px Verdana, Helvetica, Arial, sans-serif;
+        }
+        p{
+            width:603px;
+            padding-top:3px;
+            overflow:hidden;
+        }
+        .btn{
+            width:142px;
+        }
+        #container{
+            min-height:767px;
+        }
+    </style>
+    </head>
+    
+    <body id="content" class="easyui-layout" style="height:767px;">
+        <div id="container"></div>
+        
+        <script type="text/javascript">
+            var cfgPara  = $:cfgPara;
+            var _markers =[];
+            var map;
+            var customAlarmDiv;
+            var myIcons = qqParseIcon('busmap');
+            var _markers={}
+            var _markerImage = getMarkerIcon(cfgPara['dev']["arm_type"]);
+            var mapPts =[],pts,arm,openid,imei,_url;
+            \$(document).ready(function () {
+                
+                var hisNo;
+                var center = new qq.maps.LatLng(cfgPara["centerQQLat"],cfgPara["centerQQLng"]);
+                map = new qq.maps.Map(document.getElementById('container'),{
+                    zoom: 13,
+                    center:center,
+                    mapTypeControlOptions: {
+                        position: qq.maps.ControlPosition.LEFT_TOP    //设置地图控件位置靠近顶部
+                    }
+                });
+                //线路信息
+                customAlarmDiv = document.createElement("div");  
+                endDatetime   = cfgPara["endTime"]
+                startDatetime =cfgPara["startTime"]
+                start_addr    =cfgPara["pts"][0]["addr"]
+                end_addr    =cfgPara["pts"][cfgPara["pts"].length-1]["addr"]
+                mileage     =cfgPara["pts"][cfgPara["pts"].length-1]["dist"]
+                var customAlarmControl = new CustomAlarmControl(customAlarmDiv,endDatetime,startDatetime,start_addr,end_addr,mileage);
+                map.controls[qq.maps.ControlPosition.RIGHT_TOP].push(customAlarmDiv);
+                initHistoryTrack(cfgPara);
+
+            });
+            function CustomAlarmControl(controlDiv,endDatetime,startDatetime,start_addr,end_addr,mileage) {
+                //controlDiv.style.display = "none";
+                controlDiv.style.backgroundColor = "#FFFFFF";
+                controlDiv.style.border = "2px solid #86ACF2";
+                controlDiv.innerHTML = '\
+                    <div style="width:300px">\
+                        <div style="padding:10px 10px 10px 10px"><strong>历史轨迹</strong></div>\
+                        <div style="padding:10px 10px 10px 10px">\
+                            <table cellspacing="10" border="0">\
+                                <tr>\
+                                    <td>截止时间</td>\
+                                    <td><input type="datetime-local"  id = "end_time" value="'+endDatetime+'" style="width:180px"></td>\
+                                </tr>\
+                                <tr>\
+                                    <td>开始时间</td>\
+                                    <td><input type="datetime-local" id = "from_time" value="'+startDatetime+'" style="width:180px"></td>\
+                                </tr>\
+                                <tr>\
+                                    <td colspan="2" style="text-align:center"><button id="browser-history" >查看历史轨迹</button></td>\
+                                </tr>\
+                            </table>\
+                            <hr>\
+                            <table cellspacing="10" border="0" width="100%">\
+                                <tr>\
+                                    <td style="width:60px">开始位置</td>\
+                                    <td id="start_addr">'+start_addr+'</td>\
+                                </tr>\
+                                <tr>\
+                                    <td style="width:60px">截止位置</td>\
+                                    <td id="end_addr">'+end_addr+'</td>\
+                                </tr>\
+                                 <tr>\
+                                    <td>行程</td>\
+                                    <td id="mileage">'+mileage+'公里</td>\
+                                </tr>\
+                            </table>\
+                        </div>\
+                    </div>\
+                ';
+                controlDiv.index = 1;//设置在当前布局中的位置
+     
+
+                function update(e) {
+                    var src,dst;
+                    if (e.target.id!="browser-history") {
+                        return
+                    }
+                    if (historyTimeIsValid()) {
+                        from_time = \$("#from_time").val().replace('T'," ")+":00";
+                        end_time = \$("#end_time").val().replace('T'," ")+":00";
+                        \$.post("/pc/monitor",
+                        {
+                            act      :"get-HISTORYTRACK",
+                            openid   :cfgPara["openid"],
+                            imei     :cfgPara["dev"]["imei"],
+                            startTime:from_time,
+                            endTime  :end_time
+                        },
+                        function(data,status){
+                            initHistoryTrack(data);
+                        });
+                    }
+                }
+                qq.maps.event.addDomListener(controlDiv, "click", update);
+            }
+            //检查时间的合法性
+            function historyTimeIsValid() {
+                from_time = \$("#from_time").val();
+                if (from_time==""){
+                    \$("#from_time").focus()
+                    return false
+                } else {
+                    from_time =from_time.replace('T'," ")+":00"
+                }
+                
+                end_time = \$("#end_time").val();
+                if (end_time=="") {
+                    \$("#end_time").focus()
+                    return false
+                } else {
+                    end_time = end_time.replace('T'," ")+":00"
+                }
+                var timediff = GetDateDiff(from_time,end_time,"minute")
+                if (timediff<0) {
+                    \$("#from_time").focus()
+                    return false
+                } else {
+                    return true
+                }
+                
+            }
+            function getCenter(points){
+                //设置新的map中点
+                var aLat = 0;
+                var aLng = 0;
+                for(var i=0;i<buses.length;i++){
+                    aLat +=points[i]["qqLat"];
+                    aLng +=points[i]["qqLng"];
+                }
+                aLat = aLat/points.length;
+                aLng = aLng/points.length;
+                
+                var center = new qq.maps.LatLng(aLat,aLng);
+                return center
+            }
+            //删除后，微信无法显示
+            function getMarkerIcon(name){   
+                if (name=="") {
+                    name = "motor"
+                }
+                var icon= new qq.maps.MarkerImage(
+                    "/static/img/map/"+name+".png",
+                    new qq.maps.Size(31, 40),
+                    new qq.maps.Point(0, 0),
+                    new qq.maps.Point(16, 40)
+                )
+                return icon;
+            }
+
+            function initHistoryTrack(hisPara) {
+                var hisData = {"total":hisPara["hisSites"].length,"rows":hisPara["hisSites"]}
+            
+                \$("#end_time").val(hisPara["endTime"])
+                \$("#from_time").val(hisPara["startTime"])
+                \$("#start_addr").html(hisPara["pts"][0]["addr"])
+                \$("#end_addr").html(hisPara["pts"][hisPara["pts"].length-1]["addr"])
+                \$("#mileage").html(hisPara["pts"][hisPara["pts"].length-1]["dist"]+"公里")
+                pts = hisPara['pts'];
+                arm = hisPara['dev'];
+                openid = hisPara['openid']
+                imei = arm['imei'];
+                _url  = hisPara['url'];
+                
+     
+                var center = new qq.maps.LatLng(hisPara["centerQQLat"],hisPara["centerQQLng"]);
+                map.panTo(center)
+                
+                mapPts =[]
+                for (var i=0;i<pts.length;i++)
+                {
+                    mapPts.push(new qq.maps.LatLng(pts[i]['lat'],pts[i]['lng']));
+                }                
+                
+                
+                showMarkers(hisPara["sites"]["auto"],map,"blue",1);
+                showMarkers(hisPara["sites"]["manual"],map,"red",10);
+                \$("#hist-arm-name").html(arm['name']);
+                \$("#history-desc").html('<strong>始:</strong>'+hisPara["startTime"]+" "+pts[0]['addr']+"  <strong>终:</strong>"+''+hisPara["endTime"]+" "+pts[pts.length-1]['addr'] +"<br><strong>行程：</strong>"+pts[pts.length-1]['dist']+"公里")
+                setTimeout(runHistory, 50);
+            }
+            
+            function runHistory() {
+                var startP = new qq.maps.Marker({
+                    icon: myIcons[0][0],
+                    map: map,
+                    position:mapPts[0],
+                    zIndex:2})
+                runMarker();
+                drawline();
+
+                var endP = new qq.maps.Marker({
+                    icon: myIcons[1][0],
+                    map: map,
+                    position:mapPts[pts.length-1],
+                    zIndex:2})                    
+            }
+            //添加显示板
+            function CustomZoomControl(controlDiv, map) {
+                controlDiv.style.padding = "5px";
+                controlDiv.style.backgroundColor = "#FFFFFF";
+                controlDiv.style.border = "2px solid #86ACF2";
+                //controlDiv.style.width ="70%"
+                controlDiv.style.textAlign ="left"
+        
+                controlDiv.index = 1;//设置在当前布局中的位置
+                updateMyControl(controlDiv);
+            } 
+            function updateMyControl(controlDiv) {
+                controlDiv.innerHTML = "<strong>时间:</strong>" + pts[hisNo]['gpsTime']+' <strong>速度:</strong>'+pts[hisNo]["speed"]+'公里/小时<strong>行程：</strong>'+pts[hisNo]["dist"]+'公里<br><strong>位置:</strong>'+pts[hisNo]["addr"];
+                qq.maps.event.trigger(controlDiv, "resize");
+            }
+            
+            function runMarker() {
+                hisNo = 0;
+                var customZoomDiv = document.createElement("div");
+                var customZoomControl = new CustomZoomControl(customZoomDiv, map);
+                if (map.controls[qq.maps.ControlPosition.TOP_LEFT].length==0){
+                    map.controls[qq.maps.ControlPosition.TOP_LEFT].push(customZoomDiv);
+                }
+                var myMarker1 = new qq.maps.Marker({
+                        icon: _markerImage,
+                        map: map,
+                        position:mapPts[0]});
+
+                var intObj =setInterval(function(){
+                    var myMarker = new qq.maps.Marker({
+                        icon: _markerImage,
+                        map: map,
+                        position:mapPts[hisNo]});
+                    myMarker1.setMap(null);
+                    myMarker1 = myMarker;
+                    updateMyControl(customZoomDiv);                    
+                    hisNo+=1;
+                    if (hisNo>=mapPts.length){
+                        clearInterval(intObj);
+                        customZoomDiv.style.display="none"
+                    }
+                },300);
+            }
+
+            function drawline()
+            {
+                var polyline = new qq.maps.Polyline({
+                    path: mapPts,
+                    strokeColor: '#1c29d8',
+                    strokeWeight: 5,
+                    editable:false,
+                    map: map
+                });
+                
+            }
+            //显示站点信息
+            function showMarkers(sites,map,color,zIndex) {
+                var markers={}
+                var icon;
+                var clr = (color=="red"? "red":"");
+                //用户当前位置
+                for(var i=0;i<sites.length;i++){
+                    (function(n){
+                        var site_id = sites[n]['site_id']
+                        var pos = new qq.maps.LatLng(sites[n]["qqLat"],sites[n]["qqLng"]);
+                        var title = sites[n]["seated_num"]+"人,上客:"+sites[n]["num_change"]+"\r\n"+sites[n]["name"]
+                        if (n<20) {
+                            _markers[site_id] = new qq.maps.Marker({
+                                icon    : getMarkerIcon(clr+(n+1).toString()),
+                                map     : map,
+                                position: pos,
+                                title   : title,
+                                zIndex  : zIndex});
+                        } else {
+                            _markers[site_id] = new qq.maps.Marker({
+                                position: pos,
+                                title   : title,
+                                map: map
+                            });                
+                        }
+                        //添加到提示窗
+                        var info = new qq.maps.InfoWindow({
+                            map: map
+                        });
+                        //获取标记的点击事件
+                        //content = sites[i]["address"]+"<br>id:"+sites[i]["id"]
+                        qq.maps.event.addListener(_markers[site_id], 'click', function(e) {
+                            //是自动站点
+                            //是设定的站点，恢复为自动站点
+                            var icon = _markers[site_id].getIcon();
+                            if (icon!=null && _markers[site_id].getIcon()["url"].indexOf("site.png")>=0){
+                                _markers[site_id].setIcon(getMarkerIcon("plane"));
+                                updateSiteType(site_id,"auto")
+                            } else { 
+                                
+                                
+                                if (icon==null || (icon!=null && icon["url"].indexOf("red")==-1)){
+                                    _markers[site_id].setIcon(getMarkerIcon("site"));
+                                    _markers[site_id].setZIndex(10);
+                                    updateSiteType(site_id,"manual")
+                                }
+                            }
+                        });
+                    })(i)
+                }
+            }
+                
+        </script>
+
+    </body>
+    </html>
+    

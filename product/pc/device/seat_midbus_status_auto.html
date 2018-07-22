@@ -1,0 +1,297 @@
+$def with (cfgPara,jdksign,sharePara)
+    $code:
+        def back_color(no):
+            color = "#C0C0C0"
+            for i in no:
+                if i not in "1234567890":
+                    color = "#FFFFFF"
+                    break
+            return color
+            
+    <!doctype HTML>
+    <html>
+    <head>
+        <title id="title"></title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.8">
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+    
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+        <style  type="text/css">
+            .seat {font-size:100%; 
+                border: 1px dash  #b5d6e6; 
+                border-right-color:#C0C0C0;
+                border-left-color:#C0C0C0;
+                border-top-color:#C0C0C0;
+                border-bottom-color:#C0C0C0;
+                text-align:center}
+        </style>   
+    </head>
+    
+    <script>
+        var _cfgPara = $:cfgPara;
+        \$(document).on("pagebeforeshow","#HomePage",function(e){ // 当进入页面二时
+            showGroupMember(_cfgPara)
+            setInterval(function(){
+                   \$.post("/pc/device",
+                   {
+                       act      :"SEAT-STATUS-AUTO",
+                       imei     :'$sharePara["imei"]',
+                       openid   :'$sharePara["openid"]',
+                   },
+                   function(data,status){
+                       showGroupMember(data);
+                   });
+            },5000);
+            
+            
+            
+            function showGroupMember(data){
+                \$('#imei').html(data["imei"]);
+                //\$('#time').html(data["time"]);
+                \$('#time').html(data["gpsTime"]);
+                \$('#speed').html(data["speed"]);
+                \$('#addr').html(data["addr"]);
+                \$('#seated').html(data["sum"]['有人']);
+                \$('#unseated').html(data["sum"]['空座']);
+                //\$('#unknown').html(data["sum"]['未知']);
+                //\$('#outtime').html(data["sum"]['超时']);
+                
+                var seats = data["seats"];
+                var bgcolor ={"有人":"#339933","未知":"#C0C0C0","超时":"#FFFFFF","空座":"#FFFFFF"}
+                for(var i = 0;i<60;i++)
+                {
+                    if (typeof(seats[i])=="undefined") {
+                            continue;
+                    }
+                    \$("#bed-"+i.toString()).css("background-color",bgcolor[seats[i]])
+                    if (seats[i]=="有人"){
+                        \$("#bed-"+i.toString()).css("color","#FFFFF0")
+                    } else {
+                        \$("#bed-"+i.toString()).css("color","#2F4F4F")
+                    }
+                }
+            }
+        })
+        var jdksign  = $:jdksign;
+        wx.config({
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                appId:     jdksign['appid'] , // 必填，公众号的唯一标识
+                timestamp: jdksign['timestamp'], // 必填，生成签名的时间戳
+                nonceStr:  jdksign['nonceStr'], // 必填，生成签名的随机串
+                signature: jdksign['signature'],// 必填，签名，见附录1
+                jsApiList: ['onMenuShareAppMessage',
+                            'onMenuShareTimeline',
+                            "onMenuShareQQ",
+                            "onMenuShareWeibo",
+                            "onMenuShareQZone"] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            });
+            
+        wx.ready(function(){
+            $if sharePara.has_key("title"):
+                wx.onMenuShareTimeline({
+                    title  : '$sharePara["catchword"]', // 分享标题
+                    desc   : "$sharePara["advertising_word"]", // 分享描述
+                    link   : '$sharePara["show_url"]',   //分享链接
+                    imgUrl : '$sharePara["logo_url"]', // 分享图标
+                    type   : '', // 分享类型,music、video或link，不填默认为link
+                    dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                    success: function () {
+                        // 用户确认分享后执行的回调函数
+                        alert("分享成功")
+                        },
+                        cancel: function () { 
+                            // 用户取消分享后执行的回调函数
+                            //alert("取消了分享")
+                        }
+                });
+            $else:
+                wx.onMenuShareAppMessage({
+                    title  : '你的朋友 $sharePara["user"] 给你分享了1个设备，注意确认！', // 分享标题
+                    desc   : "$sharePara["advertising_word"]", // 分享描述
+                    link   : '$sharePara["share_url"]',   //分享链接
+                    imgUrl : '$sharePara["logo_url"]', // 分享图标
+                    type   : '', // 分享类型,music、video或link，不填默认为link
+                    dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                    success: function () {
+                        // 用户确认分享后执行的回调函数
+                        \$.post("/m/order",
+                        {
+                        act         :"GEN_SEATS_SHARE",
+                        openid      :'$sharePara["openid"]',
+                        imei        :'$sharePara["imei"]',
+                        out_trade_no:'$sharePara["out_trade_no"]',
+                        share_url   :'$sharePara["share_url"]', 
+                        
+                        },
+                        function(data,status){
+                            if (data["result"]=="success") {
+                                window.location.href ='$sharePara["share_url"]&trusting=yes';
+                            }
+                        });
+                    },
+                    cancel: function () { 
+                        // 用户取消分享后执行的回调函数
+                        //alert("取消了分享")
+                    }
+                });
+            wx.onMenuShareTimeline({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                    alert("分享成功")
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQQ({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                    alert("分享成功")
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareWeibo({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                    alert("分享成功")
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQZone({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                    alert("分享成功")
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+        }); 
+    </script>
+    <body>
+        <div data-role="page" id="HomePage" style="background-color:#fffffff"  >
+   
+            <div id="bar-member" class="ui-content">
+                <table id ="car-massage"  width="100%" >
+                    <tr>
+                        <td >速度:<span id='speed' style="color:#000066"></span>公里/小时</td>
+                        
+                        <td >时间:<span id='time' style="color:#000066"></span></td>
+
+                        <td >有人:<span id='seated' style="color:#FF0000">0</span></td>
+
+                        <td >空座:<span id='unseated' style="color:#FF0000">29</span></td>
+                    </tr> 
+                    <tr>
+                        <td colspan="1">位置:<span id='addr' style="color:#000066"></span></td>
+                    </tr> 
+                </table> 
+                <!-- <p style="font-size:100%"><strong>imei:</strong><span id='imei' style="color:#000066"></span>
+                <strong style="background-color:#FFFFFF">有人:</strong><span id='seated' style="color:#FF0000">0</span>
+                <strong style="background-color:#FFFFFF">空座:</strong><span id='unseated' style="color:#FF0000">29</span>
+                <strong>     时间:</strong><span id='time' style="color:#000066"></span>
+                <strong>     速度:</strong><span id='speed' style="color:#000066"></span> 公里/小时</p>
+                <p style="font-size:100%"><strong>位置:</strong><span id='addr' style="color:#000066"></span></p>
+                                         strong>未知:</strong><span id='unknown'></span-->
+                                          <!--strong>超时:</strong><span id='outtime'></span-->
+                <table id ="group-member"  width="100%" border="1" class="seat" cellspacing="0" cellpadding="10" style="font-size:90%" >
+                    <tr style="background-color: #C0C0C0">
+                        <td colspan="3" rowspan="2" bgColor="#C0C0C0">驾驶室</td>
+                        <td id='bed-30' bgColor='$back_color(sharePara["seat_template"][30][0])'>$sharePara["seat_template"][30][1]</td>
+                        <td id='bed-0'  bgColor='$back_color(sharePara["seat_template"][0][0])' >$sharePara["seat_template"][0][1] </td>
+                    </tr> 
+                    <tr>
+                        <td id='bed-31' bgColor='$back_color(sharePara["seat_template"][31][0])'>$sharePara["seat_template"][31][1]</td>
+                        <td id='bed-32' bgColor='$back_color(sharePara["seat_template"][32][0])'>$sharePara["seat_template"][32][1]</td>
+                    </tr>                     
+                    <tr>                                                                                                                                                                             
+                        <td id="bed-1"  bgColor='$back_color(sharePara["seat_template"][1][0])' >$sharePara["seat_template"][1][1]</td>
+                        <td id="bed-2"  bgColor='$back_color(sharePara["seat_template"][2][0])' >$sharePara["seat_template"][2][1]</td>
+                        <td rowspan="6" bgColor="#C0C0C0">过<br>道</td>                                                                                           
+                        <td id="bed-3"  bgColor='$back_color(sharePara["seat_template"][3][0])' >$sharePara["seat_template"][3][1]</td>
+                        <td id="bed-4"  bgColor='$back_color(sharePara["seat_template"][4][0])' >$sharePara["seat_template"][4][1]</td>
+                    </tr>                                                                                                         
+                    <tr>                                                                                                          
+                        <td id="bed-5"  bgColor='$back_color(sharePara["seat_template"][5][0])' >$sharePara["seat_template"][5][1]</td>
+                        <td id="bed-6"  bgColor='$back_color(sharePara["seat_template"][6][0])' >$sharePara["seat_template"][6][1]</td>
+                        <td id="bed-7"  bgColor='$back_color(sharePara["seat_template"][7][0])' >$sharePara["seat_template"][7][1]</td>
+                        <td id="bed-8"  bgColor='$back_color(sharePara["seat_template"][8][0])' >$sharePara["seat_template"][8][1]</td>
+                    </tr>                                                                                                                                                
+                    <tr>                                                                                                                                                 
+                        <td id="bed-9"  bgColor='$back_color(sharePara["seat_template"][9][0])' >$sharePara["seat_template"][9][1]</td>
+                        <td id="bed-10" bgColor='$back_color(sharePara["seat_template"][10][0])'>$sharePara["seat_template"][10][1]</td>
+                        <td id="bed-11" bgColor='$back_color(sharePara["seat_template"][11][0])'>$sharePara["seat_template"][11][1]</td>
+                        <td id="bed-12" bgColor='$back_color(sharePara["seat_template"][12][0])'>$sharePara["seat_template"][12][1]</td>
+                    </tr>                                                                                                          
+                    <tr>                                                                                                           
+                        <td id="bed-13" bgColor='$back_color(sharePara["seat_template"][13][0])'>$sharePara["seat_template"][13][1]</td>
+                        <td id="bed-14" bgColor='$back_color(sharePara["seat_template"][14][0])'>$sharePara["seat_template"][14][1]</td>
+                        <td id="bed-15" bgColor='$back_color(sharePara["seat_template"][15][0])'>$sharePara["seat_template"][15][1]</td>
+                        <td id="bed-16" bgColor='$back_color(sharePara["seat_template"][16][0])'>$sharePara["seat_template"][16][1]</td>
+                    </tr>                                                                                                          
+                    <tr>                                                                                                           
+                        <td id="bed-17" bgColor='$back_color(sharePara["seat_template"][17][0])'>$sharePara["seat_template"][17][1]</td>
+                        <td id="bed-18" bgColor='$back_color(sharePara["seat_template"][18][0])'>$sharePara["seat_template"][18][1]</td>
+                        <td id="bed-19" bgColor='$back_color(sharePara["seat_template"][19][0])'>$sharePara["seat_template"][19][1]</td>
+                        <td id="bed-20" bgColor='$back_color(sharePara["seat_template"][20][0])'>$sharePara["seat_template"][20][1]</td>
+                    </tr>                                                                                                          
+                    <tr>                                                                                                           
+                        <td id="bed-21" bgColor='$back_color(sharePara["seat_template"][21][0])'>$sharePara["seat_template"][21][1]</td>
+                        <td id="bed-22" bgColor='$back_color(sharePara["seat_template"][22][0])'>$sharePara["seat_template"][22][1]</td>
+                        <td id="bed-23" bgColor='$back_color(sharePara["seat_template"][23][0])'>$sharePara["seat_template"][23][1]</td>
+                        <td id="bed-24" bgColor='$back_color(sharePara["seat_template"][24][0])'>$sharePara["seat_template"][24][1]</td>
+                    </tr>                                                                                                          
+                    <tr>                                                                                                           
+                        <td id="bed-25" bgColor='$back_color(sharePara["seat_template"][25][0])'>$sharePara["seat_template"][25][1]</td>
+                        <td id="bed-26" bgColor='$back_color(sharePara["seat_template"][26][0])'>$sharePara["seat_template"][26][1]</td>
+                        <td id="bed-27" bgColor='$back_color(sharePara["seat_template"][27][0])'>$sharePara["seat_template"][27][1]</td>
+                        <td id="bed-28" bgColor='$back_color(sharePara["seat_template"][28][0])'>$sharePara["seat_template"][28][1]</td>
+                        <td id="bed-29" bgColor='$back_color(sharePara["seat_template"][29][0])'>$sharePara["seat_template"][29][1]</td>
+                    </tr>
+
+                </table> 
+                $if sharePara["manager"]=="DEBUG":
+                    <a href='/pc/device?act=seat-status-auto&openid=$sharePara["openid"]&imei=$sharePara["imei"]' class="ui-btn ui-btn-inline">调测模式</a>       
+            </div>
+        </div>  
+    </body>
+    </html>
+    
+    

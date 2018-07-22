@@ -1,0 +1,189 @@
+$def with (cfgPara,fixPara)
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="keywords" content="gxsaiwei,saiwei,gps,座位检测">
+        <title>服务器健康服务平台</title>
+        <link rel="stylesheet" type="text/css" href="/easyui/themes/bootstrap/easyui.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/themes/icon.css">
+        <!--link rel="stylesheet" type="text/css" href="/easyui/css/layout.css"-->
+        <link rel="stylesheet" type="text/css" href="/easyui/css/kube.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/css/main.css">
+        
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.min.js"></script>
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.easyui.min.js"></script>
+        <!--script type="text/javascript" src="/easyui/script/tabify.js"></script-->
+        <script type="text/javascript" src="/static/js/utility.js"></script>
+        <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp&key=I7UBZ-KAVAP-VQCDT-V6GG7-7NE5O-GVBBG"></script>
+        
+    </head>
+    <body class="easyui-layout" >
+        <div id="header" class="group wrap header">
+            <div class="content">
+                <div class="navigation-toggle" data-tools="navigation-toggle" data-target="#navbar-1">
+                    <span>天网守护</span>
+                </div>
+                <!--div id="elogo" class="navbar navbar-left">
+                    <ul>
+                        <li>
+                            <a href="http://www.iwaiter.cn"><img src="/static/img/tianwangshouhu/logo.png" alt="jQuery EasyUI"/></a>
+                        </li>
+                    </ul>
+                </div-->
+                <div class="navbar navbar-left" ><h3  id="company" style="color:#F0F0F0">服务器健康服务平台</h3></div>
+                <!--div id="navbar-1" class="navbar navbar-right">
+                    <ul>
+                        <li><a id="nav-seat" href="http://twsh2.iwaiter.cn/pc/monitor?act=car-online&openid=o1_UJj_xHN0QqWY0dLy8BQ1eMoU8&company_id=9"  target='_blank'>实际应用</a></li>
+                        <li><a id="nav-bus"  href="http://twsh2.iwaiter.cn/pc/monitor?act=car-online&openid=o1_UJj_xHN0QqWY0dLy8BQ1eMoU8&company_id=10" target='_blank'>演示中心</a></li>
+                        <!--li><a id="nav-login" href="/pc/user?act=login" target='_blank'>登录</a></li>
+                    </ul>
+                    <div id="login_container"> </div>
+                </div-->
+                <div style="clear:both"></div>
+            </div>
+            <script type="text/javascript">
+                function setNav(){
+                    var demosubmenu = \$('#demo-submenu');
+                    if (demosubmenu.length){
+                        if (\$(window).width() < 450){
+                            demosubmenu.find('a:last').hide();
+                        } else {
+                            demosubmenu.find('a:last').show();
+                        }
+                    }
+                    if (\$(window).width() < 767){
+                        \$('.navigation-toggle').each(function(){
+                            \$(this).show();
+                            var target = \$(this).attr('data-target');
+                            \$(target).hide();
+                            setDemoNav();
+                        });
+                    } else {
+                        \$('.navigation-toggle').each(function(){
+                            \$(this).hide();
+                            var target = \$(this).attr('data-target');
+                            \$(target).show();
+                        });
+                    }
+                }
+                function setDemoNav(){
+                    \$('.navigation-toggle').each(function(){
+                        var target = \$(this).attr('data-target');
+                        if (target == '#navbar-demo'){
+                            if (\$(target).is(':visible')){
+                                \$(this).css('margin-bottom', 0);
+                            } else {
+                                \$(this).css('margin-bottom', '2.3em');
+                            }
+                        }
+                    });
+                }
+                \$(function(){
+                    setNav();
+                    \$(window).bind('resize', function(){
+                        setNav();
+                    });
+                    \$('.navigation-toggle').bind('click', function(){
+                        var target = \$(this).attr('data-target');
+                        \$(target).toggle();
+                        setDemoNav();
+                    });
+                })
+            </script>        
+        </div>
+        <div class="easyui-layout" data-options="fit:true" style="width:100%;height:800px;">
+            <div data-options="region:'west',split:true" title="服务区域" style="width:330px;" >
+                <div data-options="region:'center',split:true" style="width:100%;height:100%;position:relative;">
+                    <table id="area" class="easyui-datagrid" fit="true"  style="width:100%;height:auto;display:block"
+                            data-options="
+                                singleSelect: true,
+                                fit:true,
+                                rownumbers:true,
+                                remoteSort:false,
+                                multiSort:true,
+                            "
+                            >
+                        <thead>
+                            <tr>
+                                <th data-options="field:'imei',align:'left'"  sortable="true" style="width:50%" sortable="true">名称</th>
+                                <th data-options="field:'name',align:'left'"  sortable="true" style="width:50%" sortable="true">区域</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+            <div data-options="region:'center'" style="height:767px;width:auto;">
+                <div id="tt" class="easyui-tabs" fit="true" border="false" plain="true">
+                    <div title="风扇健康表" id="container">
+                        <table id="fans" class="easyui-datagrid" fit="true"  style="width:100%;height:auto;display:block"
+                                data-options="
+                                    singleSelect: true,
+                                    fit:true,
+                                    rownumbers:true,
+                                    remoteSort:false,
+                                    multiSort:true,
+                                ",
+                                sortName='state',sortOrder="asc"
+                                >
+                            <thead>
+                                <tr>
+                                    <th data-options="field:'addr',align:'center'"  sortable="true" style="width:20%" sortable="true">蓝牙地址</th>
+                                    <th data-options="field:'fanid',align:'center'"  sortable="true" style="width:20%" sortable="true">资产编号</th>
+                                    <th data-options="field:'major',align:'center'"  sortable="true" style="width:5%" sortable="true">major</th>
+                                    <th data-options="field:'minor',align:'center'"  sortable="true" style="width:5%" sortable="true">minor</th>
+                                    <th data-options="field:'state',align:'center'"  sortable="true" style="width:15%" sortable="true">运行状态</th>
+                                    <th data-options="field:'battery',align:'center'"  sortable="true" style="width:15%" sortable="true">蓝牙电池量</th> 
+                                    <th data-options="field:'report_at',align:'center'"  sortable="true" style="width:20%" sortable="true">检测时间</th>                                     
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                    <!--div title="区间检测" id="container">
+                        <p style="margin-top:10px;"></p>
+                    </div>
+                    <div title="客车运营" id="container">
+                        <p  style="margin-top:10px;"></p>
+                    </div-->
+                </div>
+            </div>
+            
+        </div>
+        <script type="text/javascript">
+            var cfgPara  = $:cfgPara;
+            var currentRoom = "";
+            \$(document).ready(function () {
+                //\$("#company").html(cfgPara["company"]["company"])
+                \$("#area").datagrid("loadData",cfgPara["area"])
+                \$("#fans").datagrid("loadData",cfgPara["fans"])
+                
+                setInterval(function(){
+                    getFanState();
+                },5000);
+            });
+            \$("#area").datagrid({
+                onClickRow:function(index,row) {
+                    currentRoom=row.imei;
+                    getFanState();
+                },
+            })
+            function getFanState(){
+                \$.post("/pc/monitor",
+                {
+                    act      :"GET-FAN-STATE",
+                    openid   :cfgPara["openid"],
+                    imei     :currentRoom,
+                },
+                function(data,status){
+                    \$("#fans").datagrid("loadData",data["fans"]);
+                });
+            }
+        </script>
+
+        
+        
+
+    </body>
+    </html>
+    

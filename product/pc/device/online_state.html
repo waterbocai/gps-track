@@ -1,0 +1,73 @@
+$def with (cfgPara,jdkSign,fixPara)
+    <!doctype html>
+    <html>
+    <head>
+        <title id="title">大巴上线情况</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.8">
+        <link rel="stylesheet" href="/jqm/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="/jqm/jquery.mobile.structure-1.4.5.min.css" />
+    
+        <script type="text/javascript" src="/jqm/jquery.min.js"></script>
+        <script src="/jqm/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script> 
+    </head>
+    <body>
+        <table id="dg" border="1" cellspacing="1" style="border-color: lightgray">    
+        </table>
+        
+        <script>
+            var cfgPara = $:cfgPara;
+            
+            \$(document).ready(function () {
+                showGroupMember(cfgPara["buses"]);
+                setInterval(function(){
+                    \$.post("/pc/device",
+                    {
+                        act      :"GET-ONLINE-STATE",
+                        openid   :cfgPara["openid"],
+                    },
+                    function(data,status){
+                        showGroupMember(data["buses"]);
+                    });
+                },5000);
+                
+            
+                \$("tr").bind("click",function(){
+                    var imei = \$(this).attr("id");
+                    window.location.href="/pc/device?act=seat-status-test&openid"+cfgPara["openid"]+"&imei="+imei,target="_blank";
+                });
+                //显示小组所有成员列表
+                function showGroupMember(buses){
+                    \$('#dg').empty();
+                    \$('#dg').append('<tr style="text-align:center;background-color:PowderBlue;"><th>&nbsp</th><th width="90px">公司</th><th width="90px">线路</th><th width="80px">车牌</th><th>IMEI</th><th width="80px">心跳</th><th width="80px">离线小时</th> </tr>')
+                    var oldFlag = "";
+                    var no = 1;
+                    for(var j = 0;j<buses.length;j++)
+                    {   
+                        var bgcolors =["lightgray","white"];
+                        newFlag = buses[j]["company"]+buses[j]["busline_name"];
+                        no =(newFlag!=oldFlag ? (1^no):no)
+                        oldFlag = newFlag;
+                        \$('#dg').append(appendItem(j,buses[j],bgcolors[no]));
+                    }
+                }        
+        });      
+         
+        function appendItem(i,bus,bgcolor) {
+            var tr ='<tr id="'+bus['imei']+'"'+'style="background-color:'+bgcolor+'">'
+            tr = tr+'<td>'+i+'</td>';
+            tr = tr+"<td>"+bus['company']+"</td>"; 
+            tr = tr+"<td>"+bus['busline_name']+"</td>"; 
+            tr = tr+"<td>"+bus['bus_no']+"</td>"; 
+            tr = tr+"<td>"+bus['imei'].substr(0,5)+"<br>"+bus['imei'].substr(5,5)+"<br>"+bus['imei'].substr(10)+"</td>"; 
+            tr = tr+"<td>"+bus['heardbeat_at']+"</td>"; 
+            tr = tr+"<td>"+bus['offline_hours']+"</td>"; 
+            tr = tr + "</tr>";
+            return tr;
+        } 
+        </script>
+        
+    </body>    
+    </html>

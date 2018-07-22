@@ -1,0 +1,710 @@
+$def with (cfgPara,jdksign,sharePara)
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+    
+    <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>  
+    <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp"></script>  
+    <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+    
+    <script type="text/javascript" src="/static/js/utility.js"></script>
+    <style type="text/css">
+    *{
+        margin:0px;
+        padding:0px;
+    }
+    body, button, input, select, textarea {
+        font: 12px/16px Verdana, Helvetica, Arial, sans-serif;
+    }
+    #info{
+        width:603px;
+        padding-top:3px;
+        overflow:hidden;
+    }
+    .btn{
+        width:142px;
+    }
+    div#group-select.ui-grid-a .ui-block-a { width: 40% }
+    div#group-select.ui-grid-a .ui-block-b { width: 60% }
+
+    div#seat-info.ui-grid-a .ui-block-a { width: 30% }
+    div#seat-info.ui-grid-a .ui-block-b { width: 70% }    
+  
+    div#hours-select.ui-grid-a .ui-block-a { width: 50% }
+    div#hours-select.ui-grid-a .ui-block-b { width: 50% }
+
+    div#history-select.ui-grid-a .ui-block-a { width: 40% }
+    div#history-select.ui-grid-a .ui-block-b { width: 60% }         
+    </style>
+
+
+    <title>当前位置</title>
+    <script type="text/javascript">
+        var _cfgPara = $:cfgPara;
+        var _openid ="";
+        var _imei = "",_url="";        
+        var fromServer = 'Y';//标记调度来源
+        var _sites  = _cfgPara["sites"],map;
+        var myIcons = qqParseIcon('busmap');
+        var _markerImage = getMarkerIcon(_cfgPara['dev']["arm_type"]);
+        var _markers={}
+        var _showSites={}
+        //权限检测
+        if (_cfgPara["dev"]==""){
+            alert("对不起，你没有权限查看该设备!")
+        }
+        //显示站点信息
+        function showMarkers(sites,map,color,zIndex) {
+            var markers={}
+            var icon;
+            var clr = (color=="red"? "red":"");
+            //用户当前位置
+            for(var i=0;i<sites.length;i++){
+                (function(n){
+                    var site_id = sites[n]['site_id']
+                    var pos = new qq.maps.LatLng(sites[n]["qqLat"],sites[n]["qqLng"]);
+                    var title = sites[n]["seated_num"]+"人,上客:"+sites[n]["num_change"]+"\r\n"+sites[n]["name"]
+                    if (n<20) {
+                        _markers[site_id] = new qq.maps.Marker({
+                            icon    : getMarkerIcon(clr+(n+1).toString()),
+                            map     : map,
+                            position: pos,
+                            title   : title,
+                            zIndex  : zIndex});
+                    } else {
+                        _markers[site_id] = new qq.maps.Marker({
+                            position: pos,
+                            title   : title,
+                            map: map
+                        });                
+                    }
+                    //添加到提示窗
+                    var info = new qq.maps.InfoWindow({
+                        map: map
+                    });
+                    //获取标记的点击事件
+                    //content = sites[i]["address"]+"<br>id:"+sites[i]["id"]
+                    qq.maps.event.addListener(_markers[site_id], 'click', function(e) {
+                        //是自动站点
+                        //是设定的站点，恢复为自动站点
+                        var icon = _markers[site_id].getIcon();
+                        if (icon!=null && _markers[site_id].getIcon()["url"].indexOf("site.png")>=0){
+                            _markers[site_id].setIcon(getMarkerIcon("plane"));
+                            updateSiteType(site_id,"auto")
+                        } else { 
+                            
+                            
+                            if (icon==null || (icon!=null && icon["url"].indexOf("red")==-1)){
+                                _markers[site_id].setIcon(getMarkerIcon("site"));
+                                _markers[site_id].setZIndex(10);
+                                updateSiteType(site_id,"manual")
+                            }
+                        }
+                    });
+                })(i)
+            }
+        }
+            
+        function updateSiteType(site_id,setting_type){
+            \$.post("/m/manager",
+                {
+                    act        :"UPDATE-ONE-SITE",
+                    openid     :_openid,
+                    site_id    :site_id,
+                    setting_type :setting_type,                   
+                },
+                function(data,status){
+                    alert("update "+site_id + " to "+setting_type)
+            });
+        }
+        
+        //当前位置页面
+        \$(document).on("pagebeforeshow","#CurrentPage",function(e){
+            $if sharePara["isOwner"]:
+                \$("#arm-select").attr("href",'/m/manager?act=line-buses&openid='+_cfgPara["openid"]+'&busline_id='+_cfgPara["busline_id"]+'&company_id='+_cfgPara["company_id"])
+
+            var myMarker;
+            if (fromServer="Y"){
+                initCurrentLocation(_cfgPara);
+                fromServer='N';
+                setInterval(function(){
+                    \$.post("/m/bustrack",
+                    {
+                        act      :"MINE_TRACK",
+                        openid   :_openid,
+                        imei     :_imei,
+                        company_id:_cfgPara["company_id"]
+                    },
+                    function(data,status){
+                        inervalEvent(data);
+                    });
+                },2000);
+            } 
+            function inervalEvent(cfgPara) {
+                var site = cfgPara['pt'];
+                var arm  = cfgPara['dev'];
+                _url  = cfgPara['url'];
+                _imei = cfgPara['dev']["imei"];
+                _openid = cfgPara["openid"]
+                
+                myMarker.setMap(null);
+                
+                var mapPt = new qq.maps.LatLng(site['qqLat'],site['qqLng']);
+                myMarker = new qq.maps.Marker({
+                    icon: _markerImage,
+                    map: map,
+                    position:mapPt});
+                \$("#arm-detail").html('<strong>车速:</strong>'+site['speed']+'公里/小时  '+'<strong>位置</strong>：'+site['addr'])
+            }
+            
+            function initCurrentLocation(cfgPara) {
+                var site = cfgPara['pt'];
+                var arm  = cfgPara['dev'];
+                _url  = cfgPara['url'];
+                _imei = cfgPara['dev']["imei"];
+                _openid = cfgPara["openid"]
+                
+                var mapPt = new qq.maps.LatLng(site['qqLat'],site['qqLng']);
+                map = new qq.maps.Map(document.getElementById('allmap'),{
+                    center: mapPt,
+                    zoom: 10
+                });
+                myMarker = new qq.maps.Marker({
+                    icon: _markerImage,
+                    map: map,
+                    position:mapPt});
+                showMarkers(_sites,map,"blue",2);
+                \$("#arm-name").html(arm['name']);
+                \$("#arm-detail").html('<strong>车速:</strong>'+site['speed']+'公里/小时  '+'<strong>位置</strong>：'+site['addr'])
+            }
+
+            \$('#current-state').click(function(e){
+                window.location.href="/m/device?act=seat-status-auto&openid="+_openid+"&imei="+_imei,target="_blank";
+            });  
+            \$('#about-bus').click(function(e){
+                window.location.href="/m/device?act=about&openid="+_openid+"&imei="+_imei,target="_blank";
+            }); 
+            
+           
+        });       
+        
+        //历史轨迹回放处理
+        \$(document).on("pagebeforeshow","#HISTORY-TRACK",function(e){
+            \$("#arm-select3").attr("href",'/m/manager?act=line-buses&openid='+_cfgPara["openid"]+'&busline_id='+_cfgPara["busline_id"]+'&company_id='+_cfgPara["company_id"])
+            var groups;
+            var hisTime = getTrackDuration();
+            var hisMap,mapPts =[],pts,arm,openid,imei,_url;
+            var hisNo;
+            startTime = hisTime[0];
+            endTime   =  hisTime[1]
+            \$.post("/m/bustrack",
+                   {
+                      act      :"HISTORY-TRACK",
+                      openid   :_openid,
+                      imei     :_imei,
+                      startTime:startTime,
+                      endTime  :endTime
+                   },
+                   function(data,status){
+                       initHistoryTrack(data);
+                   });
+
+            function initHistoryTrack(hisPara) {
+                pts = hisPara['pts'];
+                arm = hisPara['dev'];
+                openid = hisPara['openid']
+                imei = arm['imei'];
+                _url  = hisPara['url'];
+     
+                
+                mapPts =[]
+                for (var i=0;i<pts.length;i++)
+                {
+                    mapPts.push(new qq.maps.LatLng(pts[i]['gpsLat'],pts[i]['gpsLng']));
+                }                
+                hisMap = new qq.maps.Map(document.getElementById('history-map'),{
+                    center: mapPts[0],
+                    zoom: 10
+                });
+                
+                showMarkers(hisPara["sites"]["auto"],hisMap,"blue",1);
+                showMarkers(hisPara["sites"]["manual"],hisMap,"red",10);
+                \$("#hist-arm-name").html(arm['name']);
+                \$("#history-desc").html('<strong>始:</strong>'+startTime.slice(5,-3)+" "+pts[0]['addr']+"  <strong>终:</strong>"+''+endTime.slice(5,-3)+" "+pts[pts.length-1]['addr'] +"<br><strong>行程：</strong>"+pts[pts.length-1]['dist']+"公里")
+                setTimeout(runHistory, 50);
+            }
+            
+            function runHistory() {
+                var startP = new qq.maps.Marker({
+                    icon: myIcons[0][0],
+                    map: hisMap,
+                    position:mapPts[0],
+                    zIndex:2})
+                runMarker();
+                drawline();
+
+                var endP = new qq.maps.Marker({
+                    icon: myIcons[1][0],
+                    map: hisMap,
+                    position:mapPts[pts.length-1],
+                    zIndex:2})                    
+            }
+            //添加显示板
+            function CustomZoomControl(controlDiv, map) {
+                controlDiv.style.padding = "5px";
+                controlDiv.style.backgroundColor = "#FFFFFF";
+                controlDiv.style.border = "2px solid #86ACF2";
+                controlDiv.style.width ="70%"
+                controlDiv.style.textAlign ="left"
+        
+                controlDiv.index = 1;//设置在当前布局中的位置
+                updateMyControl(controlDiv);
+            } 
+            function updateMyControl(controlDiv) {
+                controlDiv.innerHTML = "<strong>时间:</strong>" + pts[hisNo]['gpsTime']+' <strong>速度:</strong>'+pts[hisNo]["speed"]+'公里/小时<strong>行程：</strong>'+pts[hisNo]["dist"]+'公里<strong>位置:</strong>'+pts[hisNo]["addr"];
+                qq.maps.event.trigger(controlDiv, "resize");
+            }
+            
+            function runMarker() {
+                hisNo = 0;
+                var customZoomDiv = document.createElement("div");
+                var customZoomControl = new CustomZoomControl(customZoomDiv, hisMap);
+                hisMap.controls[qq.maps.ControlPosition.TOP_LEFT].push(customZoomDiv);
+                
+                var myMarker1 = new qq.maps.Marker({
+                        icon: _markerImage,
+                        map: hisMap,
+                        position:mapPts[0]});
+
+                var intObj =setInterval(function(){
+                    var myMarker = new qq.maps.Marker({
+                        icon: _markerImage,
+                        map: hisMap,
+                        position:mapPts[hisNo]});
+                    myMarker1.setMap(null);
+                    myMarker1 = myMarker;
+                    updateMyControl(customZoomDiv);                    
+                    hisNo+=1;
+                    if (hisNo>=mapPts.length){
+                        clearInterval(intObj);
+                        customZoomDiv.style.display="none"
+                    }
+                },300);
+            }
+
+            function drawline()
+            {
+                var polyline = new qq.maps.Polyline({
+                    path: mapPts,
+                    strokeColor: '#1c29d8',
+                    strokeWeight: 5,
+                    editable:false,
+                    map: hisMap
+                });
+                
+            }
+        });
+
+        var _hisstat,_hisNo;
+        //运行统计信息处理
+        \$(document).on("pagebeforeshow","#HISTORY-STAT",function(e){
+            \$("#arm-select2").attr("href",'/m/manager?act=line-buses&openid='+_cfgPara["openid"]+'&busline_id='+_cfgPara["busline_id"]+'&company_id='+_cfgPara["company_id"])
+            var groups;
+            var hisTime = getTrackDuration();
+            var hisMap,mapPts =[],pts,arm,openid,imei,_url;
+            startTime = hisTime[0];
+            endTime   =  hisTime[1]
+            \$.mobile.loading( "show", {
+                text: "",
+                textVisible: true,
+                theme: \$.mobile.loader.prototype.options.theme,
+                textonly: false,
+                html: ""
+            });
+            \$.post("/m/bustrack",
+                   {
+                      act      :"HISTORY-STAT",
+                      openid   :_openid,
+                      imei     :_imei,
+                      startTime:startTime,
+                      endTime  :endTime
+                   },
+                   function(data,status){
+                        \$.mobile.loading( "hide" );
+                       _hisstat = data
+                       init(data);
+                       
+                   });
+           
+            function init(hisStat) {
+                var pts    =hisStat['pts'];
+                var imei   =hisStat['imei']
+                var openid = hisStat['openid']                
+                var _url  = hisStat['url'];
+            
+                \$('#history-stat').empty();
+                \$('#history-stat').append('<tr style="text-align:center"><th width="10%">时刻</th><th width="10%">速度</th><th width="10%">停留</th><th >位置</th><th width="10%">里程</th><th width="3%">乘客</th></tr>')
+                var startDate="",endDate="";
+                for(var i = 0;i<pts.length;i++)
+                {
+                    var tr;
+                    if (pts[i]['speed'] =='-')
+                    {   
+                        if (startDate=="") {
+                            startDate = pts[i]['report_at'];
+                            endDate= pts[i]['report_at'];
+                        } else {
+                            endDate = pts[i]['report_at'];
+                        }
+                        tr= "<tr Bgcolor=#00FFFF>";
+                    } else if (pts[i]['speed'] =='停止') {
+                        tr= "<tr Bgcolor='lightgray'>";
+                    } else {
+                        tr= "<tr>";
+                    }
+                    
+                    tr = tr+"<td >"+pts[i]['report_at']+"</td>";
+                    tr = tr+"<td >"+pts[i]['speed']+"</td>";
+                    tr = tr+"<td >"+pts[i]['duration']+"</td>";
+                    tr = tr+'<td style="text-align:left">'+pts[i]['addr']+"</td>";
+                    tr = tr+"<td >"+pts[i]['dist']+"</td>";
+                    tr = tr+"<td >"+pts[i]['seated_num']+"</td>";
+                    
+                    tr = tr + "</tr>";
+                    \$('#history-stat').append(tr);
+                    
+                    \$('#start-stat').html('<strong>起点:</strong> '+startDate+" " +pts[1]['report_at'].split("<br>")[0]+ ' ' + pts[1]['addr'] );
+                    \$('#end-stat').html('<strong>终点:'+endDate+" "+pts[pts.length-1]['report_at'].split("<br>")[0]+'</strong> ' +pts[pts.length-1]['addr'] );
+                    \$('#long-stat').html('<strong>行程:</strong>'+ pts[pts.length-1]['dist']+ '公里');
+                }
+            }
+            \$('#history-stat').delegate("td","click",function(e){
+                if (e.target.id.slice(0,3)!="pos"){//不是座位的事件
+                    return
+                }
+                _hisNo = e.target.id.slice(3);
+                window.location.href="#SeatSatusPage";
+            });
+        });
+        
+        
+        //运行统计信息处理
+        \$(document).on("pagebeforeshow","#history-time",function(e){
+            \$('#radio_last_hour').click(function(e){
+                \$('#hours-select').show();
+                \$('#history-select').hide();
+            });
+            \$('#radio_selfdefine').click(function(e){
+                \$('#hours-select').hide();
+                \$('#history-select').show();
+            });
+        });
+        
+        
+        //获取历史时间开始与结束点
+        function getTrackDuration(){
+            var startDatetime,endDatetime;  
+            //获取时间设置模式
+            var selType = \$( "[name='radio-select']:checked" ).attr( "id" )
+            //最近过去的时间 选择模式
+            if (selType=='radio_last_hour'){
+                _hour = \$("#hours-menu option:selected").val();
+                endDatetime= new Date();
+                endDatetime=endDatetime.format('yyyy-MM-dd hh:mm:ss')
+                startDatetime=addDate(endDatetime,parseInt('-'+_hour),'hour');
+            } else {
+                _startDatetime = \$("#start_datetime").val();
+                _endDatetime = \$("#end_datetime").val();
+                if (_startDatetime==""){
+                    \$("#start_datetime").focus()
+                    alert("开始日期不能为空");
+                }
+                
+                if (_endDatetime==""){
+                    \$("#end_datetime").focus()
+                    alert("结束日期不能为空");
+                }
+                
+                startDatetime =_startDatetime.replace('T'," ")+":00"
+                endDatetime = _endDatetime.replace('T'," ")+":00"
+                var dh = GetDateDiff(startDatetime,endDatetime,'hour')
+                if (dh<0) {
+                    alert('开始时间不能早于结束时间，请重新选择')
+                    return;
+                }
+            }
+            return [startDatetime,endDatetime]
+        }
+        //删除后，微信无法显示
+        function getMarkerIcon(name){   
+            if (name=="") {
+                name = "motor"
+            }
+            var icon= new qq.maps.MarkerImage(
+                "/static/img/map/"+name+".png",
+                new qq.maps.Size(31, 40),
+                new qq.maps.Point(0, 0),
+                new qq.maps.Point(16, 40)
+            )
+            return icon;
+        }
+        var jdksign  = $:jdksign;
+        wx.config({
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                appId:     jdksign['appid'] , // 必填，公众号的唯一标识
+                timestamp: jdksign['timestamp'], // 必填，生成签名的时间戳
+                nonceStr:  jdksign['nonceStr'], // 必填，生成签名的随机串
+                signature: jdksign['signature'],// 必填，签名，见附录1
+                jsApiList: ['onMenuShareAppMessage',
+                            'onMenuShareTimeline',
+                            "onMenuShareQQ",
+                            "onMenuShareWeibo",
+                            "onMenuShareQZone"] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            });
+            
+        wx.ready(function(){
+            $if sharePara.has_key("title"):
+                wx.onMenuShareTimeline({
+                    title  : '$sharePara["catchword"]', // 分享标题
+                    desc   : "$sharePara["advertising_word"]", // 分享描述
+                    link   : '$sharePara["show_url"]',   //分享链接
+                    imgUrl : '$sharePara["logo_url"]', // 分享图标
+                    type   : '', // 分享类型,music、video或link，不填默认为link
+                    dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                    success: function () {
+                        // 用户确认分享后执行的回调函数
+                        },
+                        cancel: function () { 
+                            // 用户取消分享后执行的回调函数
+                            //alert("取消了分享")
+                        }
+                });
+            $else:
+                wx.onMenuShareAppMessage({
+                    title  : '你的朋友 $sharePara["user"] 给你分享了1个设备，注意确认！', // 分享标题
+                    desc   : '$sharePara["advertising_word"]', // 分享描述
+                    link   : '$sharePara["share_url"]',   //分享链接
+                    imgUrl : '$sharePara["logo_url"]', // 分享图标
+                    type   : '', // 分享类型,music、video或link，不填默认为link
+                    dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                    success: function () {
+                        // 用户确认分享后执行的回调函数
+                        \$.post("/m/order",
+                        {
+                        act         :"GEN_SHARE_ORDER2",
+                        openid      :'$sharePara["openid"]',
+                        imei        :'$sharePara["imei"]',
+                        out_trade_no:'$sharePara["out_trade_no"]',
+                        share_url   :'$sharePara["share_url"]', 
+                        
+                        },
+                        function(data,status){
+                            if (data["result"]=="success") {
+                                window.location.href ='$sharePara["share_url"]&trusting=yes';
+                            }
+                        });
+                    },
+                    cancel: function () { 
+                        // 用户取消分享后执行的回调函数
+                        //alert("取消了分享")
+                    }
+                });
+            wx.onMenuShareTimeline({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQQ({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareWeibo({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQZone({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+        });         
+    <!-------------------------------------------固定框架-----修改开始位置--------------------------------------------------------------->            
+    </script>     
+    </head>
+
+    <body >
+    <!-- 当前位置展示 -->
+    <div data-role="page" id="CurrentPage" data-theme="a">
+       
+        <div data-role="header" >
+            $if sharePara["isOwner"]:
+                <a id="arm-select" href='' target="_blank"  data-role="button" data-icon="home"  data-iconpos="left">班车队</a>
+            <h1 id="arm-name" style="font-size:150%"></h1>
+            $if sharePara["isOwner"]:
+                <a href='/m/device?act=friend-manager&openid=$sharePara["openid"]&imei=$sharePara["imei"]' target="_blank" data-role="button" data-icon="grid"  data-iconpos="left">分享管理</a>
+        </div>
+        <!-------------------------------------------固定框架-----修改开始位置--------------------------------------------------------------->
+        
+        <div data-role="content" id="allmap" style="height:600px">	
+        </div>
+        <div data-role="footer" data-position="fixed" data-fullscreen="false" data-tap-toggle="false" style="position: fixed;">
+            <div id="arm-detail" style="font-size:100%">位置:</div>
+            <div data-role="navbar" >
+              <ul >
+                <li><a href='#history-time' style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-video">历史轨迹</a></li>
+                <li><a id='current-state' href='' style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-grid">上座状态</a></li>
+                $if sharePara["isOwner"]:
+                    <li><a id='about-bus' href='' style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-info">大巴信息</a></li>
+              </ul>
+            </div>
+        </div><!-- /footer -->
+    </div>
+    
+
+    
+    <!---历史时间监测--->
+    <div data-role="page" id="history-time" data-overlay-theme="a">
+        <div data-role="header">
+            <a id="back" href="#CurrentPage" data-role="button" data-icon="back"  data-iconpos="left">返回</a>
+            <h1 style="font-size:150%">设置回放时间段</h1>
+        </div><!-- /header --> 
+        <div role="main" class="ui-content">
+             <div class="ui-field-contain">
+                <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true"><legend>设置方式</legend>
+<input type="radio" name="radio-select" id="radio_last_hour" value="on" checked="checked" data-mini="false">
+<label for="radio_last_hour">最近过去的时间</label>
+<input type="radio" name="radio-select" id="radio_selfdefine" value="off">
+<label for="radio_selfdefine">自定义时间段</label></fieldset> </div><form id="hours-select"><select name="select-native-2" id="hours-menu" data-mini="false" width='100%'>
+                    <option value="3">3小时</option>
+                    <option value="6">6小时</option>
+                    <option value="9">9小时</option>
+                    <option value="12">12小时</option>
+                    <option value="15">15小时</option>
+                    <option value="18">18小时</option>
+                    <option value="21">21小时</option>
+                    <option value="24">24小时</option>
+                </select>
+            </form>
+            <div class="ui-grid-a" id="history-select" style="display: none;">             
+                <div  class="ui-block-a" ><div class="ui-bar ui-bar-e" style="text-align:center;height:25px; line-height:25px;overflow:hidden;">开始</div></div>
+                <div class="ui-block-b" >
+                    <input  id="start_datetime" type="datetime-local" data-clear-btn="true" name="datetime-4" value="">
+                </div>
+                <div  class="ui-block-a" ><div class="ui-bar ui-bar-e" style="text-align:center;height:25px; line-height:25px;overflow:hidden;">结束</div></div>
+                <div class="ui-block-b" >
+                    <input  id="end_datetime" type="datetime-local" data-clear-btn="true" name="datetime-4" value="">
+                </div> 
+            </div>
+        </div>        
+        <div data-role="footer" data-position="fixed">
+          <div data-role="navbar">
+            <ul> 
+              <li><a href='#HISTORY-TRACK' style="font-size:110%"  class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-camera">历史轨迹</a>
+              </li> 
+              <li><a href='#HISTORY-STAT' style="font-size:110%"  class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-grid">运行统计</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+    </div>
+    
+    <!---历史轨迹回放--->
+    <div data-role="page" id="HISTORY-TRACK">
+        <div data-role="header" data-position="fixed">
+        <!-------------------------------------------固定框架-------修改开始位置------------------------------------------------------------->
+             <a id="arm-select3" href='' target="_blank"  data-role="button" data-icon="eye"  data-iconpos="left">监测目标</a>
+                <h1 id="hist-arm-name" style="font-size:150%">历史轨迹回放</h1>
+        </div>
+        
+        <div data-role="content" id="history-map" style="height:600px">	
+        </div>
+        <div data-role="footer" data-position="fixed" data-fullscreen="false" data-tap-toggle="false" >
+            <span style='font-size:100%' id='history-desc'></span>
+            <div data-role="navbar">
+              <ul>
+                <li><a href="#HISTORY-STAT"  style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-camera">运行统计</a></li>
+                <li><a href="#history-time" style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-clock">重设时段</a>
+                <li><a href="#CurrentPage" style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-location">当前位置</a></li>
+              </ul>
+            </div>
+        </div><!-- /footer -->
+        
+    </div>
+    <!---运行统计信息--->
+    <div data-role="page" id="HISTORY-STAT" data-theme="a">
+       
+        <div data-role="header" >
+             <a id="arm-select1" href='' target="_blank"  data-role="button" data-icon="eye"  data-iconpos="left">监测目标</a>
+                <h1 id="histat-arm-name" style="font-size:150%">运行统计表</h1>
+        </div>
+        <!-------------------------------------------固定框架-----修改开始位置--------------------------------------------------------------->
+        
+        <div data-role="content" id="history-stat-cont" style="height:600px">
+            <p id='start-stat'></p>
+            <!--p id='end-stat'></p-->
+            <!--p id='long-stat'></p-->
+            <table width="100%" id='history-stat' border='1' cellpadding='0' cellspacing='0' style="text-align:center" >
+
+            </table>
+        </div>
+        <div data-role="footer" data-position="fixed" data-fullscreen="false" data-tap-toggle="false" style="position: fixed;">
+            <div data-role="navbar">
+              <ul style="font-size:100%">
+                <li><a href='#HISTORY-TRACK' style="font-size:100%"  class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-camera">历史轨迹</a></li>
+                <li><a href="#history-time" style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-clock">重设时段</a>
+                </li>
+                <li><a href='#CurrentPage' style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-location">当前位置</a></li>
+              </ul>
+            </div>
+        </div><!-- /footer -->
+        
+    </div>
+    </body>
+ </html>

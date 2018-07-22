@@ -1,0 +1,129 @@
+$def with (cfgPara,jdksign,fixPara)
+    <!doctype HTML>
+    <html>
+    <head>
+        <title id="title">入库测试监控</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.8">
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+    
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+        <style type="text/css"> 
+
+        div#device-info.ui-grid-a .ui-block-a { width: 40% }
+        div#device-info.ui-grid-a .ui-block-b { width: 60% }
+        div#share-group.ui-grid-a .ui-block-a { width: 40% }
+        div#share-group.ui-grid-a .ui-block-b { width: 60% } 
+        div#group-select.ui-grid-b .ui-block-a { width: 20% }
+        div#group-select.ui-grid-b .ui-block-b { width: 35% }
+        div#group-select.ui-grid-b .ui-block-c { width: 45% }        
+        </style>   
+    <style id="custom-size-flipswitch">
+        /* Custom indentations are needed because the length of custom labels differs from
+           the length of the standard labels */
+        .custom-size-flipswitch.ui-flipswitch .ui-btn.ui-flipswitch-on {
+        	text-indent: -6.9em;
+        }
+        .custom-size-flipswitch.ui-flipswitch .ui-flipswitch-off {
+        	text-indent: 0em;
+        }
+        /* Custom widths are needed because the length of custom labels differs from
+           the length of the standard labels */
+        .custom-size-flipswitch.ui-flipswitch {
+        	width: 8.875em;
+        }
+        .custom-size-flipswitch.ui-flipswitch.ui-flipswitch-active {
+        	padding-left: 7em;
+        	width: 1.875em;
+        }
+        @media (min-width: 28em) {
+        	/*Repeated from rule .ui-flipswitch above*/
+        	.ui-field-contain > label + .custom-size-flipswitch.ui-flipswitch {
+        		width: 1.875em;
+        	}
+        }
+	</style>        
+    </head>
+    
+    <script>
+        var cfgPara  =$:cfgPara;
+        var _openid  =cfgPara["openid"];
+        var jdksign  =$:jdksign;
+        var devs     = cfgPara['items'];
+        var _managers= cfgPara['mgr'];       
+        var deviceChecked=[];
+        \$(document).on("pagebeforeshow","#HomePage",function(e){ // 当进入页面二时
+            \$("#DeviceBack").attr("href",'/tianwangshouhu/m/person?act=HOME&openid='+_openid);
+            setInterval(function(){
+                   \$.post("/m/device",
+                   {
+                       act      :"ONLINE-TEST",
+                       openid   :'vk',
+                   },
+                   function(data,status){
+                       showGroupMember(data);
+                   });
+            },2000);
+            showGroupMember();
+            
+            
+            //显示小组所有成员列表
+            function showGroupMember(){
+                \$('#group-member').empty();
+                \$('#group-member').append('<tr style="text-align:center;Bgcolor:PowderBlue;"><th>&nbsp</th><th width="25%">IMEI</th><th width="25%">版本</th><th width="25%">最近上报</th><th width="20%">当前位置</th></tr>')
+                var grp = devs;
+                for(var j = 0;j<grp.length;j++)
+                {
+                    \$('#group-member').append(appendItem(j,"no"));
+                }
+            }        
+        });      
+         
+        function appendItem(i,fistType) {
+           var tr ="<tr>"
+           
+           if (fistType == "no"){
+              tr = tr+'<td>'+(i+1).toString()+'</td>';
+           } else {
+              tr = tr+'<td><input type="checkbox" name="checkbox-device"  id="checkbox-'+i.toString() +'" data-theme="b"></td>';
+           } 
+           
+           
+           tr = tr+"<td><a name='device' id='about-btn" + i.toString() +"' style='font-size:100%' href='#About' >"+devs[i]['imei']+"</a></td>";
+           tr = tr+"<td>"+devs[i]['ver']+"</td>"; 
+           tr = tr+"<td>"+devs[i]['last_time']+"</td>"; 
+           var addr;
+           if (devs[i]['addr'].length > 5) {
+               addr = devs[i]['addr'].slice(0,5)+"..";
+           } else {
+               addr = devs[i]['addr'];
+           }
+           tr = tr+"<td >"+addr+"</td>";
+           
+           tr = tr + "</tr>";
+           return tr;
+        } 
+                 
+    </script>
+    <body>
+        <div data-role="page" id="HomePage" style="background-color:#fffffff"  >
+            <div data-role="header" >
+                <!--a id="DeviceBack" href="" data-role="button" data-icon="back"  data-iconpos="left">管理中心</a-->
+                <h1 id="arm-name" style="font-size:100%">设备视图</h1>
+            </div>
+            <!--div role="main" class="ui-content"--> 
+                    <div id="bar-member" class="ui-content">
+                        <table width="100%" id='group-member'  border='1' cellspacing="0" style='font-size:100%;text-align:center'>
+                            
+                        </table>
+                    </div>                               
+
+        </div>  
+    </body>
+    </html>
+    
+    

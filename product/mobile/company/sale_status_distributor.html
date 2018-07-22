@@ -1,0 +1,41 @@
+$def with (cfgPara)
+    <!doctype HTML>
+    <html>
+    <head>
+        <title>销售情况统计</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.9">
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+    
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>        
+    </head>
+   
+    <body>
+    <div data-role="page" id="HomePage" data-theme="a">
+        <div data-role="header">
+            <a id="DeviceBack" href="/tianwangshouhu/m/person?act=manager-home&openid=$cfgPara['openid']" data-role="button" data-icon="back"  data-iconpos="left">公司运营管理</a>
+            <h1 style="font-size:100%">销售情况统计</h1>
+        </div><!-- /header -->
+            <strong>总共卖出:<font id="sum" style="color:red;font-size:120%">$cfgPara["sum"]</font>台</strong>
+            <table width="100%" border="1" cellspacing="0" cellpadding="0" style="text-align:center">
+            <caption>近3个月销售情况</caption>
+                <tr><th style="width:20%">&nbsp</th>
+                    $for devType in cfgPara["devType"]:
+                        <th>$devType</th>
+                </tr>
+                
+                $for month in cfgPara["stat"].keys():
+                    <tr><td>$month</td>
+                        $for devType in cfgPara["devType"]:
+                            <td><a href='/tianwangshouhu/m/person?act=sale-details&type=$cfgPara["stat"][month][devType]&month=$month&idCard=$cfgPara["idCard"]&openid=$cfgPara["openid"]'>$cfgPara["stat"][month][devType]</a></td>
+                    </tr>
+            </table>     
+    </div><!-- /page two -->    
+    </body>
+    </html>
+    
+    

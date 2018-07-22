@@ -1,0 +1,394 @@
+$def with (cfgPara,jdksign,sharePara)
+    <!doctype HTML>
+    <html>
+    <head>
+        <title id="title"></title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.9, minimum-scale=0.9, maximum-scale=0.9, user-scalable=no" />
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="/static/stylesheets/iwaiter.css" />        
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"  type="text/javascript" charset="utf-8"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+      
+    </head>
+    <style type="text/css">
+.table-b table {background:#D3D3D3}
+#customers tr.alt
+{
+background-color:#E0E0E0;
+}
+#customers tr
+{
+height:50px;
+}
+  
+    </style>
+ <style id="full-width-slider">
+         /* Hide the number input */
+        .full-width-slider input {
+            display: none;
+        }
+        .full-width-slider .ui-slider-track {
+            margin-left: 0px;
+        }
+ </style>
+    <script>
+        var cfgPara  = $:cfgPara;
+        var jdksign  = $:jdksign;
+        wx.config({
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                appId:     jdksign['appid'] , // 必填，公众号的唯一标识
+                timestamp: jdksign['timestamp'], // 必填，生成签名的时间戳
+                nonceStr:  jdksign['nonceStr'], // 必填，生成签名的随机串
+                signature: jdksign['signature'],// 必填，签名，见附录1
+                jsApiList: ['onMenuShareAppMessage',
+                            'onMenuShareTimeline',
+                            "onMenuShareQQ",
+                            "onMenuShareWeibo",
+                            "onMenuShareQZone"] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            });
+            
+        wx.ready(function(){
+            wx.onMenuShareAppMessage({
+                title  : '你的朋友 $sharePara["user"] 给你转让了1个设备，注意确认！', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["share_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                    \$.post("/tianwangshouhu/m/order",
+                    {
+                       act         :"GEN_TRANFER_ORDER",
+                       openid      :'$sharePara["openid"]',
+                       imei        :'$sharePara["imei"]',
+                       out_trade_no:'$sharePara["out_trade_no"]',
+                       share_url   :'$sharePara["share_url"]', 
+                       
+                    },
+                    function(data,status){
+                        if (data["result"]=="success") {
+                            window.location.href ='$sharePara["share_url"]&trusting=yes';
+                        }
+                    });
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareTimeline({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQQ({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareWeibo({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQZone({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+        }); 
+        \$(document).ready(function(){
+            \$('#title').html(cfgPara["title"])
+            \$('#new-name').attr("value",cfgPara['name']);
+            \$('#new-type').html(cfgPara['devType']);
+            \$('#new-imei').html(cfgPara['imei']);
+            \$('#new-phone').attr("value",cfgPara['phone']);
+            //\$("#back").attr("href","/m/bustrack?act=MINE_TRACK&openid="+cfgPara['openid']+"&imei="+cfgPara['imei']);
+            //\$("#security-page").attr("href","/security?act=home&openid="+cfgPara["openid"]+"&imei="+cfgPara["imei"]);
+            //\$("#share-page").attr("href","/m/device?act=friend-manager&openid="+cfgPara["openid"]+"&imei="+cfgPara["imei"]);
+            \$("#location-page").attr("href","/m/bustrack?act=MINE_TRACK&openid="+cfgPara["openid"]+"&imei="+cfgPara["imei"]+"&company_id="+cfgPara["company_id"]);
+            
+            \$("select option[value='"+cfgPara['seat_type']+"']").attr("select","selected");
+            //\$("#seat_type").selectmenu('refresh');
+            
+            \$("#new-name").change(function(e){
+                updateDevice("name-success");
+            })
+            \$("#new-phone").change(function(e){
+                updateDevice("sim-success");
+            })
+            \$("#seat_type").change(function(e){
+                updateDevice("sim-success");
+            })
+            var arm_types = new Array("motor","car","bus","child","older","camera");
+            var arm_type  = cfgPara["arm_type"];//设定初始类型
+            
+            var arm_index;//确定类型所在顺序
+            for (var i = 0;i<arm_types.length;i++) {
+                if (arm_types[i]==arm_type){
+                    arm_index = i;
+                }
+            }
+            //var arm_index = arm_types.indexof(arm_type)
+            armTypeChange("no_waitting",arm_type);
+            \$("#arm_type_list").click(function(e){
+                armTypeChange("yes","")
+            })
+            \$("#arm_type").click(function(e){
+                armTypeChange("yes","")
+            })
+            //延迟5秒钟更新类型，以便用户有时间进行选择
+            var waitTime=50000; //10 秒 
+            function OnTimer(){ 
+                waitTime=waitTime-1000; 
+                if(waitTime==0){ 
+                    updateDevice("arm-success"); 
+                }
+            }            
+            function armTypeChange(waiting,type) {
+                \$("#arm_type").addClass("ui-icon-edit");
+                var next_type;
+                if (type=="") {//没有设定初始类型
+                    arm_index=(arm_index+1)%arm_types.length
+                    next_type = arm_types[arm_index]
+                    arm_type  = next_type
+                } else {
+                    next_type = type
+                }
+                
+                \$("#arm_type_list").empty();
+                for(var i =0;i<arm_types.length;i++) {
+                    if (i!=arm_index){
+                       \$("#arm_type_list").append('<td><img id="arm_type" width="20" height="20" src="/static/img/'+arm_types[i]+'.png"></td>') 
+                    }
+                }
+                \$("#arm_type").attr("src","/static/img/"+next_type+".png")
+                
+                if (waiting=="yes") {
+                    waitTime=5000;//2秒后更新
+                    timer=setInterval(OnTimer,1000);
+                }
+            }
+            
+            
+   
+            
+            function updateDevice(name){
+                \$.post("/m/device",
+                    {
+                        act      :"UPDATE-DEVICE",
+                        openid   :cfgPara["openid"],
+                        imei     :cfgPara["imei"],
+                        busline_id:cfgPara["busline_id"],
+                        grpName  :cfgPara["grpName"],
+                        distributor_id:cfgPara["distributor_id"],
+                        arm_type :arm_type,
+                        name     :\$("#new-name").val(),
+                        phone    :\$("#new-phone").val(),
+                        seat_type :\$("#seat_type").val(),
+                    },
+                    function(data,status){
+                        \$("#"+name).addClass("ui-icon-refresh");
+                })
+            }
+        })
+        
+    </script>
+
+    <body>
+        <div data-role="page" id="HomePage"  >
+            <div data-role="header">
+                <a id="location-page" href="" target="_blank"  data-role="button" data-icon="location"  data-iconpos="right">当前位置</a><h1>大巴车信息管理</h1>
+            </div>
+            <div role="main" class="ui-content"> 
+                <table cellspacing="0" cellpadding="0" id="customers">
+                    <tr class="alt"> 
+                        <td width="30%"> <strong>名称</strong></td>
+                        <td colspan="2">
+                            <input type="text" data-clear-btn="false" data-mini="true"  name="number-4" id="new-name" value="" >
+                        </td>
+                        <td width="2%" style="text-align:center" ><a id="name-success" data-mini="true"  class="ui-btn ui-icon-edit ui-btn-icon-notext"></a></td>
+                    </tr>
+                    <!--
+                    <tr > 
+                        <td width="30%"> <strong>类型</strong></td>
+                        <td><img id="arm_type" width="40" height="40" src="/static/img/motor.png"></td>
+                        <td>
+                            <table id="arm_type_list" style="align:buttom"></table>    
+                        </td>
+                        <td>
+                            <a id="arm-success" data-mini="true"  class="ui-btn ui-icon-edit ui-btn-icon-notext"></a>
+                        </td>
+                    </tr>
+                    -->
+                    <tr > 
+                        <td><strong>IMEI</strong></td>
+                        <td colspan="3" id="new-imei"></td>
+                    </tr>
+
+                    <!--tr > 
+                        <td><strong>设备型号</strong></td>
+                        <td id="new-type" colspan="3">
+                            -
+                        </td>
+                    </tr-->
+                    <tr class="alt"> 
+                        <td><strong>GPS SIM卡号</strong></td>
+                        <td colspan="2">
+                            <input type="tel" data-clear-btn="false" data-mini="true"  name="number-4" id="new-phone" value=""  placeholder="是设备的SIM卡号，不是自己手机号" >
+                        </td>
+                        <td width="2%" style="text-align:center" ><a id="sim-success" data-mini="true" class="ui-btn ui-icon-edit ui-btn-icon-notext" ></a></td>
+                    </tr>
+                    <tr> 
+                        <td><div class="ui-bar ui-bar-a" style="text-align:left">坐卧类型</div></td>
+                        <td colspan="2">
+                            <select id="seat_type" > <!--data-role="slider"-->
+
+                                <option value="midbus"  style="font-size:50%;" $sharePara["sel"]["midbus"]>中巴</option>
+                                <option value="bed" style="font-size:50%;"   $sharePara["sel"]["bed"]>卧铺</option>
+                                <option value="test" style="font-size:50%;"  $sharePara["sel"]["test"]>内测</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <!--
+                    <tr> 
+                        <td rowspan="2"><div class="ui-bar ui-bar-a" style="text-align:left">SIM卡话费余额</div></td>
+                        <td>
+                            <input type="text" data-clear-btn="false" data-mini="true"  name="verify-code" id="verify-code" value=""  placeholder="验证码" >
+                        </td>
+                        <td><img src="http://wap.sn.10086.cn/servlet/CreateImage?width=70&height=21&1438217329655"></td>
+                        
+                        <td><a id="fee-query" data-mini="true" class="ui-btn" style="font-size:70%">查询</a></td>
+                    </tr>
+                    <tr> 
+                        <td>12.5元</td>
+                    </tr>
+                    -->
+                    <!--
+                    <tr> 
+                        <td><strong>经销商电子签</strong></td>
+                        <td id="distributor" style="text-align:center" colspan="3">
+                            <span style="font-size:120%;border:red solid thin;outline:#00ff00  thick;color:red;outline-width:3px;" id ="distributor-name"></span>
+                        </td>
+                        <!--td><a id="scan-distributor" data-mini="true" class="ui-btn ui-icon-camera ui-btn-icon-notext" style="display:block">No text</a></td-->
+                    </tr-->
+                    </table>
+                    <!--table cellspacing="0" cellpadding="0" width="100%" style="background-color:#E0E0E0">
+                        <tr> 
+                        <td rowspan="2" width="25%"><strong>服务期限</strong></td>
+                        <td id="new-service-start" style= "text-align:left" >
+                            &nbsp
+                        </td>
+                        <td style= "text-align:center">
+                            <img src="/static/img/to.png">
+                        </td>
+                        <td id="new-service-end" style= "text-align:right">
+                            &nbsp
+                        </td>
+                        </tr>
+                        <tr><td colspan="3">
+                            <div class="full-width-slider"><input type="range"  name="service_days" id="service_days" disabled="disabled" data-highlight="true" min="1" data-mini="true"  max="366" value="0" >
+                        </td></tr>
+                    
+                    </table-->
+                    <!--table cellspacing="0" cellpadding="0" id="customers">
+                    
+                    <tr > 
+                        <td rowspan="1" width="25%"><strong>服务充值</strong></td>
+                        <td id="new-service-end" colspan="2"  style="text-align:left"><div class="full-width-slider"><input type="range"  name="slider-12" id="service-slider" data-highlight="true" min="1" max="12" value="10" ></div>
+                            <div><span style="font-size:75%;">服务期限:</span><strong id="service_time" style="font-size:100%;color:red">10个月</strong><span style="font-size:75%;">,服务费用:</span><strong id="service_fee"  style="font-size:100%;color:red">150</strong><span style="font-size:80%;">元</span></div>
+                            <div><span style="font-size:75%;">慧特币:</span><strong id="iwaiter_money" style="font-size:100%;color:red">50</strong><span style="font-size:75%;">,支付:</span><strong id="iwaiter_pay"  style="font-size:100%;color:red">50</strong><span style="font-size:75%;">,现金支付:</span><strong id="cash_pay"  style="font-size:100%;color:red"></strong><span style="font-size:80%;">元</span></div>
+                        </td>
+                        <td width="2%" style="text-align:center" ><button class="ui-btn ui-btn-inline ui-corner-all" style="font-size:100%;hight:70px">支付</button></td>
+                    </tr>
+                    <tr class="alt"> 
+                        <td><strong>设备转让</strong></td>
+                        <td colspan="3" style="text-align:center"><a  href="#share-friend"  data-rel="popup" data-position-to="window" style="font-size:100%"  class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-inline" data-transition="fade" aria-haspopup="true" aria-owns="popupPhotoPortrait" aria-expanded="false">选择受让方</a></td>
+                    </tr-->                     
+                    
+                    <!--tr id="tr-owner" style="display:none"> 
+                    <td><div class="ui-bar ui-bar-a" style="text-align:left">设备主人</div></td>
+                    <td id="new-owner" colspan="2">
+                        -
+                    </td>
+                    </tr>
+                    <tr id="tr-group" style="display:none">
+                        <td><input type="checkbox" data-role="flipswitch" name="new-group-name" id="new-group-name" data-on-text="选择已有组名" data-off-text="自定义组名" data-wrapper-class="custom-size-flipswitch"></td>
+                                
+                        <td colspan="2">
+                                <form id="new-group-sel-form" style="display: none;">
+                                    <select name="dev-group" id="new-group-select" data-mini="true"  width='100%' >
+                                    </select> 
+                                </form>
+                                <input type="text" data-clear-btn="true" name="text-3" id="new-group-input" value="未分组" >   
+                        </td>
+                    </tr>
+                </table-->
+                    
+               
+            </div><!-- /content --> 
+            <div data-role="popup" id="share-friend" class="photopopup" data-overlay-theme="a" data-corners="false" data-tolerance="30,15">
+                <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a><img src="/static/img/weixin_share_friend.png" alt="Photo portrait">
+            </div>
+            <!--
+            <div data-role="footer" data-position="fixed" data-fullscreen="false" data-tap-toggle="false" >
+                <span style='font-size:80%' id='history-desc'></span>
+                <div data-role="navbar">
+                    <ul>
+                        <li><a id="security-page" href=""  target="_blank" style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-camera">双向防盗</a></li>
+                        <li><a id="share-page" href=""   target="_blank" style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-clock">分享管理</a></li>
+                        
+                        <li><a id="location-page" href=""    target="_blank" style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-location">当前位置</a></li>
+                    </ul>
+                </div>
+            </div>
+            -->
+        </div>        
+    </body>
+    </html>
+    
+    

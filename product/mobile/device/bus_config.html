@@ -1,0 +1,719 @@
+$def with (cfgPara,jdksign,sharePara)
+    <!doctype HTML>
+    <html>
+    <head>
+        <title id="title"></title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.9, minimum-scale=0.9, maximum-scale=0.9, user-scalable=no" />
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="/static/stylesheets/iwaiter.css" />        
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"  type="text/javascript" charset="utf-8"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+      
+    </head>
+    <style type="text/css">
+.table-b table {background:#D3D3D3}
+
+#bed tr.alt
+{
+background-color:#E0E0E0;
+}
+#bed tr
+{
+height:50px;
+}
+#bed td {
+  height:40px;
+  text-align:center;
+}
+
+.s {
+font-size:70%;
+color    :red
+}
+.n {
+font-size:90%;
+color    :blue
+}
+.center {
+text-align:center
+}
+
+
+.channel {
+  height:20px;
+  text-align:center;
+}
+    </style>
+ <style id="full-width-slider">
+         /* Hide the number input */
+        .full-width-slider input {
+            display: none;
+        }
+        .full-width-slider .ui-slider-track {
+            margin-left: 0px;
+        }
+ </style>
+    <script>
+        var cfgPara  = $:cfgPara;
+        var jdksign  = $:jdksign;
+        wx.config({
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                appId:     jdksign['appid'] , // 必填，公众号的唯一标识
+                timestamp: jdksign['timestamp'], // 必填，生成签名的时间戳
+                nonceStr:  jdksign['nonceStr'], // 必填，生成签名的随机串
+                signature: jdksign['signature'],// 必填，签名，见附录1
+                jsApiList: ['onMenuShareAppMessage',
+                            'onMenuShareTimeline',
+                            "onMenuShareQQ",
+                            "onMenuShareWeibo",
+                            "onMenuShareQZone"] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            });
+            
+        wx.ready(function(){
+            wx.onMenuShareAppMessage({
+                title  : '你的朋友 $sharePara["user"] 给你转让了1个设备，注意确认！', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["share_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                    \$.post("/tianwangshouhu/m/order",
+                    {
+                       act         :"GEN_TRANFER_ORDER",
+                       openid      :'$sharePara["openid"]',
+                       imei        :'$sharePara["imei"]',
+                       out_trade_no:'$sharePara["out_trade_no"]',
+                       share_url   :'$sharePara["share_url"]', 
+                       
+                    },
+                    function(data,status){
+                        if (data["result"]=="success") {
+                            window.location.href ='$sharePara["share_url"]&trusting=yes';
+                        }
+                    });
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareTimeline({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQQ({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareWeibo({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQZone({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+        }); 
+        \$(document).ready(function(){
+            \$('#title').html(cfgPara["title"])
+            \$('#new-name').attr("value",cfgPara['name']);
+            \$('#seat_type').html(cfgPara['seat_type']);
+            \$('#new-imei').html(cfgPara['imei']);
+            \$('#new-phone').attr("value",cfgPara['phone']);
+            //\$("#back").attr("href","/m/bustrack?act=MINE_TRACK&openid="+cfgPara['openid']+"&imei="+cfgPara['imei']);
+            //\$("#security-page").attr("href","/security?act=home&openid="+cfgPara["openid"]+"&imei="+cfgPara["imei"]);
+            //\$("#share-page").attr("href","/m/device?act=friend-manager&openid="+cfgPara["openid"]+"&imei="+cfgPara["imei"]);
+            \$("#location-page").attr("href","/m/bustrack?act=MINE_TRACK&openid="+cfgPara["openid"]+"&imei="+cfgPara["imei"]+"&company_id="+cfgPara["company_id"]);
+            
+            \$("select option[value='"+cfgPara['seat_type']+"']").attr("select","selected");
+            \$("#"+\$("#seat_type  option:selected").val()).show()
+            
+            $if sharePara["manager"]!=None:
+                \$("#submit-relation").show()
+            //\$("#seat_type").selectmenu('refresh');
+            
+            \$("#new-name").change(function(e){
+                updateDevice("name-success");
+            })
+            \$("#seat_type").change(function(e){
+                bus_type = \$("#seat_type  option:selected").val();
+                seatTypes =["midbus","seat53","bed","seat39"]
+                for(var i =0;i<seatTypes.length;i++){
+                    if (seatTypes[i]==bus_type){
+                       \$("#"+seatTypes[i]).show() 
+                    } else {
+                        \$("#"+seatTypes[i]).hide()
+                    }
+                }
+                \$("#submit-relation").show()
+            })
+            \$("#new-phone").change(function(e){
+                updateDevice("sim-success");
+            })
+            //\$("#seat_type").change(function(e){
+            //    updateDevice("sim-success");
+            //})
+            var arm_types = new Array("motor","car","bus","child","older","camera");
+            var arm_type  = cfgPara["arm_type"];//设定初始类型
+            
+            //var arm_index;//确定类型所在顺序
+            //for (var i = 0;i<arm_types.length;i++) {
+            //    if (arm_types[i]==arm_type){
+            //        arm_index = i;
+            //    }
+            //}
+            ////var arm_index = arm_types.indexof(arm_type)
+            //armTypeChange("no_waitting",arm_type);
+            //\$("#arm_type_list").click(function(e){
+            //    armTypeChange("yes","")
+            //})
+            //
+            //\$("#arm_type").click(function(e){
+            //    armTypeChange("yes","")
+            //})
+            
+            var bus_type = cfgPara["seat_type"]
+            \$("#bed td").click(function(e){
+                config_sensor(e)
+            })
+            \$("#midbus td").click(function(e){
+                config_sensor(e)
+            })
+            \$("#seat53 td").click(function(e){
+                config_sensor(e)
+            })
+            \$("#seat39 td").click(function(e){
+                config_sensor(e)
+            })
+            \$("#submit-relation").click(function(e){
+                var confirmed=confirm("刷新后,原有座位关系将被更换！");
+                if (confirmed==false){return;}
+                var sum={"midbus":33,"bed":54,"seat53":60,"seat39":41}
+                var temp = [];
+                //获取座位信息
+                for(var i =1;i<sum[bus_type]+1;i++){
+                    temp.push(\$("#"+bus_type+"_sensor-"+i).html()+","+\$("#"+bus_type+"_name-"+i).html())
+                }
+                seats =temp.join(";");
+                \$.post("/m/device",
+                    {
+                        act      :"CFG-BUS-SEAT",
+                        seat_template :seats,
+                        seat_type:bus_type,
+                        openid   :cfgPara["openid"],
+                        imei     :cfgPara["imei"],
+                        
+                    },
+                    function(data,status){
+                        alert("更新成功！");
+                })
+            })
+            function config_sensor(e){
+                var temp = e.target.id.split("-")
+                var no = temp[1];
+                if (typeof(no)=="undefined"){
+                    return
+                }
+                bus_type =temp[0].split("_")[0] 
+                var sensor = "";
+                var name   =""
+                if (\$("#sensor-"+no).html()=="&nbsp;") {
+                    var temp=prompt("蓝牙,座位号","蓝牙编号,座位名称")
+                } else {
+                    var temp=prompt("蓝牙,座位号",\$("#"+bus_type+"_sensor-"+no).html()+","+\$("#"+bus_type+"_name-"+no).html())
+                }
+                
+                if (temp!=null && temp!=""){
+                    var arr = temp.split(",");
+                    if (arr.length==1){
+                        arr = temp.split("，") 
+                    }
+                    switch(arr.length) {
+                        case 2:
+                            sensor = arr[0];
+                            name   = arr[1];
+                            break;
+                        case 1:
+                            name   = temp;
+                            break;
+                        default:
+                            name   = "无效输入"
+                    }
+                    \$("#"+bus_type+"_sensor-"+no).html(sensor);
+                    \$("#"+bus_type+"_name-"+no).html(name);
+                }
+            }
+
+            //延迟5秒钟更新类型，以便用户有时间进行选择
+            var waitTime=50000; //10 秒 
+            function OnTimer(){ 
+                waitTime=waitTime-1000; 
+                if(waitTime==0){ 
+                    updateDevice("arm-success"); 
+                }
+            }            
+            //function armTypeChange(waiting,type) {
+            //    \$("#arm_type").addClass("ui-icon-edit");
+            //    var next_type;
+            //    if (type=="") {//没有设定初始类型
+            //        arm_index=(arm_index+1)%arm_types.length
+            //        next_type = arm_types[arm_index]
+            //        arm_type  = next_type
+            //    } else {
+            //        next_type = type
+            //    }
+            //    
+            //    \$("#arm_type_list").empty();
+            //    for(var i =0;i<arm_types.length;i++) {
+            //        if (i!=arm_index){
+            //           \$("#arm_type_list").append('<td><img id="arm_type" width="20" height="20" src="/static/img/'+arm_types[i]+'.png"></td>') 
+            //        }
+            //    }
+            //    \$("#arm_type").attr("src","/static/img/"+next_type+".png")
+            //    
+            //    if (waiting=="yes") {
+            //        waitTime=5000;//2秒后更新
+            //        timer=setInterval(OnTimer,1000);
+            //    }
+            //}
+            
+            function updateDevice(name){
+                \$.post("/m/device",
+                    {
+                        act      :"UPDATE-DEVICE",
+                        openid   :cfgPara["openid"],
+                        imei     :cfgPara["imei"],
+                        busline_id:cfgPara["busline_id"],
+                        grpName  :cfgPara["grpName"],
+                        distributor_id:cfgPara["distributor_id"],
+                        arm_type :arm_type,
+                        name     :\$("#new-name").val(),
+                        phone    :\$("#new-phone").val(),
+                        //seat_type :\$("#seat_type").val(),
+                    },
+                    function(data,status){
+                        \$("#"+name).addClass("ui-icon-refresh");
+                })
+            }
+        })
+        
+    </script>
+
+    <body>
+        <div data-role="page" id="HomePage"  >
+            <div data-role="header">
+                <a id="location-page" href="" target="_blank"  data-role="button" data-icon="location"  data-iconpos="right">当前位置</a><h1>大巴车信息管理</h1>
+            </div>
+            <div role="main" class="ui-content"> 
+                <table cellspacing="0" cellpadding="0" id="customers">
+                    <tr class="alt"> 
+                        <td width="30%"> <strong>名称</strong></td>
+                        <td colspan="2">
+                            <input type="text" data-clear-btn="false" data-mini="true"  name="number-4" id="new-name" value="" >
+                        </td>
+                        <td width="2%" style="text-align:center" ><a id="name-success" data-mini="true"  class="ui-btn ui-icon-edit ui-btn-icon-notext"></a></td>
+                    </tr>
+                    
+                    $if sharePara["manager"]!=None:
+                        <tr > 
+                            <td><strong>IMEI</strong></td>
+                            <td colspan="3" id="new-imei"></td>
+                        </tr>
+                        <tr > 
+                            <td><strong>座位类型</strong></td>
+                            <td colspan="3" id="seat_type"></td>
+                        </tr>
+                        <tr class="alt"> 
+                            <td><strong>GPS SIM卡号</strong></td>
+                            <td colspan="2">
+                                <input type="tel" data-clear-btn="false" data-mini="true"  name="number-4" id="new-phone" value=""  placeholder="是设备的SIM卡号，不是自己手机号" >
+                            </td>
+                            <td width="2%" style="text-align:center" ><a id="sim-success" data-mini="true" class="ui-btn ui-icon-edit ui-btn-icon-notext" ></a></td>
+                        </tr>
+                        <!--tr> 
+                            <td><div class="ui-bar ui-bar-a" style="text-align:left">坐卧类型</div></td>
+                            <td colspan="2">
+                                <select id="seat_type" > 
+                                    <option value="midbus"  style="font-size:50%;"  $sharePara["sel"]["midbus"]>中巴</option>
+                                    <option value="bed"     style="font-size:50%;"  $sharePara["sel"]["bed"]>卧铺</option>
+                                    <option value="seat53"  style="font-size:50%;"  $sharePara["sel"]["seat53"]>53座</option>
+                                    <option value="seat39"  style="font-size:50%;"  $sharePara["sel"]["seat39"]>39座</option>
+                                </select>
+                            </td>
+                        </tr-->
+                    </table>
+            </div><!-- /content --> 
+                <table id ="bed"  width="100%" border="1" class="seat center" cellspacing="0" cellpadding="5" style="font-size:90%;display:none" >
+                    <caption>双击建立传感器与座位关联</caption>
+                    <tr style="background-color: #C0C0C0">
+                        <td colspan="2" rowspan="2">驾驶室</td>
+                        <td colspan="4" >驾驶室</td>
+                        <td colspan="2" rowspan="2">车门</td>
+                    </tr>           
+                    <tr>
+                        <td id="bed_p-3"><span id="bed_sensor-3" class='s' >$sharePara["seat_t"][2][0]</span><span class="n"  id="bed_name-3">$sharePara["seat_t"][2][1]</span></td>
+                        <td id="bed_p-4"><span id="bed_sensor-4" class='s' >$sharePara["seat_t"][3][0]</span><span class="n"  id="bed_name-4">$sharePara["seat_t"][3][1]</span></td>
+                        <td id="bed_p-5"><span id="bed_sensor-5" class='s' >$sharePara["seat_t"][4][0]</span><span class="n"  id="bed_name-5">$sharePara["seat_t"][4][1]</span></td>
+                        <td id="bed_p-6"><span id="bed_sensor-6" class='s' >$sharePara["seat_t"][5][0]</span><span class="n"  id="bed_name-6">$sharePara["seat_t"][5][1]</span></td>
+                        
+                    </tr>                                            
+                    <tr><td id="bed_p-1"><span id="bed_sensor-1" class='s' >$sharePara["seat_t"][0][0]</span><span class="n"  id="bed_name-1">$sharePara["seat_t"][0][1]</span></td>
+                        <td id="bed_p-2"><span id="bed_sensor-2" class='s' >$sharePara["seat_t"][1][0]</span><span class="n"  id="bed_name-2">$sharePara["seat_t"][1][1]</span></td>
+                        <td rowspan="7" bgColor="#C0C0C0">过<br>道</td>
+                        <td id="bed_p-53" bgColor="#C0C0C0" ><span id="bed_sensor-53" class='s' >$sharePara["seat_t"][52][0]</span><span class="n"  id="bed_name-53">$sharePara["seat_t"][52][1]</span></td>
+                        <td id="bed_p-54" bgColor="#C0C0C0" ><span id="bed_sensor-54" class='s' >$sharePara["seat_t"][53][0]</span><span class="n"  id="bed_name-54">$sharePara["seat_t"][53][1]</span></td>
+                        <td rowspan="7" bgColor="#C0C0C0" >过<br>道</td>
+                        <td id="bed_p-7"><span id="bed_sensor-7" class='s' >$sharePara["seat_t"][6][0]</span><span class="n"  id="bed_name-7">$sharePara["seat_t"][6][1]</span></td>
+                        <td id="bed_p-8"><span id="bed_sensor-8" class='s' >$sharePara["seat_t"][7][0]</span><span class="n"  id="bed_name-8">$sharePara["seat_t"][7][1]</span></td>
+                    </tr> 
+                    <tr>
+                        <td id="bed_p-9" ><span id="bed_sensor-9" class='s' >$sharePara["seat_t"][8][0]</span>    <span class="n"  id="bed_name-9">$sharePara["seat_t"][8][1]</span></td>
+                        <td id="bed_p-10"><span id="bed_sensor-10" class='s' >$sharePara["seat_t"][9][0]</span><span class="n"  id="bed_name-10">$sharePara["seat_t"][9][1]</span></td>
+                        <td id="bed_p-11"><span id="bed_sensor-11" class='s' >$sharePara["seat_t"][10][0]</span><span class="n"  id="bed_name-11">$sharePara["seat_t"][10][1]</span></td>
+                        <td id="bed_p-12"><span id="bed_sensor-12" class='s' >$sharePara["seat_t"][11][0]</span><span class="n"  id="bed_name-12">$sharePara["seat_t"][11][1]</span></td>
+                        <td id="bed_p-13"><span id="bed_sensor-13" class='s' >$sharePara["seat_t"][12][0]</span><span class="n"  id="bed_name-13">$sharePara["seat_t"][12][1]</span></td>
+                        <td id="bed_p-14"><span id="bed_sensor-14" class='s' >$sharePara["seat_t"][13][0]</span><span class="n"  id="bed_name-14">$sharePara["seat_t"][13][1]</span></td>
+                    </tr>                    
+                    <tr>
+                        <td id="bed_p-15"><span id="bed_sensor-15" class='s' >$sharePara["seat_t"][14][0]</span><span class="n"  id="bed_name-15">$sharePara["seat_t"][14][1]</span></td>
+                        <td id="bed_p-16"><span id="bed_sensor-16" class='s' >$sharePara["seat_t"][15][0]</span><span class="n"  id="bed_name-16">$sharePara["seat_t"][15][1]</span></td>
+                        <td id="bed_p-17"><span id="bed_sensor-17" class='s' >$sharePara["seat_t"][16][0]</span><span class="n"  id="bed_name-17">$sharePara["seat_t"][16][1]</span></td>
+                        <td id="bed_p-18"><span id="bed_sensor-18" class='s' >$sharePara["seat_t"][17][0]</span><span class="n"  id="bed_name-18">$sharePara["seat_t"][17][1]</span></td>
+                        <td id="bed_p-19"><span id="bed_sensor-19" class='s' >$sharePara["seat_t"][18][0]</span><span class="n"  id="bed_name-19">$sharePara["seat_t"][18][1]</span></td>
+                        <td id="bed_p-20"><span id="bed_sensor-20" class='s' >$sharePara["seat_t"][19][0]</span><span class="n"  id="bed_name-20">$sharePara["seat_t"][19][1]</span></td>
+                    </tr>                                                                                                                         
+                    <tr>                                                                                                                          
+                        <td id="bed_p-21"><span id="bed_sensor-21" class='s' >$sharePara["seat_t"][20][0]</span><span class="n"  id="bed_name-21">$sharePara["seat_t"][20][1]</span></td>
+                        <td id="bed_p-22"><span id="bed_sensor-22" class='s' >$sharePara["seat_t"][21][0]</span><span class="n"  id="bed_name-22">$sharePara["seat_t"][21][1]</span></td>
+                        <td id="bed_p-23"><span id="bed_sensor-23" class='s' >$sharePara["seat_t"][22][0]</span><span class="n"  id="bed_name-23">$sharePara["seat_t"][22][1]</span></td>
+                        <td id="bed_p-24"><span id="bed_sensor-24" class='s' >$sharePara["seat_t"][23][0]</span><span class="n"  id="bed_name-24">$sharePara["seat_t"][23][1]</span></td>
+                        <td id="bed_p-25"><span id="bed_sensor-25" class='s' >$sharePara["seat_t"][24][0]</span><span class="n"  id="bed_name-25">$sharePara["seat_t"][24][1]</span></td>
+                        <td id="bed_p-26"><span id="bed_sensor-26" class='s' >$sharePara["seat_t"][25][0]</span><span class="n"  id="bed_name-26">$sharePara["seat_t"][25][1]</span></td>
+                    </tr>                                                                                                                         
+                    <tr>                                                                                                                          
+                        <td id="bed_p-27"><span id="bed_sensor-27" class='s' >$sharePara["seat_t"][26][0]</span><span class="n"  id="bed_name-27">$sharePara["seat_t"][26][1]</span></td>
+                        <td id="bed_p-28"><span id="bed_sensor-28" class='s' >$sharePara["seat_t"][27][0]</span><span class="n"  id="bed_name-28">$sharePara["seat_t"][27][1]</span></td>
+                        <td id="bed_p-29"><span id="bed_sensor-29" class='s' >$sharePara["seat_t"][28][0]</span><span class="n"  id="bed_name-29">$sharePara["seat_t"][28][1]</span></td>
+                        <td id="bed_p-30"><span id="bed_sensor-30" class='s' >$sharePara["seat_t"][29][0]</span><span class="n"  id="bed_name-30">$sharePara["seat_t"][29][1]</span></td>
+                        <td id="bed_p-31"><span id="bed_sensor-31" class='s' >$sharePara["seat_t"][30][0]</span><span class="n"  id="bed_name-31">$sharePara["seat_t"][30][1]</span></td>
+                        <td id="bed_p-32"><span id="bed_sensor-32" class='s' >$sharePara["seat_t"][31][0]</span><span class="n"  id="bed_name-32">$sharePara["seat_t"][31][1]</span></td>
+                    </tr>                                                                                                                                   
+                    <tr>                                                                                                                                    
+                        <td id="bed_p-33"><span id="bed_sensor-33" class='s' >$sharePara["seat_t"][32][0]</span><span class="n"  id="bed_name-33">$sharePara["seat_t"][32][1]</span></td>
+                        <td id="bed_p-34"><span id="bed_sensor-34" class='s' >$sharePara["seat_t"][33][0]</span><span class="n"  id="bed_name-34">$sharePara["seat_t"][33][1]</span></td>
+                        <td id="bed_p-35"><span id="bed_sensor-35" class='s' >$sharePara["seat_t"][34][0]</span><span class="n"  id="bed_name-35">$sharePara["seat_t"][34][1]</span></td>
+                        <td id="bed_p-36"><span id="bed_sensor-36" class='s' >$sharePara["seat_t"][35][0]</span><span class="n"  id="bed_name-36">$sharePara["seat_t"][35][1]</span></td>
+                        <td id="bed_p-37"><span id="bed_sensor-37" class='s' >$sharePara["seat_t"][36][0]</span><span class="n"  id="bed_name-37">$sharePara["seat_t"][36][1]</span></td>
+                        <td id="bed_p-38"><span id="bed_sensor-38" class='s' >$sharePara["seat_t"][37][0]</span><span class="n"  id="bed_name-38">$sharePara["seat_t"][37][1]</span></td>
+                    </tr>                                                                                                                         
+                    <tr>                                                                                                                                    
+                        <td id="bed_p-39"><span id="bed_sensor-39" class='s' >$sharePara["seat_t"][38][0]</span><span class="n"  id="bed_name-39">$sharePara["seat_t"][38][1]</span></td>
+                        <td id="bed_p-40"><span id="bed_sensor-40" class='s' >$sharePara["seat_t"][39][0]</span><span class="n"  id="bed_name-40">$sharePara["seat_t"][39][1]</span></td>
+                        <td id="bed_p-41"><span id="bed_sensor-41" class='s' >$sharePara["seat_t"][40][0]</span><span class="n"  id="bed_name-41">$sharePara["seat_t"][40][1]</span></td>
+                        <td id="bed_p-42"><span id="bed_sensor-42" class='s' >$sharePara["seat_t"][41][0]</span><span class="n"  id="bed_name-42">$sharePara["seat_t"][41][1]</span></td>
+                        <td id="bed_p-43"><span id="bed_sensor-43" class='s' >$sharePara["seat_t"][42][0]</span><span class="n"  id="bed_name-43">$sharePara["seat_t"][42][1]</span></td>
+                        <td id="bed_p-44"><span id="bed_sensor-44" class='s' >$sharePara["seat_t"][43][0]</span><span class="n"  id="bed_name-44">$sharePara["seat_t"][43][1]</span></td>
+                    </tr>                                                                                                                                                    
+                    <tr>                                                                                                                                                     
+                        <td id="bed_p-45"><span id="bed_sensor-45" class='s' >$sharePara["seat_t"][44][0]</span><span class="n"  id="bed_name-45">$sharePara["seat_t"][44][1]</span></td>
+                        <td id="bed_p-46"><span id="bed_sensor-46" class='s' >$sharePara["seat_t"][45][0]</span><span class="n"  id="bed_name-46">$sharePara["seat_t"][45][1]</span></td>
+                        <td id="bed_p-47"><span id="bed_sensor-47" class='s' >$sharePara["seat_t"][46][0]</span><span class="n"  id="bed_name-47">$sharePara["seat_t"][46][1]</span></td>
+                        <td id="bed_p-48"><span id="bed_sensor-48" class='s' >$sharePara["seat_t"][47][0]</span><span class="n"  id="bed_name-48">$sharePara["seat_t"][47][1]</span></td>
+                        <td id="bed_p-49"><span id="bed_sensor-49" class='s' >$sharePara["seat_t"][48][0]</span><span class="n"  id="bed_name-49">$sharePara["seat_t"][48][1]</span></td>
+                        <td id="bed_p-50"><span id="bed_sensor-50" class='s' >$sharePara["seat_t"][49][0]</span><span class="n"  id="bed_name-50">$sharePara["seat_t"][49][1]</span></td>
+                        <td id="bed_p-51"><span id="bed_sensor-51" class='s' >$sharePara["seat_t"][50][0]</span><span class="n"  id="bed_name-51">$sharePara["seat_t"][50][1]</span></td>
+                        <td id="bed_p-52"><span id="bed_sensor-52" class='s' >$sharePara["seat_t"][51][0]</span><span class="n"  id="bed_name-52">$sharePara["seat_t"][51][1]</span></td>
+                    </tr>
+                </table> 
+                <table id ="midbus"  width="100%" border="1" class="seat center" cellspacing="0" cellpadding="5" style="font-size:90%;display:none" >
+                    <caption>双击建立传感器与座位关联</caption>
+                    <tr style="background-color: #C0C0C0">
+                        <td colspan="3" rowspan="2" >驾驶室</td>
+                        <td id="midbus_p-31"><span id="midbus_sensor-31" class='s'>$sharePara["seat_t"][30][0]</span><span class="n"  id="midbus_name-31">$sharePara["seat_t"][30][1]</span></td>
+                        <td id="midbus_p-1"><span id="midbus_sensor-1" class='s'>  $sharePara["seat_t"][0][0] </span><span class="n"   id="midbus_name-1">$sharePara["seat_t"][0][1] </span></td>
+                    </tr>                                                                                                                                 
+                    <tr>                                                                                                                                  
+                        <td id="midbus_p-32"><span id="midbus_sensor-32" class='s'>$sharePara["seat_t"][31][0]</span><span class="n"  id="midbus_name-32">$sharePara["seat_t"][31][1]</span></td>
+                        <td id="midbus_p-33"><span id="midbus_sensor-33" class='s'>$sharePara["seat_t"][32][0]</span><span class="n"  id="midbus_name-33">$sharePara["seat_t"][32][1]</span></td>
+                   </tr>                                                                                                                                  
+                    <tr>                                                                                                                                  
+                        <td id="midbus_p-2"><span id="midbus_sensor-2" class='s'  >$sharePara["seat_t"][1][0] </span><span class="n"   id="midbus_name-2">$sharePara["seat_t"][1][1] </span></td>
+                        <td id="midbus_p-3"><span id="midbus_sensor-3" class='s'  >$sharePara["seat_t"][2][0] </span><span class="n"   id="midbus_name-3">$sharePara["seat_t"][2][1] </span></td>
+                        <td rowspan="6" bgColor="#C0C0C0">过<br>道</td>                                                                                                              
+                        <td id="midbus_p-4"><span id="midbus_sensor-4" class='s'  >$sharePara["seat_t"][3][0] </span><span class="n"   id="midbus_name-4">$sharePara["seat_t"][3][1] </span></td>
+                        <td id="midbus_p-5"><span id="midbus_sensor-5" class='s'  >$sharePara["seat_t"][4][0] </span><span class="n"   id="midbus_name-5">$sharePara["seat_t"][4][1] </span></td>
+                    </tr>                                                                                                                                                            
+                    <tr>                                                                                                                                                             
+                        <td id="midbus_p-6"><span id="midbus_sensor-6" class='s'  >$sharePara["seat_t"][5][0] </span><span class="n"   id="midbus_name-6">$sharePara["seat_t"][5][1] </span></td>
+                        <td id="midbus_p-7"><span id="midbus_sensor-7" class='s'  >$sharePara["seat_t"][6][0] </span><span class="n"   id="midbus_name-7">$sharePara["seat_t"][6][1] </span></td>
+                        <td id="midbus_p-8"><span id="midbus_sensor-8" class='s'  >$sharePara["seat_t"][7][0] </span><span class="n"   id="midbus_name-8">$sharePara["seat_t"][7][1] </span></td>
+                        <td id="midbus_p-9"><span id="midbus_sensor-9" class='s'  >$sharePara["seat_t"][8][0] </span><span class="n"   id="midbus_name-9">$sharePara["seat_t"][8][1] </span></td>
+                    </tr>                                                                                                                                 
+                    <tr>                                                                                                                                  
+                        <td id="midbus_p-10"><span id="midbus_sensor-10" class='s'>$sharePara["seat_t"][9][0] </span><span class="n"  id="midbus_name-10">$sharePara["seat_t"][9][1] </span></td>
+                        <td id="midbus_p-11"><span id="midbus_sensor-11" class='s'>$sharePara["seat_t"][10][0]</span><span class="n"  id="midbus_name-11">$sharePara["seat_t"][10][1]</span></td>
+                        <td id="midbus_p-12"><span id="midbus_sensor-12" class='s'>$sharePara["seat_t"][11][0]</span><span class="n"  id="midbus_name-12">$sharePara["seat_t"][11][1]</span></td>
+                        <td id="midbus_p-13"><span id="midbus_sensor-13" class='s'>$sharePara["seat_t"][12][0]</span><span class="n"  id="midbus_name-13">$sharePara["seat_t"][12][1]</span></td>
+                    </tr>                                                                                                                                                          
+                    <tr>                                                                                                                                                           
+                        <td id="midbus_p-14"><span id="midbus_sensor-14" class='s'>$sharePara["seat_t"][13][0]</span><span class="n"  id="midbus_name-14">$sharePara["seat_t"][13][1]</span></td>
+                        <td id="midbus_p-15"><span id="midbus_sensor-15" class='s'>$sharePara["seat_t"][14][0]</span><span class="n"  id="midbus_name-15">$sharePara["seat_t"][14][1]</span></td>
+                        <td id="midbus_p-16"><span id="midbus_sensor-16" class='s'>$sharePara["seat_t"][15][0]</span><span class="n"  id="midbus_name-16">$sharePara["seat_t"][15][1]</span></td>
+                        <td id="midbus_p-17"><span id="midbus_sensor-17" class='s'>$sharePara["seat_t"][16][0]</span><span class="n"  id="midbus_name-17">$sharePara["seat_t"][16][1]</span></td>
+                    </tr>                                                                                                                                                          
+                    <tr>                                                                                                                                                           
+                        <td id="midbus_p-18"><span id="midbus_sensor-18" class='s'>$sharePara["seat_t"][17][0]</span><span class="n"  id="midbus_name-18">$sharePara["seat_t"][17][1]</span></td>
+                        <td id="midbus_p-19"><span id="midbus_sensor-19" class='s'>$sharePara["seat_t"][18][0]</span><span class="n"  id="midbus_name-19">$sharePara["seat_t"][18][1]</span></td>
+                        <td id="midbus_p-20"><span id="midbus_sensor-20" class='s'>$sharePara["seat_t"][19][0]</span><span class="n"  id="midbus_name-20">$sharePara["seat_t"][19][1]</span></td>                                             
+                        <td id="midbus_p-21"><span id="midbus_sensor-21" class='s'>$sharePara["seat_t"][20][0]</span><span class="n"  id="midbus_name-21">$sharePara["seat_t"][20][1]</span></td>
+                    </tr>                                                                                                                                                          
+                    <tr>                                                                                                                                                           
+                        <td id="midbus_p-22"><span id="midbus_sensor-22" class='s'>$sharePara["seat_t"][21][0]</span><span class="n"  id="midbus_name-22">$sharePara["seat_t"][21][1]</span></td>
+                        <td id="midbus_p-23"><span id="midbus_sensor-23" class='s'>$sharePara["seat_t"][22][0]</span><span class="n"  id="midbus_name-23">$sharePara["seat_t"][22][1]</span></td>
+                        <td id="midbus_p-24"><span id="midbus_sensor-24" class='s'>$sharePara["seat_t"][23][0]</span><span class="n"  id="midbus_name-24">$sharePara["seat_t"][23][1]</span></td>
+                        <td id="midbus_p-25"><span id="midbus_sensor-25" class='s'>$sharePara["seat_t"][24][0]</span><span class="n"  id="midbus_name-25">$sharePara["seat_t"][24][1]</span></td>
+                    </tr>                                                                                                                                                          
+                    <tr>                                                                                                                                                           
+                        <td id="midbus_p-26"><span id="midbus_sensor-26" class='s'>$sharePara["seat_t"][25][0]</span><span class="n"  id="midbus_name-26">$sharePara["seat_t"][25][1]</span></td>                                              
+                        <td id="midbus_p-27"><span id="midbus_sensor-27" class='s'>$sharePara["seat_t"][26][0]</span><span class="n"  id="midbus_name-27">$sharePara["seat_t"][26][1]</span></td>
+                        <td id="midbus_p-28"><span id="midbus_sensor-28" class='s'>$sharePara["seat_t"][27][0]</span><span class="n"  id="midbus_name-28">$sharePara["seat_t"][27][1]</span></td>
+                        <td id="midbus_p-29"><span id="midbus_sensor-29" class='s'>$sharePara["seat_t"][28][0]</span><span class="n"  id="midbus_name-29">$sharePara["seat_t"][28][1]</span></td>
+                        <td id="midbus_p-30"><span id="midbus_sensor-30" class='s'>$sharePara["seat_t"][29][0]</span><span class="n"  id="midbus_name-30">$sharePara["seat_t"][29][1]</span></td>
+                    </tr>                                                               
+                </table>
+                <table id ="seat53"  width="100%" border="1" class="seat center" cellspacing="0" cellpadding="5" style="font-size:90%;display:none" >
+                    <caption>双击建立传感器与座位关联</caption>
+                    <tr style="background-color: #C0C0C0">
+                        <td colspan="2" >驾驶室</td>
+                        <td id="seat53_p-58"><span id="seat53_sensor-58" class='s' >$sharePara["seat_t"][57][0]</span><span class="n"  id="seat53_name-58">$sharePara["seat_t"][57][1]</span></td>
+                        <td id="seat53_p-59"><span id="seat53_sensor-59" class='s' >$sharePara["seat_t"][58][0]</span><span class="n"  id="seat53_name-59">$sharePara["seat_t"][58][1]</span></td>
+                        <td id="seat53_p-60"><span id="seat53_sensor-60" class='s' >$sharePara["seat_t"][59][0]</span><span class="n"  id="seat53_name-60">$sharePara["seat_t"][59][1]</span></td>
+                    </tr>                                                                                                                                                         
+                    <tr>                                                                                                                                   
+                        <td id="seat53_p-1"><span id="seat53_sensor-1"   class='s' >$sharePara["seat_t"][0][0] </span><span class="n"   id="seat53_name-1">$sharePara["seat_t"][0][1] </span></td>
+                        <td id="seat53_p-2"><span id="seat53_sensor-2"   class='s' >$sharePara["seat_t"][1][0] </span><span class="n"   id="seat53_name-2">$sharePara["seat_t"][1][1] </span></td>
+                        <td rowspan="13" bgColor="#C0C0C0">过<br>道</td>                                                                                                              
+                        <td id="seat53_p-3"><span id="seat53_sensor-3"   class='s' >$sharePara["seat_t"][2][0] </span><span class="n"   id="seat53_name-3">$sharePara["seat_t"][2][1] </span></td>
+                        <td id="seat53_p-4"><span id="seat53_sensor-4"   class='s' >$sharePara["seat_t"][3][0] </span><span class="n"   id="seat53_name-4">$sharePara["seat_t"][3][1] </span></td>
+                    </tr>                                                                                                                                                             
+                    <tr>                                                                                                                                                              
+                        <td id="seat53_p-5"><span id="seat53_sensor-5"   class='s' >$sharePara["seat_t"][4][0] </span><span class="n"   id="seat53_name-5">$sharePara["seat_t"][4][1] </span></td>              
+                        <td id="seat53_p-6"><span id="seat53_sensor-6"   class='s' >$sharePara["seat_t"][5][0] </span><span class="n"   id="seat53_name-6">$sharePara["seat_t"][5][1] </span></td>
+                        <td id="seat53_p-7"><span id="seat53_sensor-7"   class='s' >$sharePara["seat_t"][6][0] </span><span class="n"   id="seat53_name-7">$sharePara["seat_t"][6][1] </span></td>
+                        <td id="seat53_p-8"><span id="seat53_sensor-8"   class='s' >$sharePara["seat_t"][7][0] </span><span class="n"   id="seat53_name-8">$sharePara["seat_t"][7][1] </span></td>
+                    </tr>                                                                                                                                                             
+                    <tr>                                                                                                                                                              
+                        <td  id="seat53_p-9"><span id="seat53_sensor-9"  class='s' >$sharePara["seat_t"][8][0] </span><span  class="n"  id="seat53_name-9">$sharePara["seat_t"][8][1] </span></td>
+                        <td id="seat53_p-10"><span id="seat53_sensor-10" class='s' >$sharePara["seat_t"][9][0] </span><span class="n"  id="seat53_name-10">$sharePara["seat_t"][9][1] </span></td>
+                        <td id="seat53_p-11"><span id="seat53_sensor-11" class='s' >$sharePara["seat_t"][10][0]</span><span class="n"  id="seat53_name-11">$sharePara["seat_t"][10][1]</span></td>
+                        <td id="seat53_p-12"><span id="seat53_sensor-12" class='s' >$sharePara["seat_t"][11][0]</span><span class="n"  id="seat53_name-12">$sharePara["seat_t"][11][1]</span></td>
+                    </tr>                                                                                                                                  
+                    <tr>                                                                                                                                   
+                        <td id="seat53_p-13"><span id="seat53_sensor-13" class='s' >$sharePara["seat_t"][12][0]</span><span class="n"  id="seat53_name-13">$sharePara["seat_t"][12][1]</span></td>                                                                                    
+                        <td id="seat53_p-14"><span id="seat53_sensor-14" class='s' >$sharePara["seat_t"][13][0]</span><span class="n"  id="seat53_name-14">$sharePara["seat_t"][13][1]</span></td>
+                        <td id="seat53_p-15"><span id="seat53_sensor-15" class='s' >$sharePara["seat_t"][14][0]</span><span class="n"  id="seat53_name-15">$sharePara["seat_t"][14][1]</span></td>
+                        <td id="seat53_p-16"><span id="seat53_sensor-16" class='s' >$sharePara["seat_t"][15][0]</span><span class="n"  id="seat53_name-16">$sharePara["seat_t"][15][1]</span></td>
+                    </tr>                                                                                                                                  
+                    <tr>                                                                                                                                   
+                        <td id="seat53_p-17"><span id="seat53_sensor-17" class='s' >$sharePara["seat_t"][16][0]</span><span class="n"  id="seat53_name-17">$sharePara["seat_t"][16][1]</span></td>                                                                                    
+                        <td id="seat53_p-18"><span id="seat53_sensor-18" class='s' >$sharePara["seat_t"][17][0]</span><span class="n"  id="seat53_name-18">$sharePara["seat_t"][17][1]</span></td>
+                        <td id="seat53_p-19"><span id="seat53_sensor-19" class='s' >$sharePara["seat_t"][18][0]</span><span class="n"  id="seat53_name-19">$sharePara["seat_t"][18][1]</span></td>
+                        <td id="seat53_p-20"><span id="seat53_sensor-20" class='s' >$sharePara["seat_t"][19][0]</span><span class="n"  id="seat53_name-20">$sharePara["seat_t"][19][1]</span></td>                                             
+                    </tr>                                                                                                                                  
+                    <tr>                                                                                                                                   
+                        <td id="seat53_p-21"><span id="seat53_sensor-21" class='s' >$sharePara["seat_t"][20][0]</span><span class="n"  id="seat53_name-21">$sharePara["seat_t"][20][1]</span></td>                                                                                    
+                        <td id="seat53_p-22"><span id="seat53_sensor-22" class='s' >$sharePara["seat_t"][21][0]</span><span class="n"  id="seat53_name-22">$sharePara["seat_t"][21][1]</span></td>
+                        <td id="seat53_p-23"><span id="seat53_sensor-23" class='s' >$sharePara["seat_t"][22][0]</span><span class="n"  id="seat53_name-23">$sharePara["seat_t"][22][1]</span></td>
+                        <td id="seat53_p-24"><span id="seat53_sensor-24" class='s' >$sharePara["seat_t"][23][0]</span><span class="n"  id="seat53_name-24">$sharePara["seat_t"][23][1]</span></td>
+                    </tr>                                                                                                                                  
+                    <tr>                                                                                                                                   
+                        <td id="seat53_p-25"><span id="seat53_sensor-25" class='s' >$sharePara["seat_t"][24][0]</span><span class="n"  id="seat53_name-25">$sharePara["seat_t"][24][1]</span></td>                                                                                     
+                        <td id="seat53_p-26"><span id="seat53_sensor-26" class='s' >$sharePara["seat_t"][25][0]</span><span class="n"  id="seat53_name-26">$sharePara["seat_t"][25][1]</span></td>                                              
+                        <td id="seat53_p-27"><span id="seat53_sensor-27" class='s' >$sharePara["seat_t"][26][0]</span><span class="n"  id="seat53_name-27">$sharePara["seat_t"][26][1]</span></td>
+                        <td id="seat53_p-28"><span id="seat53_sensor-28" class='s' >$sharePara["seat_t"][27][0]</span><span class="n"  id="seat53_name-28">$sharePara["seat_t"][27][1]</span></td>
+                    </tr>                                                                                                                                  
+                    <tr>                                                                                                                                   
+                        <td id="seat53_p-29"><span id="seat53_sensor-29" class='s' >$sharePara["seat_t"][28][0]</span><span class="n"  id="seat53_name-29">$sharePara["seat_t"][28][1]</span></td>
+                        <td id="seat53_p-30"><span id="seat53_sensor-30" class='s' >$sharePara["seat_t"][29][0]</span><span class="n"  id="seat53_name-30">$sharePara["seat_t"][29][1]</span></td>
+                        <td id="seat53_p-31"><span id="seat53_sensor-31" class='s' >$sharePara["seat_t"][30][0]</span><span class="n"  id="seat53_name-31">$sharePara["seat_t"][30][1]</span></td>
+                        <td id="seat53_p-32"><span id="seat53_sensor-32" class='s' >$sharePara["seat_t"][31][0]</span><span class="n"  id="seat53_name-32">$sharePara["seat_t"][31][1]</span></td>
+                    </tr>                                                                                                                                  
+                    <tr>                                                                                                                                   
+                        <td id="seat53_p-33"><span id="seat53_sensor-33" class='s' >$sharePara["seat_t"][32][0]</span><span class="n"  id="seat53_name-33">$sharePara["seat_t"][32][1]</span></td>
+                        <td id="seat53_p-34"><span id="seat53_sensor-34" class='s' >$sharePara["seat_t"][33][0]</span><span class="n"  id="seat53_name-34">$sharePara["seat_t"][33][1]</span></td>
+                        <td id="seat53_p-35"><span id="seat53_sensor-35" class='s' >$sharePara["seat_t"][34][0]</span><span class="n"  id="seat53_name-35">$sharePara["seat_t"][34][1]</span></td>
+                        <td id="seat53_p-36"><span id="seat53_sensor-36" class='s' >$sharePara["seat_t"][35][0]</span><span class="n"  id="seat53_name-36">$sharePara["seat_t"][35][1]</span></td>
+                    </tr>                                                                                                                                                             
+                    <tr>                                                                                                                                                              
+                        <td id="seat53_p-37"><span id="seat53_sensor-37" class='s' >$sharePara["seat_t"][36][0]</span><span class="n"  id="seat53_name-37">$sharePara["seat_t"][36][1]</span></td>
+                        <td id="seat53_p-38"><span id="seat53_sensor-38" class='s' >$sharePara["seat_t"][37][0]</span><span class="n"  id="seat53_name-38">$sharePara["seat_t"][37][1]</span></td>
+                        <td id="seat53_p-39"><span id="seat53_sensor-39" class='s' >$sharePara["seat_t"][38][0]</span><span class="n"  id="seat53_name-39">$sharePara["seat_t"][38][1]</span></td>
+                        <td id="seat53_p-40"><span id="seat53_sensor-40" class='s' >$sharePara["seat_t"][39][0]</span><span class="n"  id="seat53_name-40">$sharePara["seat_t"][39][1]</span></td>
+                    </tr>                                                                                                                                                             
+                    <tr>                                                                                                                                                              
+                        <td id="seat53_p-41"><span id="seat53_sensor-41" class='s' >$sharePara["seat_t"][40][0]</span><span class="n"  id="seat53_name-41">$sharePara["seat_t"][40][1]</span></td>
+                        <td id="seat53_p-42"><span id="seat53_sensor-42" class='s' >$sharePara["seat_t"][41][0]</span><span class="n"  id="seat53_name-42">$sharePara["seat_t"][41][1]</span></td>
+                        <td id="seat53_p-43"><span id="seat53_sensor-43" class='s' >$sharePara["seat_t"][42][0]</span><span class="n"  id="seat53_name-43">$sharePara["seat_t"][42][1]</span></td>
+                        <td id="seat53_p-44"><span id="seat53_sensor-44" class='s' >$sharePara["seat_t"][43][0]</span><span class="n"  id="seat53_name-44">$sharePara["seat_t"][43][1]</span></td>
+                    </tr>                                                                                                                                                             
+                    <tr>                                                                                                                                                              
+                        <td id="seat53_p-45"><span id="seat53_sensor-45" class='s' >$sharePara["seat_t"][44][0]</span><span class="n"  id="seat53_name-45">$sharePara["seat_t"][44][1]</span></td>
+                        <td id="seat53_p-46"><span id="seat53_sensor-46" class='s' >$sharePara["seat_t"][45][0]</span><span class="n"  id="seat53_name-46">$sharePara["seat_t"][45][1]</span></td>
+                        <td id="seat53_p-47"><span id="seat53_sensor-47" class='s' >$sharePara["seat_t"][46][0]</span><span class="n"  id="seat53_name-47">$sharePara["seat_t"][46][1]</span></td>
+                        <td id="seat53_p-48"><span id="seat53_sensor-48" class='s' >$sharePara["seat_t"][47][0]</span><span class="n"  id="seat53_name-48">$sharePara["seat_t"][47][1]</span></td>
+                    </tr>                                                                                                                                                             
+                    <tr>                                                                                                                                                              
+                        <td id="seat53_p-49"><span id="seat53_sensor-49" class='s' >$sharePara["seat_t"][48][0]</span><span class="n"  id="seat53_name-49">$sharePara["seat_t"][48][1]</span></td>
+                        <td id="seat53_p-50"><span id="seat53_sensor-50" class='s' >$sharePara["seat_t"][49][0]</span><span class="n"  id="seat53_name-50">$sharePara["seat_t"][49][1]</span></td>
+                        <td id="seat53_p-51"><span id="seat53_sensor-51" class='s' >$sharePara["seat_t"][50][0]</span><span class="n"  id="seat53_name-51">$sharePara["seat_t"][50][1]</span></td>
+                        <td id="seat53_p-52"><span id="seat53_sensor-52" class='s' >$sharePara["seat_t"][51][0]</span><span class="n"  id="seat53_name-52">$sharePara["seat_t"][51][1]</span></td>
+                    </tr>                                                                                                                                  
+                    <tr>                                                                                                                                                              
+                        <td id="seat53_p-53"><span id="seat53_sensor-53" class='s' >$sharePara["seat_t"][52][0]</span><span class="n"  id="seat53_name-53">$sharePara["seat_t"][52][1]</span></td>
+                        <td id="seat53_p-54"><span id="seat53_sensor-54" class='s' >$sharePara["seat_t"][53][0]</span><span class="n"  id="seat53_name-54">$sharePara["seat_t"][53][1]</span></td>
+                        <td id="seat53_p-55"><span id="seat53_sensor-55" class='s' >$sharePara["seat_t"][54][0]</span><span class="n"  id="seat53_name-55">$sharePara["seat_t"][54][1]</span></td>
+                        <td id="seat53_p-56"><span id="seat53_sensor-56" class='s' >$sharePara["seat_t"][55][0]</span><span class="n"  id="seat53_name-56">$sharePara["seat_t"][55][1]</span></td>
+                        <td id="seat53_p-57"><span id="seat53_sensor-57" class='s' >$sharePara["seat_t"][56][0]</span><span class="n"  id="seat53_name-57">$sharePara["seat_t"][56][1]</span></td>
+                    </tr>                    
+                </table>
+                <table id ="seat39"  width="100%" border="1" class="seat center" cellspacing="0" cellpadding="5" style="font-size:90%;display:none" >
+                    <caption>双击建立传感器与座位关联</caption>
+                    <tr style="background-color: #C0C0C0">
+                        <td colspan="2" rowspan="2" >驾驶座</td>
+                        <td rowspan="10" bgColor="#C0C0C0">过<br>道</td> 
+                        <td id="seat39_p-38"><span id="seat39_sensor-38" class='s' >$sharePara["seat_t"][37][0]</span><span class="n"  id="seat39_name-38">$sharePara["seat_t"][37][1] </span></td>
+                        <td id="seat39_p-39"><span id="seat39_sensor-39" class='s' >$sharePara["seat_t"][38][0]</span><span class="n"  id="seat39_name-39">$sharePara["seat_t"][38][1] </span></td>
+                    </tr>                                                                                                                                  
+                    <tr>                                                                                                                                   
+                                                                                                                                                           
+                        <td id="seat39_p-3"><span id="seat39_sensor-3"   class='s' >$sharePara["seat_t"][2][0] </span><span class="n"   id="seat39_name-3">$sharePara["seat_t"][2][1]  </span></td>
+                        <td id="seat39_p-4"><span id="seat39_sensor-4"   class='s' >$sharePara["seat_t"][3][0] </span><span class="n"   id="seat39_name-4">$sharePara["seat_t"][3][1]  </span></td>
+                    </tr>                                                                                                                                                             
+                    <tr>                                                                                                                                                              
+                        <td id="seat39_p-1"><span id="seat39_sensor-1"   class='s' >$sharePara["seat_t"][0][0] </span><span class="n"   id="seat39_name-1">$sharePara["seat_t"][0][1]  </span></td>
+                        <td id="seat39_p-2"><span id="seat39_sensor-2"   class='s' >$sharePara["seat_t"][1][0] </span><span class="n"   id="seat39_name-2">$sharePara["seat_t"][1][1]  </span></td>
+                        <td id="seat39_p-7"><span id="seat39_sensor-7"   class='s' >$sharePara["seat_t"][6][0] </span><span class="n"   id="seat39_name-7">$sharePara["seat_t"][6][1]  </span></td>
+                        <td id="seat39_p-8"><span id="seat39_sensor-8"   class='s' >$sharePara["seat_t"][7][0] </span><span class="n"   id="seat39_name-8">$sharePara["seat_t"][7][1]  </span></td>
+                    </tr>                                                                                                                                  
+                    <tr>                                                                                                                                   
+                                                                                                                                                           
+                        <td id="seat39_p-5"><span id="seat39_sensor-5"   class='s' >$sharePara["seat_t"][5][0] </span><span class="n"   id="seat39_name-5">$sharePara["seat_t"][5][1] </span></td>              
+                        <td id="seat39_p-6"><span id="seat39_sensor-6"   class='s' >$sharePara["seat_t"][6][0] </span><span class="n"   id="seat39_name-6">$sharePara["seat_t"][6][1] </span></td>
+                        <td id="seat39_p-11"><span id="seat39_sensor-11" class='s' >$sharePara["seat_t"][11][0]</span><span class="n"  id="seat39_name-11">$sharePara["seat_t"][11][1]</span></td>
+                        <td id="seat39_p-12"><span id="seat39_sensor-12" class='s' >$sharePara["seat_t"][12][0]</span><span class="n"  id="seat39_name-12">$sharePara["seat_t"][12][1]</span></td>
+                    </tr>                                                                                                                                  
+                    <tr>                                                                                                                                   
+                                                                                                                                                           
+                        <td id="seat39_p-9" ><span id="seat39_sensor-9"  class='s' >$sharePara["seat_t"][9][0] </span><span  class="n"  id="seat39_name-9">$sharePara["seat_t"][9][1] </span></td>
+                        <td id="seat39_p-10"><span id="seat39_sensor-10" class='s' >$sharePara["seat_t"][10][0]</span><span class="n"  id="seat39_name-10">$sharePara["seat_t"][10][1]</span></td>
+                        <td id="seat39_p-15"><span id="seat39_sensor-15" class='s' >$sharePara["seat_t"][15][0]</span><span class="n"  id="seat39_name-15">$sharePara["seat_t"][15][1]</span></td>
+                        <td id="seat39_p-16"><span id="seat39_sensor-16" class='s' >$sharePara["seat_t"][16][0]</span><span class="n"  id="seat39_name-16">$sharePara["seat_t"][16][1]</span></td>
+                    </tr>                                                                                                                                  
+                    <tr>                                                                                                                                   
+                                                                                                                                                           
+                        <td id="seat39_p-13" ><span id="seat39_sensor-13" class='s'>$sharePara["seat_t"][13][0]</span><span class="n"  id="seat39_name-13">$sharePara["seat_t"][13][1]</span></td>                                                                                    
+                        <td id="seat39_p-14" ><span id="seat39_sensor-14" class='s'>$sharePara["seat_t"][14][0]</span><span class="n"  id="seat39_name-14">$sharePara["seat_t"][14][1]</span></td>
+                                                                                                                                                           
+                        <td id="seat39_p-40"><span id="seat39_sensor-40" class='s' >$sharePara["seat_t"][39][0]</span><span class="n"  id="seat39_name-40">$sharePara["seat_t"][39][1]</span></td>
+                        <td id="seat39_p-41"><span id="seat39_sensor-41" class='s' >$sharePara["seat_t"][40][0]</span><span class="n"  id="seat39_name-41">$sharePara["seat_t"][40][1]</span></td>                                             
+                    </tr>                                                                                                                                  
+                    <tr>                                                                                                                                   
+                        <td id="seat39_p-17"><span id="seat39_sensor-17" class='s' >$sharePara["seat_t"][16][0]</span><span class="n"  id="seat39_name-17">$sharePara["seat_t"][16][1]</span></td>                                                                                    
+                        <td id="seat39_p-18"><span id="seat39_sensor-18" class='s' >$sharePara["seat_t"][17][0]</span><span class="n"  id="seat39_name-18">$sharePara["seat_t"][17][1]</span></td>
+                        <td id="seat39_p-19"><span id="seat39_sensor-19" class='s' >$sharePara["seat_t"][18][0]</span><span class="n"  id="seat39_name-19">$sharePara["seat_t"][18][1]</span></td>
+                        <td id="seat39_p-20"><span id="seat39_sensor-20" class='s' >$sharePara["seat_t"][19][0]</span><span class="n"  id="seat39_name-20">$sharePara["seat_t"][19][1]</span></td>                                             
+                    </tr>                                                                                                                                  
+                    <tr>                                                                                                                                   
+                        <td id="seat39_p-21"><span id="seat39_sensor-21" class='s' >$sharePara["seat_t"][20][0]</span><span class="n"  id="seat39_name-21">$sharePara["seat_t"][20][1]</span></td>                                                                                    
+                        <td id="seat39_p-22"><span id="seat39_sensor-22" class='s' >$sharePara["seat_t"][21][0]</span><span class="n"  id="seat39_name-22">$sharePara["seat_t"][21][1]</span></td>
+                        <td id="seat39_p-23"><span id="seat39_sensor-23" class='s' >$sharePara["seat_t"][22][0]</span><span class="n"  id="seat39_name-23">$sharePara["seat_t"][22][1]</span></td>
+                        <td id="seat39_p-24"><span id="seat39_sensor-24" class='s' >$sharePara["seat_t"][23][0]</span><span class="n"  id="seat39_name-24">$sharePara["seat_t"][23][1]</span></td>
+                    </tr>                                                                                                                                  
+                    <tr>                                                                                                                                   
+                        <td id="seat39_p-25"><span id="seat39_sensor-25" class='s' >$sharePara["seat_t"][24][0]</span><span class="n"  id="seat39_name-25">$sharePara["seat_t"][24][1]</span></td>                                                                                     
+                        <td id="seat39_p-26"><span id="seat39_sensor-26" class='s' >$sharePara["seat_t"][25][0]</span><span class="n"  id="seat39_name-26">$sharePara["seat_t"][25][1]</span></td>                                              
+                        <td id="seat39_p-27"><span id="seat39_sensor-27" class='s' >$sharePara["seat_t"][26][0]</span><span class="n"  id="seat39_name-27">$sharePara["seat_t"][26][1]</span></td>
+                        <td id="seat39_p-28"><span id="seat39_sensor-28" class='s' >$sharePara["seat_t"][27][0]</span><span class="n"  id="seat39_name-28">$sharePara["seat_t"][27][1]</span></td>
+                    </tr>                                                                                                                                  
+                    <tr>                                                                                                                                   
+                        <td id="seat39_p-29"><span id="seat39_sensor-29" class='s' >$sharePara["seat_t"][28][0]</span><span class="n"  id="seat39_name-29">$sharePara["seat_t"][28][1]</span></td>
+                        <td id="seat39_p-30"><span id="seat39_sensor-30" class='s' >$sharePara["seat_t"][29][0]</span><span class="n"  id="seat39_name-30">$sharePara["seat_t"][29][1]</span></td>
+                        <td id="seat39_p-31"><span id="seat39_sensor-31" class='s' >$sharePara["seat_t"][30][0]</span><span class="n"  id="seat39_name-31">$sharePara["seat_t"][30][1]</span></td>
+                        <td id="seat39_p-32"><span id="seat39_sensor-32" class='s' >$sharePara["seat_t"][31][0]</span><span class="n"  id="seat39_name-32">$sharePara["seat_t"][31][1]</span></td>
+                    </tr>                                                                                                                                  
+                    <tr>                                                                                                                                   
+                        <td id="seat39_p-33"><span id="seat39_sensor-33" class='s' >$sharePara["seat_t"][32][0]</span><span class="n"  id="seat39_name-33">$sharePara["seat_t"][32][1]</span></td>
+                        <td id="seat39_p-34"><span id="seat39_sensor-34" class='s' >$sharePara["seat_t"][33][0]</span><span class="n"  id="seat39_name-34">$sharePara["seat_t"][33][1]</span></td>
+                        <td id="seat39_p-35"><span id="seat39_sensor-35" class='s' >$sharePara["seat_t"][34][0]</span><span class="n"  id="seat39_name-35">$sharePara["seat_t"][34][1]</span></td>
+                        <td id="seat39_p-36"><span id="seat39_sensor-36" class='s' >$sharePara["seat_t"][35][0]</span><span class="n"  id="seat39_name-36">$sharePara["seat_t"][35][1]</span></td>                                                                                                                                                                                                                 
+                        <td id="seat39_p-37"><span id="seat39_sensor-37" class='s' >$sharePara["seat_t"][36][0]</span><span class="n"  id="seat39_name-37">$sharePara["seat_t"][36][1]</span></td>                  
+                    <tr>
+                </table>
+                <!--button id="submit-relation" class="ui-btn ui-btn-inline" style="display:none">刷新关系表</button-->
+            <!--
+            <div data-role="footer" data-position="fixed" data-fullscreen="false" data-tap-toggle="false" >
+                <span style='font-size:80%' id='history-desc'>&nbsp</span>
+                <div data-role="navbar">
+                    <ul>
+                        <li><a id="security-page" href=""  target="_blank" style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-camera">双向防盗</a></li>
+                        <li><a id="share-page" href=""   target="_blank" style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-clock">分享管理</a></li>
+                        
+                        <li><a id="location-page" href=""    target="_blank" style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-location">当前位置</a></li>
+                    </ul>
+                </div>
+            </div>
+            -->
+        </div>        
+    </body>
+    </html>
+    
+    

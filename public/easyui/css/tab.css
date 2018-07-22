@@ -1,0 +1,21 @@
+.nav{width:760px;margin:0 auto;}
+.nav li{float:left;overflow:hidden;list-style-type:none;cursor:pointer;}
+.nav li a{width:80px;height:28px;display:block;text-decoration:none;background:url("navbtn.png") 0 0;cursor:pointer;}
+.nav li .a1{width:65px;background-position:0 0;}
+.nav li .a1:hover{background-position:0 -28px;}
+.nav li .a1.selected{background-position:0 -56px;}
+.nav li .a2{width:114px;background-position:-65px 0;}
+.nav li .a2:hover{background-position:-65px -28px;}
+.nav li .a2.selected{background-position:-65px -56px;}
+.nav li .a3{width:122px;background-position:-179px 0;}
+.nav li .a3:hover{background-position:-179px -28px;}
+.nav li .a3.selected{background-position:-179px -56px;}
+.nav li .a4{width:95px;background-position:-301px 0;}
+.nav li .a4:hover{background-position:-301px -28px;}
+.nav li .a4.selected{background-position:-301px -56px;}
+.nav li .a5{width:65px;background-position:-396px 0;}
+.nav li .a5:hover{background-position:-396px -28px;}
+.nav li .a5.selected{background-position:-396px -56px;}
+.nav li .a6{width:64px;background-position:-461px 0;}
+.nav li .a6:hover{background-position:-461px -28px;}
+.nav li .a6.selected{background-position:-461px -56px;}

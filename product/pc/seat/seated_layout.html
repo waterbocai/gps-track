@@ -1,0 +1,356 @@
+$def with (cfgPara,fixPara)
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>赛微，为智能客运而生</title>
+        <link rel="stylesheet" type="text/css" href="/easyui/jquery-easyui/themes/bootstrap/easyui.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/jquery-easyui/themes/icon.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/css/kube.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/css/main.css">
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.min.js"></script>
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.easyui.min.js"></script>
+        <script type="text/javascript" src="/easyui/script/tabify.js"></script>
+        <script type="text/javascript" src="/static/js/utility.js"></script>
+        <style type="text/css">
+            *{
+                margin:0px;
+                padding:0px;
+            }
+            button, input, select, textarea {
+                font: 12px/16px Verdana, Helvetica, Arial, sans-serif;
+            }
+            #container{
+                min-width:600px;
+                min-height:767px;
+            }
+        </style>
+        <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp"></script>
+    </head>
+    <body class="easyui-layout" >
+		<div id="header" class="group wrap header">
+			<div class="content">
+                <div class="navigation-toggle" data-tools="navigation-toggle" data-target="#navbar-1">
+                    <span>EasyUI</span>
+                </div>
+                <div id="elogo" class="navbar navbar-left">
+                    <ul>
+                        <li>
+                            <a href="http://www.iwaiter.cn"><img src="/static/img/tianwangshouhu/logo.png" alt="jQuery EasyUI"/></a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="navbar navbar-left" ><h3  id="company" style="color:#F0F0F0"></h3></div>
+                <div id="navbar-1" class="navbar navbar-right">
+                    <ul>
+                        $if fixPara["isMgr"]:
+                            <li><a id="nav-manager" href="#" target='_blank'>企业服务</a></li>
+                        <li ><a id="nav-seat" href="#" >座位计费</a></li>
+                        <li ><a id="nav-bus"  href="#" target='_blank'>车辆监控</a></li>
+                        <li ><a id="nav-login" href="/pc/user?act=login" target='_blank'>登录</a></li>
+                    </ul>
+                </div>
+                <div style="clear:both"></div>
+            </div>
+            <script type="text/javascript">
+                function setNav(){
+                    var demosubmenu = \$('#demo-submenu');
+                    if (demosubmenu.length){
+                        if (\$(window).width() < 450){
+                            demosubmenu.find('a:last').hide();
+                        } else {
+                            demosubmenu.find('a:last').show();
+                        }
+                    }
+                    if (\$(window).width() < 767){
+                        \$('.navigation-toggle').each(function(){
+                            \$(this).show();
+                            var target = \$(this).attr('data-target');
+                            \$(target).hide();
+                            setDemoNav();
+                        });
+                    } else {
+                        \$('.navigation-toggle').each(function(){
+                            \$(this).hide();
+                            var target = \$(this).attr('data-target');
+                            \$(target).show();
+                        });
+                    }
+                }
+                function setDemoNav(){
+                    \$('.navigation-toggle').each(function(){
+                        var target = \$(this).attr('data-target');
+                        if (target == '#navbar-demo'){
+                            if (\$(target).is(':visible')){
+                                \$(this).css('margin-bottom', 0);
+                            } else {
+                                \$(this).css('margin-bottom', '2.3em');
+                            }
+                        }
+                    });
+                }
+                \$(function(){
+                    setNav();
+                    \$(window).bind('resize', function(){
+                        setNav();
+                    });
+                    \$('.navigation-toggle').bind('click', function(){
+                        var target = \$(this).attr('data-target');
+                        \$(target).toggle();
+                        setDemoNav();
+                    });
+                })
+            </script>		
+        </div>
+        <div id="seat-layout">
+            <div class="easyui-layout" data-options="fit:true" style="width:100%;height:800px;">
+                <div data-options="region:'west',split:true"  title="统计参数"  style="width:280px;">
+                    <div class="easyui-layout" data-options="fit:true" style="width:100%;height:100%;">
+                        <!--div data-options="region:'north',split:false,border:true" style="height:60px">
+                            
+                        </div-->
+                        <div data-options="region:'center',split:true"  style="width:90%;height:200px;">
+                            <table title="统计日期" >
+                            <tr><td><strong>统计日期</strong></td><td style="padding:5px;text-align:center">
+                                <input id="dd" type="text" class="easyui-datebox" data-options="formatter:myformatter,parser:myparser" required="required" style="padding:5px;">
+                            </td></tr></table>
+                           
+                            
+                            <table id="dg" class="easyui-datagrid"  title="班车信息" style="width:100%;height:auto"
+                                    data-options="
+                                        singleSelect: true,
+                                        onClickRow: onClickBusLine,
+                                        onDblClickRow: onDblClickBusLine
+                                    ">
+                                <thead>
+                                    <tr>
+                                        <th data-options="field:'no',width:30">序号</th>
+                                        <th data-options="field:'from_name',width:80,align:'center',editor:'textbox'">起点</th>
+                                        <th data-options="field:'to_name',width:80,align:'center',editor:'textbox'">终点</th>
+                                        <th data-options="field:'mileage',width:100">全程(公里)</th>
+                                        <!--th data-options="field:'no',width:100">耗时(小时)</th-->
+                                    </tr>
+                                </thead>
+                            </table>
+                        
+                            <!--div id="tb" style="height:auto">
+                                <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="addLine()">添加</a>
+                                <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-remove',plain:true" onclick="removeLine()">删除</a>
+                                <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-undo',plain:true" onclick="price_design()">价格</a>
+        
+                            </div-->
+                        </div>
+                        <div data-options="region:'south',split:true" style="width:90%;height:60%;"> 
+                            <div data-options="region:'center',split:false,border:false">
+                                <table id="buses" class="easyui-datagrid" title="线路车队" style="width:100%;height:auto"
+                                        data-options="
+                                            singleSelect: true,
+                                            rownumbers:true,
+                                            onClickRow: onClickBus,
+                                            onDblClickRow:onDbClickBus,
+                                        ">
+                                    <thead>
+                                        <tr>
+                                            <th data-options="field:'name',align:'left'"  sortable="true" style="width:25%" sortable="true">名称</th>
+                                            <th data-options="field:'speed',align:'center'"  sortable="true" style="width:20%" sortable="true">速度</th>
+                                            <th data-options="field:'offline_days',align:'center'" sortable="true" style="width:20%" sortable="true">离线天数</th>
+                                            <th data-options="field:'expired_days',align:'center'" sortable="true"  style="width:25%" sortable="true">有效天数</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            
+                                <!--div id="bus-tb" style="height:auto">
+                                    <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-save',plain:true" onclick="history()">更新</a>
+                                </div-->                                   
+                            </div>
+                        </div>
+                       
+                    </div>
+                </div>
+                <div data-options="region:'center'" style="height:767px;width:auto;">
+                    <div id="tt" class="easyui-tabs" fit="true" border="false" plain="true">
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        <script type="text/javascript">
+            var cfgPara  = $:cfgPara;
+            var _markers =[];
+            var _bus_type="company_id";
+            var _sel_busline_id = -1;
+            var map;
+            var customAlarmDiv;
+            \$(document).ready(function () {
+                $if fixPara["isMgr"]:
+                    \$("#nav-manager").attr("href","/pc/manager?act=get-manager-center&openid="+cfgPara["openid"])
+                \$("#company").html(cfgPara["company"]["company"])
+                \$('#mytabs').tabify();
+                \$("#nav-bus").attr("href","/pc/monitor?act=car-online&openid="+cfgPara["openid"])
+                \$("#dg").datagrid("loadData",cfgPara["buslines"])
+                \$("#buses").datagrid("loadData",cfgPara["buses"])
+            });
+            
+
+              
+        </script>
+        <script type="text/javascript">
+            function myformatter(date){
+                var y = date.getFullYear();
+                var m = date.getMonth()+1;
+                var d = date.getDate();
+                return y+'-'+(m<10?('0'+m):m)+'-'+(d<10?('0'+d):d);
+            }
+            function myparser(s){
+                if (!s) return new Date();
+                var ss = (s.split('-'));
+                var y = parseInt(ss[0],10);
+                var m = parseInt(ss[1],10);
+                var d = parseInt(ss[2],10);
+                if (!isNaN(y) && !isNaN(m) && !isNaN(d)){
+                    return new Date(y,m-1,d);
+                } else {
+                    return new Date();
+                }
+            }
+        </script>
+        <script type="text/javascript">
+            var editIndex = undefined;
+            var bus;
+            function onClickBusLine(index){
+                getLineBus(cfgPara["buslines"]["rows"][index]["busgroupid"])
+                _bus_type  ="busline_id";
+                _bus_value =cfgPara["buslines"]["rows"][index]["id"];
+                _sel_busline_id = _bus_value;
+            }
+            
+            function onDblClickBusLine(index){
+                var busline_id = cfgPara["buslines"]["rows"][index]["id"];
+                
+            }
+            function getLineBus(busgroupid){
+                \$.post("/pc/monitor",
+                    {
+                        act       :"GET-LINEBUS",
+                        openid    :cfgPara["openid"],
+                        busgroupid:busgroupid,
+                    },
+                    function(data,status){
+                        \$("#buses").datagrid("loadData",data["buses"]);
+                })
+            }
+        </script>
+
+        <script id="buses-script">
+            
+            function onClickBus(index,row){
+                var imei = row["imei"];
+                
+                _bus_type  ="imei";
+                _bus_value =imei;
+                
+                var select_date = \$("#dd").datebox("getValue")
+                if (select_date==""){
+                    \$("#dd").focus();
+                    return
+                }
+                var href = '/pc/seat?act=get-bustravel&select_date='+select_date+'&imei='+imei+'&openid='+cfgPara["openid"];
+                addFunTab(href,"座位统计")
+            }
+            function onDbClickBus(index){
+                return
+                
+            }
+
+        </script>
+        <script id="tt-script">
+            function addFunTab(href,title){
+                if (\$('#tt').tabs('exists',title)){
+                    var tab = \$('#tt').tabs('close', title);
+                }
+                //var content = '<iframe scrolling="no" frameborder="0"  src="'+href+'" style="width:100%;height:100%;"></iframe>';  
+                
+                var content = '<iframe src="'+href+'"  id="iframe-devices" frameborder="0" scrolling="no" style="width:100%;height:100%;"></iframe>'
+
+                \$('#tt').tabs('add',{
+                    title:title,
+                    content:content,
+                    closable:true,
+                });
+            }
+            var _tab_title="当前位置";//记录当前显示的tab
+            var _tab_fired_locked =false;//避免陷入死循环，对原始促发进行标记
+            \$('#tt').tabs({
+                onSelect:function(title,index){
+                    //ajaxLoading();
+                    _tab_title = title;
+                    if(_tab_fired_locked){return;}
+                    switch(title){
+                        case "设备管理":
+                        case "用户管理":
+                            onGroupSeleted();
+                            break;
+                        case "历史轨迹":
+                            onHistorySelect();
+                            break;
+                        case "当前位置":
+                            showBusPostion();
+                            break;
+                        default:
+                            ;
+                    }
+                    
+                }
+            })
+            
+            function onHistorySelect() {
+                _tab_fired_locked = true
+                \$("#buses").datagrid("clearSelections")
+                \$("#buses").datagrid("selectRow",_dg_last_index)
+                var row =\$("#buses").datagrid("getSelected")
+                
+                from_time = \$("#from_time").val().replace('T'," ")+":00";
+                end_time = \$("#end_time").val().replace('T'," ")+":00";
+                addHistoryTab(row['imei'],row['name'],from_time,end_time)
+                _tab_fired_locked = false
+                //ajaxLoadEnd();
+            }
+            
+            //当选中设备时促发
+            function onBusSeleted(){
+                
+                _tab_fired_locked = true
+                switch(_tab_title) {
+                    case "历史轨迹":
+                        onHistorySelect()
+                        break;
+                    default://当前位置
+                        \$('#tt').tabs('select', "当前位置");
+                        showBusPostion();
+                }
+                _tab_fired_locked = false
+                //ajaxLoadEnd();
+            }
+            //当选中设备时促发
+            function onGroupSeleted(groupid){
+                _tab_fired_locked = true
+                switch(_tab_title) {
+                    case "用户管理":
+                        rightManageButton();
+                        break;
+                    case "设备管理":
+                        showDevicesTableButton();
+                        break;
+                    default://当前位置
+                        \$('#tt').tabs('select', "当前位置");
+                        reloadDgData(groupid);
+                }
+                _tab_fired_locked = false
+                //ajaxLoadEnd();
+            }
+        </script>
+        <script type="text/javascript" src="/easyui/datagrid-filter.js"></script>
+    </body>
+    </html>
+    

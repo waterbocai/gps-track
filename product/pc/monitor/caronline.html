@@ -1,0 +1,1194 @@
+$def with (cfgPara,fixPara)
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="keywords" content="gxsaiwei,saiwei,gps,座位检测">
+        <title>天网守护,车联网专家</title>
+        <link rel="stylesheet" type="text/css" href="/easyui/themes/bootstrap/easyui.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/themes/icon.css">
+        <!--link rel="stylesheet" type="text/css" href="/easyui/css/layout.css"-->
+        <link rel="stylesheet" type="text/css" href="/easyui/css/kube.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/css/main.css">
+        
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.min.js"></script>
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.easyui.min.js"></script>
+        <!--script type="text/javascript" src="/easyui/script/tabify.js"></script-->
+        <script type="text/javascript" src="/static/js/utility.js"></script>
+        <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp&key=I7UBZ-KAVAP-VQCDT-V6GG7-7NE5O-GVBBG"></script>
+        
+    </head>
+    <body class="easyui-layout" >
+        <div id="header" class="group wrap header">
+            <div class="content">
+                <div class="navigation-toggle" data-tools="navigation-toggle" data-target="#navbar-1">
+                    <span>天网守护</span>
+                </div>
+                <div id="elogo" class="navbar navbar-left">
+                    <ul>
+                        <li>
+                            <a href="http://www.iwaiter.cn"><img src="/static/img/tianwangshouhu/logo.png" alt="jQuery EasyUI"/></a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="navbar navbar-left" ><h3  id="company" style="color:#F0F0F0">深圳市慧特科技有限公司——"天网守护"车联网解决方案演示</h3></div>
+                <!--div id="navbar-1" class="navbar navbar-right">
+                    <ul>
+                        $if fixPara["isMgr"]:
+                            <!--li><a id="nav-manager" href="#" target='_blank'>企业服务</a></li>
+                        <li><a id="nav-seat" href="http://twsh2.iwaiter.cn/pc/monitor?act=car-online&openid=o1_UJj_xHN0QqWY0dLy8BQ1eMoU8&company_id=9"  target='_blank'>实际应用</a></li>
+                        <li><a id="nav-bus"  href="http://twsh2.iwaiter.cn/pc/monitor?act=car-online&openid=o1_UJj_xHN0QqWY0dLy8BQ1eMoU8&company_id=10" target='_blank'>演示中心</a></li>
+                        <!--li><a id="nav-login" href="/pc/user?act=login" target='_blank'>登录</a></li>
+                    </ul>
+                    <div id="login_container"> </div>
+                </div-->
+                <div style="clear:both"></div>
+            </div>
+            <script type="text/javascript">
+                function setNav(){
+                    var demosubmenu = \$('#demo-submenu');
+                    if (demosubmenu.length){
+                        if (\$(window).width() < 450){
+                            demosubmenu.find('a:last').hide();
+                        } else {
+                            demosubmenu.find('a:last').show();
+                        }
+                    }
+                    if (\$(window).width() < 767){
+                        \$('.navigation-toggle').each(function(){
+                            \$(this).show();
+                            var target = \$(this).attr('data-target');
+                            \$(target).hide();
+                            setDemoNav();
+                        });
+                    } else {
+                        \$('.navigation-toggle').each(function(){
+                            \$(this).hide();
+                            var target = \$(this).attr('data-target');
+                            \$(target).show();
+                        });
+                    }
+                }
+                function setDemoNav(){
+                    \$('.navigation-toggle').each(function(){
+                        var target = \$(this).attr('data-target');
+                        if (target == '#navbar-demo'){
+                            if (\$(target).is(':visible')){
+                                \$(this).css('margin-bottom', 0);
+                            } else {
+                                \$(this).css('margin-bottom', '2.3em');
+                            }
+                        }
+                    });
+                }
+                \$(function(){
+                    setNav();
+                    \$(window).bind('resize', function(){
+                        setNav();
+                    });
+                    \$('.navigation-toggle').bind('click', function(){
+                        var target = \$(this).attr('data-target');
+                        \$(target).toggle();
+                        setDemoNav();
+                    });
+                })
+            </script>        
+        </div>
+        <div class="easyui-layout" data-options="fit:true" style="width:100%;height:800px;">
+            <div data-options="region:'west',split:true" title="监管目标" style="width:330px;" >
+                <div data-options="region:'north',split:true"  style="width:100%;height:45%;">
+                    <table id="dg" class="easyui-datagrid" fit="true" title="班车线路" style="width:100%;height:auto"
+                            data-options="
+                                singleSelect: true,
+                                onClickRow: onClickBusLine,
+                                onDblClickRow: onDblClickBusLine,
+                                rownumbers:true,
+                        remoteSort:false,
+                                multiSort:true,
+                            ">
+                        <thead>
+                            <tr>
+                                <th data-options="field:'from_name',width:80,align:'center',editor:'textbox'" sortable="true">起点</th>
+                                <th data-options="field:'to_name',width:80,align:'center',editor:'textbox'" sortable="true">终点</th>
+                                <th data-options="field:'mileage',width:80" sortable="true">全程(公里)</th>
+                                <th data-options="field:'bus_num',width:80" sortable="true">大巴数</th>
+                                
+                                <!--th data-options="field:'no',width:100">耗时(小时)</th-->
+                            </tr>
+                        </thead>
+                    </table>
+                
+                    <div id="tb" style="height:auto">
+                        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="addLine()">添加</a>
+                        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-remove',plain:true" onclick="removeLine()">删除</a>
+                        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-undo',plain:true" onclick="price_design()">价格</a>
+        
+                    </div>
+                    <div id="dg-mm" class="easyui-menu" style="width:120px;">
+                        <div data-options="iconCls:'icon-add'" onclick="addLine()">添加线路</div>
+                        <div id="tb-del"  data-options="iconCls:'icon-remove'" onclick="removeLine()">删除线路</div>
+                        <div id="tb-del"  data-options="iconCls:'icon-pencil'" onclick="price_design()">价格规划</div>
+                        <!--div id="tb-travel"  data-options="iconCls:'icon-sum'" onclick="travel_stat()">运营统计</div-->
+                        <div id="dg-mm-devices"  data-options="iconCls:'icon-more'" onclick="showDevicesTableButton()">车辆管理</div>
+                        <div id="dg-mm-right"  data-options="iconCls:'icon-man'" onclick="rightManageButton()">线路管理</div>
+                    </div>
+                </div>
+                <div data-options="region:'center',split:true" style="width:100%;height:55%;position:relative;bottom:60px;">
+                    <table id="buses" class="easyui-datagrid" fit="true" title="线路车队" style="width:100%;height:auto;display:block"
+                            data-options="
+                                singleSelect: true,
+                                fit:true,
+                                rownumbers:true,
+                                remoteSort:false,
+                                multiSort:true,
+                            ",
+                            sortName='offline_days',sortOrder="asc"
+                            >
+                        <thead>
+                            <tr>
+                                <th data-options="field:'ck',checkbox:true"></th>
+                                <th data-options="field:'name',align:'left'"  sortable="true" style="width:25%" sortable="true">名称</th>
+                                <th data-options="field:'speed',align:'center'"  sortable="true" style="width:20%" sortable="true">速度</th>
+                                <th data-options="field:'offline_days',align:'center'" sortable="true" style="width:20%" sortable="true">离线天数</th>
+                                <th data-options="field:'expired_days',align:'center'" sortable="true"  style="width:25%" sortable="true">有效天数</th>
+                            </tr>
+                        </thead>
+                    </table>
+                    
+                    <div id="bus-mm" class="easyui-menu" style="height:auto">
+                        <div id="mm-travel"  data-options="iconCls:'icon-sum'" onclick="travel_stat()">运营统计</div>
+                    </div>
+                </div>
+            </div>
+            <div data-options="region:'center'" style="height:767px;width:auto;">
+                <div id="tt" class="easyui-tabs" fit="true" border="false" plain="true">
+                    <div title="当前位置" id="container">
+                        <p  style="margin-top:10px;"></p>
+                    </div>
+                    <!--div title="区间检测" id="container">
+                        <p style="margin-top:10px;"></p>
+                    </div>
+                    <div title="客车运营" id="container">
+                        <p  style="margin-top:10px;"></p>
+                    </div-->
+                </div>
+            </div>
+            
+        </div>
+        <div id="dlg-bus" class="easyui-dialog"  closed="true"   title="车辆信息" style="width:400px;height:400px;padding:10px;" data-options="
+                iconCls: 'icon-reload',
+                buttons: [{
+                    text:'保存',
+                    iconCls:'icon-ok',
+                    handler:function(){renewBusConfig()}
+                },{
+                    text:'取消',
+                    handler:function(){
+                        \$('#dlg-bus').dialog('close');
+                    }
+                }]
+            ">
+            <table id="tb-bus" class="easyui-propertygrid" style="width:100%" data-options="columns: mycolumns">
+            </table>
+        </div>
+        <div id="dev-group-select" class="easyui-dialog"  closed="true"   title="目标分组" style="width:340px;height:350px;padding:0px;" data-options="
+                iconCls: 'icon-reload',
+                autoOpen: false,
+                buttons: [{
+                    text:'确定',
+                    iconCls:'icon-ok',
+                    handler:function(){moveDev2GroupOK()}
+                },{
+                    text:'取消',
+                    handler:function(){
+                        closeMoveDev2GroupDlg();
+                    }
+                }]
+            ">
+            <div class="easyui-layout" data-options="fit:true" style="width:340px;height:auto;">
+                <div data-options="region:'center',split:true" title="经销商" fit="true" style="width:60%;height:auto;">
+                    <div class="easyui-panel" style="padding:5px;height:auto;">
+                        <ul id="tar-dist-tree" class="easyui-tree" data-options="
+                            lines:true,
+                            singleSelect: true,
+                            formatter:function(node){
+                                    var s = node.text;
+                                    if (node.children){
+                                        s += '&nbsp;<span style=\'color:blue\'>(' + node.children.length + ')</span>';
+                                    }
+                                    return s;
+                                }">
+                        </ul>
+                    </div>
+                </div>
+                <div data-options="region:'east',split:true"  style="width:50%;height:auto;">
+                    <table id="tar-dg" class="easyui-datagrid" fit="true" title="设备分组" style="width:40%;height:auto"
+                            data-options="
+                                singleSelect: true,
+                                rownumbers:true,
+                                onLoadSuccess:function(){
+                                    \$(this).datagrid('enableDnd');
+                                }
+                            ",
+                            sortName='num',sortOrder="desc">
+                            
+                        <thead>
+                            <tr>
+                                <th data-options="field:'name',editor:'textbox'">名称</th>
+                                <th data-options="field:'num'"  sortable="true">数量</th>
+                                <!--th data-options="field:'no',width:100">耗时(小时)</th-->
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+            <div id="bus-camera" class="easyui-dialog" title="" style="width:1000px;height:620px;padding:5px"
+                 data-options="closed: true" >
+                <div id="camera-tabs" class="easyui-tabs" data-options="tabWidth:100,tabHeight:60" style="width:970px;height:560px">
+					<div id="bus-layout"  title="<span class='tt-inner'><img src='/static/img/seat.png'/><br>座位状态</span>"   style="padding:10px" >
+                    <p>正在获取车位布局，请耐心等候...</p>
+                    </div>
+                    <div  title="<span class='tt-inner'><img src='/static/img/camera2.png'/><br>图片抓拍</span>" style="padding:10px">
+                      <p>正在获取车载图片，请耐心等候...</p>  
+                    </div>
+                    <div id="bus-video" title="<span class='tt-inner'><img src='/static/img/video.png'/><br>视频抓拍</span>" style="padding:10px">
+                        <p>正在获取车载视频，请耐心等候...</p>
+                    </div>
+                </div>
+                <style scoped="scoped">
+                    .tt-inner{
+                        display:inline-block;
+                        line-height:12px;
+                        padding-top:0px;
+                    }
+                    .tt-inner img{
+                        border:0;
+                    }
+                </style>
+                 <!--iframe src=""  id="iframe-camera" frameborder="0" scrolling="no" style="width:960px;height:540px;"></iframe-->
+                 
+            </div>
+        </div>
+
+        <script>
+            function renewBusConfig(){
+                var rows = \$('#tb-bus').propertygrid('getChanges');
+                var buscfg = bus["rows"] 
+                if(rows.length>=1){
+                    \$.post('/m/device',
+                    {
+                        act      :'UPDATE-DEVICE',
+                        openid   :cfgPara['openid'],
+                        imei     :buscfg[0]['value'],
+                        busline_id:_sel_busline_id,
+                        name     :buscfg[1]['value'],
+                        phone    :buscfg[2]['value'],
+                        seat_type:buscfg[5]['value'],
+                    },
+                    function(data,status){
+                        \$.messager.alert('提醒','更新成功！');;
+                        \$('#dlg-bus').datagrid("acceptChanges")
+                        \$('#dlg-bus').dialog('close');
+                    })
+                } else {
+                    \$('#dlg-bus').dialog('close');
+                }
+            } 
+            var mycolumns = [[
+                {field:'name',title:'属性',width:80,sortable:true},
+                {field:'value',title:'值',width:120,resizable:false}
+            ]];
+        </script>
+        <script type="text/javascript">
+            var cfgPara  = $:cfgPara;
+            var _markers =[],_mapInfoWin=[];
+            var _bus_type  ="openid";
+            var _bus_value = cfgPara["openid"];
+            var _sel_busline_id = -1;
+            var map,_lastMakerIndex = -1;
+            var _newcenter  = true;
+            var customAlarmDiv;
+            var _dg_last_index;//最后点击的设备row
+            var _dg_last_row;//最后点击的设备row
+            var _buses;
+            var wxobj;
+            var refreshCamera_time=0;//避免频繁点击事件
+            \$(document).ready(function () {
+                //\$("#company").html(cfgPara["company"]["company"])
+
+                \$("#nav-seat").attr("href","/pc/seat?act=get-layout&openid="+cfgPara["openid"]+"&company_id="+cfgPara["company"]["id"])
+                $if fixPara["isMgr"]:
+                    \$("#nav-manager").attr("href","/pc/manager?act=get-manager-center&openid="+cfgPara["openid"])
+                \$('#dlg-bus').dialog({ autoOpen: false });
+                \$('#iframepage2').attr("src","/pc/monitor?act=get-seat-layout&openid="+cfgPara["openid"])
+                
+                var center = getCenter(cfgPara["buses"]["locations"])
+                map = new qq.maps.Map(document.getElementById('container'),{
+                    center: center,
+                    zoom: 7,
+                    mapTypeControlOptions: {
+                        position: qq.maps.ControlPosition.TOP_CENTER    //设置地图控件位置靠近顶部
+                    }
+                });
+
+                //线路信息
+                customAlarmDiv = document.createElement("div");   
+                var customAlarmControl = new CustomAlarmControl(customAlarmDiv, map);
+                map.controls[qq.maps.ControlPosition.RIGHT_TOP].push(customAlarmDiv);
+                function CustomAlarmControl(controlDiv) {
+                    var endDatetime= new Date();
+                    var _hour = 15;
+                    startDatetime=addDate2(endDatetime,parseInt('-'+_hour),'hour');
+                    
+                    controlDiv.style.display = "none";
+                    controlDiv.style.backgroundColor = "#FFFFFF";
+                    controlDiv.style.border = "2px solid #86ACF2";
+                    controlDiv.innerHTML = '\
+                        <div>\
+                            <div style="padding:5px 5px 5px 5px"><strong>历史轨迹</strong></div>\
+                            <div style="padding:5px 5px 5px 5px">\
+                                <table cellspacing="10" border="0">\
+                                    <tr>\
+                                        <td>截止时间</td>\
+                                        <td><input type="datetime-local"  id = "end_time" value="'+endDatetime.format("yyyy-MM-ddThh:mm")+'" style="width:180px"></td>\
+                                    </tr>\
+                                    <tr>\
+                                        <td>开始时间</td>\
+                                        <td><input type="datetime-local" id = "from_time" value="'+startDatetime.format("yyyy-MM-ddThh:mm")+'" style="width:180px"></td>\
+                                    </tr>\
+                                    <tr>\
+                                        <td colspan="2" style="text-align:center"><button id="browser-history" >查看历史轨迹</button></td>\
+                                    </tr>\
+                                </table>\
+                            </div>\
+                        </div>\
+                    ';
+                    controlDiv.index = 1;//设置在当前布局中的位置
+     
+                    //\$("#end_time").val(endDatetime)
+                    //\$("#from_time").val(startDatetime)
+                    function update(e) {
+                        var src,dst;
+                        if (e.target.id!="browser-history") {
+                            return
+                        }
+                        if (historyTimeIsValid()) {
+                            var row =\$('#buses').datagrid('getSelected')
+                            from_time = \$("#from_time").val().replace('T'," ")+":00";
+                            end_time = \$("#end_time").val().replace('T'," ")+":00";
+                            addHistoryTab(row['imei'],row['name'],from_time,end_time)
+                        }
+                    }
+                    qq.maps.event.addDomListener(controlDiv, "click", update);
+                }
+
+                //线路信息
+                seatDiv = document.createElement("div");   
+                var seatControl = new SeatControl(seatDiv, map);
+                map.controls[qq.maps.ControlPosition.LEFT_BOTTOM].push(seatDiv);
+                function SeatControl(controlDiv) {
+                    controlDiv.style.backgroundColor = "#FFFFFF";
+                    controlDiv.style.border = "2px solid #86ACF2";
+                    controlDiv.innerHTML = '<div>现有乘客<strong id="seated_num">3</strong>人</div>';
+                    controlDiv.index = 1;//设置在当前布局中的位置
+     
+                    //\$("#end_time").val(endDatetime)
+                    //\$("#from_time").val(startDatetime)
+                    function update(e) {
+                        var src,dst;
+                        if (e.target.id!="browser-history") {
+                            return
+                        }
+                        if (historyTimeIsValid()) {
+                            var row =\$('#buses').datagrid('getSelected')
+                            from_time = \$("#from_time").val().replace('T'," ")+":00";
+                            end_time = \$("#end_time").val().replace('T'," ")+":00";
+                            addHistoryTab(row['imei'],row['name'],from_time,end_time)
+                        }
+                    }
+                    qq.maps.event.addDomListener(controlDiv, "click", update);
+                }
+                //检查时间的合法性
+                function historyTimeIsValid() {
+                    from_time = \$("#from_time").val();
+                    if (from_time==""){
+                        \$("#from_time").focus()
+                        return false
+                    } else {
+                        from_time =from_time.replace('T'," ")+":00"
+                    }
+                    
+                    end_time = \$("#end_time").val();
+                    if (end_time=="") {
+                        \$("#end_time").focus()
+                        return false
+                    } else {
+                        end_time = end_time.replace('T'," ")+":00"
+                    }
+                    var timediff = GetDateDiff(from_time,end_time,"minute")
+                    if (timediff<0) {
+                        \$("#from_time").focus()
+                        return false
+                    } else {
+                        return true
+                    }
+                    
+                }
+                busOnMap(cfgPara["buses"]["locations"]);
+                
+                \$("#dg").datagrid("loadData",cfgPara["buslines"])
+                _bus_value = cfgPara["company"]["id"];
+                setInterval(function(){
+                    getBusPostion();
+                },10000);
+                
+                \$("div").delegate("img","click",function(e) {
+                    if (e.target.name!="car-camera"){return}
+                    var no = parseInt(e.target.id.split("_")[1])
+                    var now = new Date()
+                    if ((now - refreshCamera_time)>10000){
+                        refreshCamera(no);
+                        refreshCamera_time = now;
+                    } 
+                })
+            });
+            
+            function getCenter(buses){
+                //设置新的map中点
+                var aLat = 0;
+                var aLng = 0;
+                for(var i=0;i<buses.length;i++){
+                    aLat +=buses[i]["qqLat"];
+                    aLng +=buses[i]["qqLng"];
+                }
+                aLat = aLat/buses.length;
+                aLng = aLng/buses.length;
+                
+                var center = new qq.maps.LatLng(aLat,aLng);
+                return center
+            }
+            function busOnMap(buses){
+                _buses = buses;//做个备份。。。
+                if (buses.length==0) {return;}
+                //清除已有的节点
+                for(var i=0;i<_markers.length;i++){
+                    _markers[i].setMap(null);
+                    _mapInfoWin[i].setMap(null);
+                }
+                _markers = []
+                _mapInfoWin = []
+                if (_newcenter==true){
+                    var center = getCenter(buses);
+                    map.panTo(center);
+                    _newcenter = false;
+                }
+                //用户当前位置
+                for(var i=0;i<buses.length;i++){
+                    (function(n){
+                        var title = "车速："+buses[n]["speed"]+"公里/小时\r\n"+buses[n]["addr"]
+                        var pos = new qq.maps.LatLng(buses[n]["qqLat"],buses[n]["qqLng"]);
+                        _markers[n] = new qq.maps.Marker({
+                                icon    : getMarkerIcon("car_blue_16_30"),
+                                map     : map,
+                                position: pos,
+                                title   : title});
+                        _mapInfoWin[n] = new qq.maps.InfoWindow({
+                            map: map
+                        });
+                        //获取标记的点击事件
+                        //content = sites[i]["address"]+"<br>id:"+sites[i]["id"]
+                        _mapInfoWin[n].setContent('<div style="width:250px;height:90px;padding-top:0px;">'+
+                                //'<a href="'+buses[n]["box_url"]+'" target="_blank"><img id="car-postion" src="/static/img/bus_camera.png" style="width:40px;height:40px;float:right;position:relative;right:2px"></img></a>' +
+                                '<img name="car-camera" id="car-camera_'+n+'" src="/static/img/bus_camera.png" style="width:40px;height:40px;float:right;position:relative;right:2px"></img>' +
+                                '<h3>'+ buses[n]["name"]+"</h3><dl>"+
+                                '<dt><strong>速度：</strong><span id="speed-'+n+'">'+buses[n]["speed"]+"</span>公里/小时"+"</dt>"+
+                                '<dt><strong>心跳：</strong><span id="heardbeat_at-'+n+'">'+buses[n]["heardbeat_at"]+"</span></dt>"+
+                                '<dt><strong>定位：</strong><span id="gpsTime-'+n+'">'+buses[n]["gpsTime"]+"</span></dt></div>");
+                        _mapInfoWin[n].setPosition(pos)
+                        qq.maps.event.addListener(_markers[n], 'click', function(e) {
+                            openMapInfoWin(n);
+                        });
+                    })(i)
+                }
+                customAlarmDiv.style.display= (buses.length==1 ? "block":"none");
+                
+                if (_markers.length==1){
+                    _lastMakerIndex=0
+                } else if (_lastMakerIndex==-1) {
+                    _lastMakerIndex = 0
+                }
+                if (_lastMakerIndex>=0){
+                    _mapInfoWin[_lastMakerIndex].open();
+                }  
+            }
+            
+            function openMapInfoWin(n){
+                if (_lastMakerIndex>-1){_mapInfoWin[_lastMakerIndex].close()}
+                _mapInfoWin[n].open()
+                _lastMakerIndex = n;
+            }
+            function getBusPostion(){
+                \$.post("/pc/monitor",
+                {
+                    act      :"BUS-POSITION",
+                    openid   :cfgPara["openid"],
+                    bus_type :_bus_type,
+                    value    :_bus_value
+                },
+                function(data,status){
+                    busOnMap(data["buses"]["locations"]);
+                });
+            }
+            //删除后，微信无法显示
+           function getMarkerIcon(name){   
+                if (name=="") {
+                    name = "car_blue"
+                }
+                if (name.indexOf("16_30")>0){
+                    var icon= new qq.maps.MarkerImage(
+                        "/static/img/map/"+name+".png",
+                        new qq.maps.Size(16, 30),
+                        new qq.maps.Point(0, 0),
+                        new qq.maps.Point(8, 15)
+                    )
+                } else {
+                    var icon= new qq.maps.MarkerImage(
+                        "/static/img/map/"+name+".png",
+                        new qq.maps.Size(23, 30),
+                        new qq.maps.Point(0, 0),
+                        new qq.maps.Point(12, 30)
+                    )
+                }
+                return icon;
+            }
+            
+            function addHistoryTab(imei,busno,startTime,endTime){
+                var href = '/pc/monitor?act=get-historytrack&startTime='+startTime+'&endTime='+endTime+'&imei='+imei+'&openid='+cfgPara["openid"];
+                addFunTab(href,"历史轨迹")
+            }
+            function iFrameHeight() {   
+                var ifm= document.getElementById("iframepage");   
+                var subWeb = document.frames ? document.frames["iframepage"].document : ifm.contentDocument;   
+                if(ifm != null && subWeb != null) {
+                    //ifm.height = subWeb.body.scrollHeight;
+                    //ifm.width = subWeb.body.scrollWidth;
+                }   
+            }
+            
+        </script>
+        <script id="dist-tree-script0">
+            function distTreeonClick(node){
+                _bus_type  ="openid";
+                _bus_value = node["openid"];
+                changeSeletedNode(node)
+            }
+            function changeSeletedNode(node){
+                \$("#tt").tabs("select","当前位置")
+                _bus_type  ="openid";
+                _bus_value =node["openid"];
+                _newcenter = true;
+                \$.post("/pc/monitor",
+                {
+                    act       :"GET-DEVGROUP",
+                    openid    :node["openid"]
+                },
+                function(data,status){
+                    \$("#buses").datagrid("unselectAll");
+                    \$("#buses").datagrid("uncheckAll");
+                    \$("#dg").datagrid("loadData",data["groups"]);
+                    \$("#buses").datagrid("loadData",data["devices"]);
+                    //\$("#group-list").combobox("loadData",data["groups"]["rows"])
+                    //loadGroupMenu(data["groups"]["rows"])
+                    busOnMap(data["devices"]["locations"]);
+                })
+            }
+        </script>
+      <script id="busline-script" type="text/javascript">
+            var editIndex = undefined;
+            var bus;
+            function onClickBusLine(index,row){
+               var groupid=row["busgroupid"]
+                _bus_type  ="groupid";
+                _bus_value =groupid;
+                onGroupSeleted(groupid)
+            }
+            function rightManageButton() {
+                var row = \$('#dg').datagrid('getSelected')
+                var groupid = row["id"];
+                var href = '/pc/monitor?act=manage-group-user&groupid='+groupid+'&openid='+cfgPara["openid"];
+                addFunTab(href,"用户管理")
+            }
+            
+            function showDevicesTableButton() {
+                var qtype = "groupid";
+                var row = \$('#dg').datagrid('getSelected')
+                var groupid = row["busgroupid"];
+                var href = '/pc/monitor?act=get-devices-table&qtype='+qtype+'&value='+groupid+'&openid='+cfgPara["openid"];
+                addFunTab(href,"设备管理")
+            }
+
+            function reloadDgData(groupid){
+                _newcenter = true;
+                getGroupBus(groupid)
+                //getBusPostion();
+                acceptBusline();
+                //customAlarmDiv.style.display = "none";
+            }
+            
+            function onDblClickBusLine(index,row){
+                var groupid = row["busgroupid"];
+                _bus_type  ="groupid";
+                _bus_value =groupid;
+                acceptBusline();
+                
+                \$('#dg').datagrid("beginEdit", index);
+                editIndex = index;
+                
+            }
+            
+            function addLine(){
+                acceptBusline();
+                \$('#dg').datagrid('appendRow',{name:'未命名'});
+                editIndex = \$('#dg').datagrid('getRows').length-1;
+                
+                \$('#dg').datagrid('selectRow', editIndex)
+                         .datagrid('beginEdit', editIndex);
+            }
+            function removeLine(){
+                \$.messager.confirm('提醒', '确定要删除该线路吗', function(r){
+                    if (r==false){return;}
+                });
+                if (row["bus_sum"]>0){\$.messager.alert('提醒','该组有设备，不能删除！');return;}
+                var row = \$('#dg').datagrid('getSelected')
+                var busline_id = row["id"];
+                \$.post("/m/manager",
+                    {
+                        act        :"DELETE-LINE",
+                        openid     :cfgPara["openid"],
+                        busline_id :busline_id
+                    },
+                    function(data,status){
+                        \$.messager.alert('提醒', data["msg"]);
+                });
+                \$('#dg').datagrid('cancelEdit', index)
+                         .datagrid('deleteRow', index);
+            }
+            
+            function acceptBusline(){
+                var row = \$('#dg').datagrid('getChanges')
+                if (editIndex == undefined || row.length==0){return;}
+                var src  = row["from_name"];
+                var dst  = row["to_name"];
+                if (src=="" || dst==""){return;}
+                var busline_id = row["id"];
+                
+                if (busline_id==undefined){
+                    busline_id = -1
+                }
+                
+                \$.post("/m/manager",
+                    {
+                    act        :"SET-LINE-NAME",
+                    openid     : cfgPara["openid"],
+                    busline_id : busline_id,
+                    src        : src,
+                    dst        : dst,
+                    company_id : cfgPara["company"]["id"]
+                    },
+                    function(data,status){
+                        \$("#dg").datagrid("loadData",data["buslines"])
+                        \$('#dg').datagrid("endEdit", editIndex);
+                        \$('#dg').datagrid("acceptChanges")
+                        editIndex = undefined;
+                        \$.messager.alert("提醒",data["result"])
+                });
+                
+                
+            }
+            function price_design(){
+                \$.messager.alert("提醒",editIndex)
+            }
+            function getGroupBus(busgroupid){
+                \$.post("/pc/monitor",
+                    {
+                        act       :"GET-LINEBUS",
+                        openid    :cfgPara["openid"],
+                        busgroupid:busgroupid,
+                    },
+                    function(data,status){
+                        \$("#buses").datagrid("loadData",data["buses"]);
+                        busOnMap(data["buses"]["locations"]);
+                })
+            }
+            \$("#dg").datagrid({
+                //onRowContextMenu:function(e, rowIndex, rowData) {
+                //    e.preventDefault();
+                //    \$('#dg-mm').menu('show', {
+                //        left: e.pageX,
+                //        top: e.pageY
+                //   });
+                //},
+                onLoadSuccess:function(data) {
+                    \$("#dg").datagrid("selectRow",0)
+                },
+                onSelect:function(index,row) {
+                    onClickBusLine(index,row);
+                }
+            })
+        </script>
+        <script type="text/javascript" src="/easyui/datagrid-filter.js"></script>
+        <script id="buses-script">            
+            function onClickBus(index,row){
+                _dg_last_index = index;
+                _dg_last_row   = row;
+                _bus_type  ="imei";
+                _bus_value =\$('#buses').datagrid('getRows')[index]["imei"];
+                
+                onBusSeleted()
+            }
+            function showBusPostion() {
+                _tab_fired_locked = true;    
+                getBusPostion();
+                customAlarmDiv.style.display = "block";
+                openMapInfoWin(0);
+                _tab_fired_locked = false;
+            }
+            
+            function travel_stat() {
+                var row = \$('#buses').datagrid('getSelected')
+                var href = '/pc/seat?act=get-bustravel&imei='+row["imei"]+'&openid='+cfgPara["openid"];
+                addFunTab(href,"运营统计")
+            }
+            function onDbClickBus(index,row){
+                \$("#tt").tabs("select","当前位置");
+                if (row["privilege"]!="manager"){return;}
+                var imei;
+                _dg_last_index = index;
+                _dg_last_row   = row;
+                if (typeof(index)=="number") {
+                    imei =\$('#buses').datagrid('getRows')[index]["imei"];
+                } else {
+                    imei = index["imei"]
+                }
+                \$.post("/pc/monitor",
+                    {
+                        act       :"GET-BUSCFG",
+                        openid    :cfgPara["openid"],
+                        imei      :imei,
+                    },
+                    function(data,status){
+                        bus = data
+                        \$("#tb-bus").datagrid("loadData",data);
+                })
+                \$('#dlg-bus').dialog('open')
+            }
+            
+            function showBusInfo() {
+                var row = _dg_last_row;
+                if (row["privilege"]!="manager"){\$.messager.alert('提醒','你不是管理者，无权操作！');return;}
+                var rows =\$('#buses').datagrid('getSelections');
+                //if (rows.length==1)
+                    onDbClickBus(_dg_last_index,_dg_last_row);
+                //else{
+                //    var imeis =[];
+                //    var qtype ="imeis";
+                //    for(var i=0;i<rows.length;i++){imeis.push(rows[i]["imei"])}
+                //    showDevicesTable(qtype,imeis.join(","))
+                //}
+            }
+            
+            \$("#buses").datagrid({
+                //onRowContextMenu:function(e, rowIndex, rowData) {
+                //   e.preventDefault();
+                //    //menuNames = ["设备信息","移动分组"]
+                //    //var action = "disableItem";
+                //    //action = (rowData["privilege"]=="manager"? "enableItem" : "disableItem")
+                //    //for(var i=0;i<menuNames.length;i++){
+                //    //    var item = \$('#buses-mm').menu('findItem', menuNames[i]);
+                //    //    \$('#buses-mm').menu(action, item.target);
+                //    //}
+                //   \$('#bus-mm').menu('show', {
+                //        left: e.pageX,
+                //        top: e.pageY
+                //   });
+                //}
+                onClickRow:function(index,row) {
+                    onClickBus(index,row);
+                },
+                onDblClickRow:function(index,row) {
+                    onDbClickBus(index,row);
+                }
+            })
+            function openMoveDev2GroupDlg() {
+                var row = _dg_last_row;
+                if (row["privilege"]!="manager"){\$.messager.alert('提醒','你不是管理者，无权操作！');return;}
+                \$("#tar-dist-tree").tree("loadData",cfgPara["distributors"])
+                \$("#dev-group-select").dialog('open') 
+            }
+            function closeMoveDev2GroupDlg() {
+                \$("#dist-tree").tree("loadData",cfgPara["distributors"])
+                \$("#dev-group-select").dialog('close') 
+            }
+            
+            \$("#opt-group").delegate("option[name='opt-group']","click",function(e){
+                moveDev2Group(e.target.value)
+            })
+            function moveDev2GroupOK(){
+                var row = \$("#tar-dg").datagrid("getSelected")
+                moveDev2Group(row["id"])
+            }
+            
+            function moveDev2Group(groupid){
+                //var row   = \$("#buses").datagrid("getSelected");
+                var rows = \$("#buses").datagrid("getSelections");
+                if (rows.length==0){return;}
+                
+                var imeis =[]
+                var indexs =[]
+                for(var i=0;i<rows.length;i++){
+                    imeis.push(rows[i]["imei"])
+                    indexs.push(\$("#buses").datagrid("getRowIndex",rows[i]))
+                }
+                
+                \$.post("/pc/monitor",
+                    {
+                        act       :"MOVE-DEV2GROUP",
+                        openid    :cfgPara["openid"],
+                        imeis     :imeis.join(","),
+                        tar_groupid:groupid,
+                    },
+                    function(data,status){ 
+                        closeMoveDev2GroupDlg();
+                        \$("#dg").datagrid("loadData",data["groups"])
+                        \$("#tb-bus").datagrid("loadData",data["devices"]);
+                })
+            }
+            
+            function loadGroupMenu(grps){
+                \$("#opt-group").empty();
+                var menu=[];
+                for(var i=0;i<grps.length;i++){
+                    menu.push('<option name="opt-group"  value="'+grps[i]["id"]+'">'+grps[i]["name"]+'</option>')
+                }
+                \$("#opt-group").html(menu.join("\r\n"))
+            }
+            function loadGroupMenu2(distributors){
+                \$("#opt-group").empty();
+                var menu=[];
+                for(var i=0;i<distributors.length;i++){
+                    menu.push('<div style="font-weight:bold;font-size:16px">'+distributors[i]["name"]+'</div>')
+                    menu.push('<div class="menu-content" style="text-align:left;padding:10px">')
+                    menu.push('<ul style="margin:0;padding:0 0 0 40px">')
+                    for(var i=0;i<distributors[i]["groups"].length;i++){
+                       var group = distributors[i]["groups"][j]
+                       menu.push('<li><a onclick="moveDev2Group('+group["id"]+')" href="javascript:void(0)">'+group["name"]+'</a></li>')
+                    } 
+                    menu.push('</ul></div>')
+                }
+                \$("#opt-group").html(menu.join("\r\n"))
+            }
+            \$(function(){
+                var buses = \$('#buses').datagrid();
+                buses.datagrid('enableFilter', [{
+                    field:'speed',
+                    type:'numberbox',
+                    options:{precision:1},
+                    op:['equal','notequal','less','greater']
+                },{
+                    field:'offline_days',
+                    type:'numberbox',
+                    options:{precision:1},
+                    op:['equal','notequal','less','greater']
+                }]);
+            });
+        </script>
+        <script id="tt-script">
+            function addFunTab(href,title){
+                if (\$('#tt').tabs('exists',title)){
+                    var tab = \$('#tt').tabs('close', title);
+                }
+                //var content = '<iframe scrolling="no" frameborder="0"  src="'+href+'" style="width:100%;height:100%;"></iframe>';  
+                
+                var content = '<iframe src="'+href+'"  id="iframe-devices" frameborder="0" scrolling="no" style="width:100%;height:100%;"></iframe>'
+
+                \$('#tt').tabs('add',{
+                    title:title,
+                    content:content,
+                    closable:true,
+                });
+            }
+            var _tab_title="当前位置";//记录当前显示的tab
+            var _tab_fired_locked =false;//避免陷入死循环，对原始促发进行标记
+            \$('#tt').tabs({
+                onClick:function(title,index){
+                    //ajaxLoading();
+                    _tab_title = title;
+                    if(_tab_fired_locked){return;}
+                    switch(title){
+                        case "设备管理":
+                        case "用户管理":
+                            onGroupSeleted();
+                            break;
+                        case "历史轨迹":
+                            onHistorySelect();
+                            break;
+                        case "当前位置":
+                            showBusPostion();
+                            break;
+                        default:
+                            ;
+                    }
+                    
+                },
+                onSelect:function(title,index){
+                    refreshTabbyTitle(title)
+                }
+            })
+            
+            function refreshTabbyTitle(title){
+                var row = \$('#buses').datagrid('getSelected')
+                if (row==undefined){
+                    \$('#buses').datagrid('selectRow',0)
+                    row = \$('#buses').datagrid('getSelected')
+                }
+                if (row==undefined){
+                    return;
+                }
+                switch(title){
+                    case "客车运营":
+                        var href = '/pc/seat?act=get-bustravel&imei='+row["imei"]+'&openid='+cfgPara["openid"];
+                        break;
+                    case "区间检测":
+                        href ="/pc/seat?act=get-region-monitor-result&imei="+row["imei"]+"&openid="+cfgPara["openid"];
+                        break;
+                    default:
+                        return;
+                }
+                updateTab(title,href)
+            }
+            function updateTab(name,href){
+                var content = '<iframe src="'+href+'"  id="iframe-devices" frameborder="0" scrolling="no" style="width:100%;height:100%;"></iframe>'
+                var tab = \$('#tt').tabs('getTab',name);
+                \$('#tt').tabs('update', {
+                    tab: tab,
+                    options: {
+                        content: content  // the new content URL
+                    }
+                });
+			}
+            
+            function onHistorySelect() {
+                _tab_fired_locked = true
+                \$("#buses").datagrid("clearSelections")
+                \$("#buses").datagrid("selectRow",_dg_last_index)
+                var row =\$("#buses").datagrid("getSelected")
+                
+                from_time = \$("#from_time").val().replace('T'," ")+":00";
+                end_time = \$("#end_time").val().replace('T'," ")+":00";
+                addHistoryTab(row['imei'],row['name'],from_time,end_time)
+                _tab_fired_locked = false
+                //ajaxLoadEnd();
+            }
+            
+            //当选中设备时促发
+            function onBusSeleted(){
+                
+                _tab_fired_locked = true
+                switch(_tab_title) {
+                    case "历史轨迹":
+                        onHistorySelect()
+                        break;
+                    default://当前位置
+                        \$('#tt').tabs('select', "当前位置");
+                        showBusPostion();
+                }
+                _tab_fired_locked = false
+                //ajaxLoadEnd();
+            }
+            //当选中设备时促发
+            function onGroupSeleted(groupid){
+                _tab_fired_locked = true
+                switch(_tab_title) {
+                    case "用户管理":
+                        rightManageButton();
+                        break;
+                    case "设备管理":
+                        showDevicesTableButton();
+                        break;
+                    default://当前位置
+                        \$('#tt').tabs('select', "当前位置");
+                        reloadDgData(groupid);
+                }
+                _tab_fired_locked = false
+                //ajaxLoadEnd();
+            }
+        </script>
+        <script>
+            \$("#seat-stat").click(function(e){
+                var tab =\$('#tt').tabs("getSelected")
+                var tab = \$('#tt').tabs('getSelected');  // get selected panel
+                tab.panel('refresh', "/pc/monitor?act=get-seat-layout&openid="+cfgPara["openid"]);
+            })
+        </script>
+        <script name="bus-camera">
+            var monitor_timer_id,check_arrayed_timer_id=0
+            var _bus_no
+            var _media ={}
+             //记录图片视频加载状态
+            var video_loaded={"image":{"loaded":false,"tabIndex":1,"path":""},
+                              "video":{"loaded":false,"tabIndex":2,"path":""}};
+            var cumeraTabs = {1:"image",2:"video"}
+            var videoTab ={"jpg":1,"mp4":2}
+            function refreshCamera(no){
+                _bus_no = no;
+                \$("#bus-camera").dialog({title:_buses[no].name+"传感数据监控"})
+                updateBusLayout();
+                \$('#bus-camera').dialog('open')
+                if (_buses[no].monitor =="none") {
+                    loadBusImgByCmd(no)
+                } 
+            }
+            function loadBusImgByCmd(bus_no){
+                \$.post("/pc/monitor",
+                {
+                    act       :"SEND-BOX-CMD",
+                    cmd       :"monitor",
+                    openid    :cfgPara["openid"],
+                    imei      :_buses[bus_no].imei,
+                },
+                function(data,status){
+                    monitor_timer_id = setInterval('getMonitorResult()',2000); 
+                });
+            }
+            
+            \$("#bus-camera").dialog({
+                onClose:function(){
+                    if (monitor_timer_id>0){
+                        clearInterval(monitor_timer_id)
+                        monitor_timer_id= 0
+                    }
+                }
+            })
+            \$("#camera-tabs").tabs({
+                onSelect:function(title,index){
+                    switch(index){
+                        case 1:
+                            href = _buses[_bus_no].monitor["camera"]
+                            break;
+                        case 2:
+                            href = _buses[_bus_no].monitor["video"]
+                            break;
+                        default:
+                            return
+                    }
+                    updateTabiFrame("camera-tabs",index,href);
+                }
+            })
+            
+            function getMonitorResult(){
+                if (monitor_timer_id==0){return}
+                \$.get("/pc/monitor",
+                {
+                    act       :"GET-BOXCMD-RESULT",
+                    cmd       :"monitor",
+                    openid    :cfgPara["openid"],
+                    imei      :_buses[_bus_no].imei,
+                },
+                function(data,status){
+                    if (data["state"]=="finish"){
+                        var loaded_sum = 0
+                        \$.each(video_loaded,function(key,val) {
+                            if (data["camera"]["video0"][key]["exist"]=="yes" && val["loaded"]==false ){
+                                //updateTabiFrame("camera-tabs",val["tabIndex"],data["camera"]["video0"][key]["path"]);
+                                video_loaded[key]["path"]=data["camera"]["video0"][key]["path"]
+                                loadBusMedia(data["camera"]["video0"][key]["path"],val["tabIndex"])
+                                video_loaded[key]["loaded"]=true
+                            }
+                            if (val["loaded"]) {loaded_sum+=1}
+                            if (loaded_sum==2){
+                                clearInterval(monitor_timer_id);
+                                monitor_timer_id=0;
+                            }
+                        })
+                    }
+                });
+            }
+
+            function sendBoxMonitorCmd(){
+                \$.post("/pc/monitor",
+                    {
+                        act       :"SEND-BOX-CMD",
+                        openid    :cfgPara["openid"],
+                        imei      :_buses[_bus_no].imei,
+                        company_id:cfgPara["company"]["id"],
+                    },function (){
+                    
+                    }
+                );
+            }
+            function loadBusMedia(href,tabIndex){
+                var temp = href.match(/\.(\w+)\$/)
+                if (temp.length==0){return}
+                var ext = temp[1];
+                var html = ""
+                switch(ext){
+                    case "mp4":
+                        html = '<video width="100%" height="100%" src="'+href+'" controls="controls"></video>';
+                        break;
+                    case "jpg":
+                        html = '<img width="100%" height="100%" src="'+href+'"/>';
+                        break;
+                    default:
+                        return
+                }
+               
+                var tab = \$('#camera-tabs').tabs('getTab',tabIndex);
+                \$('#camera-tabs').tabs('update', {
+                    tab: tab,
+                    options: {
+                        content: html  // the new content URL
+                    }
+                });
+            }
+			function updateBusLayout(){
+                var href = "/pc/device?act=seat-status-auto&openid="+cfgPara["openid"]+"&imei="+_buses[_bus_no].imei+"&company_id="+cfgPara["company"]["id"];
+                var content = '<iframe src="'+href+'"  id="iframe-devices" frameborder="0" scrolling="yes" style="width:100%;height:100%;"></iframe>';
+                var tab = \$('#camera-tabs').tabs('getTab',0);//显示的目标位置。
+                \$('#camera-tabs').tabs('update', {
+                    tab: tab,
+                    options: {
+                        content: content // the new content URL
+                    }
+                });
+            }
+            /*
+            \$(function(){
+                \$('#camera-tabs').tabs({
+                    onSelect:function(title,index){
+                        var media =video_loaded[cumeraTabs[index]];
+                        if (typeof(media)=="undefined"){return}
+                        if (media["path"]!=""){
+                            loadBusMedia(media["path"],media["tabIndex"])
+                        }
+                    }
+                })
+            })
+            */
+            function updateTabiFrame(tabid,name,href){
+                var content = '<iframe src="'+href+'" frameborder="0" scrolling="no" style="width:100%;height:100%;"></iframe>'
+                var tab = \$('#'+tabid).tabs('getTab',name);
+                \$('#'+tabid).tabs('update', {
+                    tab: tab,
+                    options: {
+                        content: content  // the new content URL
+                    }
+                });
+			}
+        </script>
+        
+        
+
+    </body>
+    </html>
+    

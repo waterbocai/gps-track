@@ -1,0 +1,366 @@
+$def with (cfgPara)
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="http://dev.jtsage.com/jQM-DateBox/css/doc.min.css" />
+    <link rel="stylesheet" href="http://dev.jtsage.com/jQM-DateBox/css/jquery.mobile.icons.min.css" />
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+    <link rel="stylesheet" href="/static/stylesheets/iwaiter.css" />    
+    <link rel="stylesheet" href="http://cdn.jtsage.com/datebox/1.4.5/jqm-datebox-1.4.5.min.css" />
+    <link rel="stylesheet" href="http://dev.jtsage.com/jQM-DateBox/css/syntax.css" />
+    
+    <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+
+    <script type="text/javascript" src="http://cdn.jtsage.com/datebox/1.4.5/jqm-datebox-1.4.5.core.min.js"></script>
+    <script type="text/javascript" src="http://cdn.jtsage.com/datebox/1.4.5/jqm-datebox-1.4.5.mode.calbox.min.js"></script>
+    <script type="text/javascript" src="http://cdn.jtsage.com/datebox/1.4.5/jqm-datebox-1.4.5.mode.flipbox.min.js"></script>
+        <script type="text/javascript" src="http://dev.jtsage.com/cdn/datebox/i18n/jquery.mobile.datebox.i18n.zh-CN.utf8.min.js"></script>  
+                 
+        <script src="/static/js/utility.js"></script>
+        <style type="text/css">
+        *{
+            margin:0px;
+            padding:0px;
+        }
+        body, button, input, select, textarea {
+            font: 12px/16px Verdana, Helvetica, Arial, sans-serif;
+        }
+        #info{
+            width:603px;
+            padding-top:3px;
+            overflow:hidden;
+        }
+        .btn{
+            width:142px;
+        }
+        div#group-select.ui-grid-a .ui-block-a { width: 30% }
+        div#group-select.ui-grid-a .ui-block-b { width: 70% }
+
+        div#hours-select.ui-grid-a .ui-block-a { width: 50% }
+        div#hours-select.ui-grid-a .ui-block-b { width: 50% }
+
+        div#history-select.ui-grid-b .ui-block-a { width: 15% }
+        div#history-select.ui-grid-b .ui-block-b { width: 42% }         
+        div#history-select.ui-grid-b .ui-block-c { width: 43% } 
+        </style>
+        <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp"></script>
+
+        <title>运行统计</title>
+        <script type="text/javascript"> 
+            var cfgPara= $:cfgPara;
+            var pts  =cfgPara['pts'];
+            var imei =cfgPara['imei']
+            var openid = cfgPara['openid']
+            var _url  = cfgPara['url'];
+            
+            function init(){
+                
+                \$('#history-track').empty();
+                \$('#history-track').append('<tr style="text-align:center"><th>时刻</th><th>速度</th><th>停留</th><th>位置</th><th>里程</th></tr>')
+                var startDate="",endDate="";
+                for(var i = 0;i<pts.length;i++)
+                {
+                    var tr;
+                    if (pts[i]['speed'] =='-')
+                    {   
+                        if (startDate=="") {
+                            startDate = pts[i]['report_at'];
+                            endDate= pts[i]['report_at'];
+                        } else {
+                            endDate = pts[i]['report_at'];
+                        }
+                        tr= "<tr Bgcolor=#00FFFF>";
+                    } else if (pts[i]['speed'] =='停止') {
+                        tr= "<tr Bgcolor='lightgray'>";
+                    } else {
+                        tr= "<tr>";
+                    }
+                    
+                    tr = tr+"<td >"+pts[i]['report_at']+"</td>";
+                    tr = tr+"<td >"+pts[i]['speed']+"</td>";
+                    tr = tr+"<td >"+pts[i]['duration']+"</td>";
+                    tr = tr+"<td >"+pts[i]['addr']+"</td>";
+                    tr = tr+"<td >&nbsp</td>";
+                    tr = tr + "</tr>";
+                    \$('#history-track').append(tr);
+                    
+                    \$('#start-stat').html('起点:'+startDate+" " +pts[1]['report_at'].split("<br>")[0]+' ' +pts[1]['addr'] );
+                    \$('#end-stat').html('终点:'+endDate+" "+pts[pts.length-1]['report_at'].split("<br>")[0]+' ' +pts[pts.length-1]['addr'] );
+                    \$('#long-stat').html('里程: xxx公里');
+                }
+            };
+            
+            \$(document).ready(function(){ 
+                \$("#current-map").click(function(e) {
+                    window.location.href="/m/bustrack?act=MINE_TRACK&openid="+openid+'&imei='+imei;
+                });
+                \$('#radio_last_hour').click(function(e){
+                    \$('#hours-select').show();
+                    \$('#history-select').hide();
+                });
+                \$('#radio_selfdefine').click(function(e){
+                    \$('#hours-select').hide();
+                    \$('#history-select').show();
+                });
+                
+                \$('#history-map').click(function(e) {
+                    duUrl = trackDuration();
+                    window.location.href="/m/bustrack?act=HISTORY-TRACK"+duUrl;
+                });
+                \$('#history-map2').click(function(e) {
+                    duUrl = trackDuration();
+                    window.location.href="/m/bustrack?act=HISTORY-TRACK"+duUrl;
+                });
+                
+                
+                \$('#history-stat2').click(function(e) {
+                    duUrl = trackDuration();
+                    window.location.href="/m/bustrack?act=HISTORY-STAT"+duUrl;
+                });
+                
+                function trackDuration(){
+                    var startDatetime,endDatetime;
+                    //获取时间设置模式
+                    var selType = \$( "[name='radio-select']:checked" ).attr( "id" )
+                    //最近过去的时间 选择模式
+                    if (selType=='radio_last_hour'){
+                        _hour = \$("#hours-menu option:selected").val();
+                        endDatetime= new Date();
+                        endDatetime=endDatetime.format('yyyy-MM-dd hh:mm:ss')
+                        startDatetime=addDate(endDatetime,parseInt('-'+_hour),'hour');
+                    } else {
+                        _startDate = \$("#start_date").val();
+                        _startTime = uniformTime(\$("#start_time").val());
+                        _endDate = \$("#end_date").val();
+                        _endTime = uniformTime(\$("#end_time").val());
+                        if (_startDate==""){
+                            \$("#start_date").focus()
+                            alert("开始日期不能为空");
+                        }
+                        
+                        if (_startTime==""){
+                            \$("#start_time").focus()
+                            alert("开始时间不能为空");
+                        }
+                        if (_endDate==""){
+                            \$("#end_date").focus()
+                            alert("结束日期不能为空");
+                        }
+                        
+                        if (_endTime==""){
+                            \$("#end_time").focus()
+                            alert("结束时间不能为空");
+                        }
+                        
+                        startDatetime = _startDate +' ' + _startTime
+                        endDatetime = _endDate +' ' + _endTime
+                        var dh = GetDateDiff(startDatetime,endDatetime,'hour')
+                        if (dh>48) {
+                            alert('时间间隔不能超过48小时，请重新选择')
+                        }
+                    }
+                    //alert(startDatetime)
+                    return "&openid="+openid+ "&imei="+imei+"&startTime="+startDatetime+"&endTime="+endDatetime
+                }
+                
+               
+            });
+
+        \$(document).on("pagebeforeshow","#SelGPS",function(e){
+            var groups;
+             \$.post("/m/bustrack",
+                    {
+                       act      :"GET-GROUP-BY-IMEI",
+                       openid   :openid,
+                       imei     :imei,
+                    },
+                    function(data,status){
+                        groups= data;
+                        var selObj = \$("#select-group");
+                        selObj.empty();
+                        for (var i = 0;i<groups.length;i++){
+                            selObj.append("<option value='"+i.toString()+"'>"+groups[i]['name']+"</option>");   
+                        }
+                        \$('#select-group').selectmenu('refresh', true);
+                        showGroup(0);
+                        window.location.href ="#SelGPS";
+                    });
+            \$('#select-group').change(function(e) {
+                grpID = \$("#select-group option:selected").val();
+                showGroup(grpID);
+            });
+            
+            function showGroup(grpID){
+                \$('#group-member').empty();
+                \$('#group-member').append('<tr style="text-align:center"><th>名称</th><th>速度</th><th>在线</th><th>省市</th></tr>')
+                devs = groups[grpID]['devs'];
+                for(var i = 0;i<devs.length;i++)
+                {
+                    var tr;
+                    if (devs[i]['online'] =='在线')
+                    {
+                        tr= "<tr Bgcolor='lightgreen'>";
+                    } else {
+                        tr= "<tr Bgcolor='lightgray'>";
+                    } 
+                    
+                    tr = tr+"<td ><a href='"+_url+devs[i]['imei']+"' target='_blank'>"+devs[i]['name']+"</a></td>";
+                    if (devs[i]['speed']==0) {
+                        tr = tr+"<td Bgcolor='red'>"+devs[i]['speed']+"</td>";
+                    } else {
+                        tr = tr+"<td>"+devs[i]['speed']+"</td>";
+                    }
+                    
+                    tr = tr+"<td >"+devs[i]['online']+"</td>";
+                    tr = tr+"<td >"+devs[i]['addr']+"</td>";
+                    tr = tr + "</tr>";
+                    \$('#group-member').append(tr);
+                }
+            
+            }
+
+            \$("#arm-select").click(function(d) {
+                \$.post("/m/bustrack",
+                    {
+                       act      :"GET-GROUP-BY-IMEI",
+                       openid   :openid,
+                       imei     :imei,
+                    },
+                    function(data,status){
+                        var groups= data;
+                        var selObj = \$("#select-group");
+                        for (var i = 0;i<groups.length;i++){
+                            selObj.append("<option value='"+i.toString()+"'>"+groups[i]['name']+"</option>");   
+                        }
+                        \$('#select-group').selectmenu('refresh', true);
+                        showGroup(0);
+                        window.location.href ="#SelGPS";
+                    });
+            });
+        });            
+    <!-------------------------------------------固定框架-----修改开始位置--------------------------------------------------------------->            
+    </script>      
+    </head>
+
+    <body onload="init()" >
+    <div data-role="page" id="home" data-theme="a" class="background">
+       
+        <div data-role="header" >
+             <a id="arm-select" href="#SelGPS" data-role="button" data-icon="eye"  data-iconpos="left">监测目标</a>
+                <h1 id="arm-name" style="font-size:150%"></h1>
+
+        </div>
+        <!-------------------------------------------固定框架-----修改开始位置--------------------------------------------------------------->
+        
+        <div data-role="content" id="allmap" style="height:600px">
+            <p id='start-stat'>开始:2015-03-10 15:30:0 广东省深圳市罗湖</p>
+            <p id='end-stat'>结束:2015-03-16 10:30:0 广西灵山</p>
+            <p id='long-stat'>里程: 800公里</p>
+            <table width="100%" id='history-track' border='1' cellpadding='0' cellspacing='0' >
+                
+                
+            </table>
+        </div>
+        <div data-role="footer" data-position="fixed" data-fullscreen="false" data-tap-toggle="false" style="position: fixed;">
+            <div data-role="navbar">
+              <ul style="font-size:150%">
+                <li><button id='history-map' style="font-size:100%"  class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-camera">历史轨迹</button></li>
+                <li><a href="#history-time" style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-clock">重设时段</a>
+                </li>
+                <li><a id='current-map' style="font-size:100%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-location">当前位置</a></li>
+              </ul>
+            </div>
+        </div><!-- /footer -->
+        
+        <!-------------------------------------------固定框架-------修改结束位置------------------------------------------------------------->
+        <div data-role="panel" id="panelMenu" data-display="overlay" data-position="right" class="ui-panel ui-panel-position-right ui-panel-display-overlay ui-body-inherit ui-panel-closed">
+            <div class="ui-panel-inner"><ul data-role="listview" data-icon="false" class="ui-listview">
+                <li><a href="#history-time" class="ui-btn">历史行踪</a></li>
+                <li><a href="http://iwaiter.sinaapp.com/m/bustrack?act=MINE_TRACK" class="ui-btn ui-shadow ui-corner-all" data-rel="dialog" data-transition="pop">当前位置</a></li>
+                <li class="ui-last-child"><a href="#" class="ui-btn">关于</a></li>
+            </ul></div>
+        </div>
+    </div>
+    
+    <!-- Start of second page: #two -->
+    <div data-role="page" id="SelGPS" data-theme="a">
+        <div data-role="header">
+            <a id="back" href="#home" data-role="button" data-icon="back"  data-iconpos="left">返回</a>
+            <h1 style="font-size:150%">选择目标设备</h1>
+        </div><!-- /header -->
+        <div role="main" class="ui-content"> 
+            <div class="ui-grid-a" id="group-select">
+                <div  class="ui-block-a" ><div class="ui-bar ui-bar-e" style="text-align:center;height:30px; line-height:30px;overflow:hidden;">选择分组</div></div>
+                <div class="ui-block-b" >
+                     <select name="select-group" id="select-group" data-mini="true" width='100%'>
+                     </select>  
+                </div>
+            </div>
+            <table width="100%" id='group-member'  bgcolor="#a1a1a1" border='1' cellspacing="0" style='font-size:120%'>
+                
+            </table>
+        </div><!-- /content -->
+    </div><!-- /page two -->
+    
+    
+    
+    <div data-role="page" id="history-time" data-overlay-theme="a">
+        <div data-role="header">
+            <a id="back" href="#home" data-role="button" data-icon="back"  data-iconpos="left">返回</a>
+            <h1 style="font-size:150%">设置追踪时间段</h1>
+        </div><!-- /header --> 
+        <div role="main" class="ui-content">
+             <div class="ui-field-contain">
+                <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+                    <legend>设置方式</legend>
+                    <input type="radio" name="radio-select" id="radio_last_hour" value="on" checked="checked" data-mini="false">
+                    <label for="radio_last_hour">最近过去的时间</label>
+                    <input type="radio" name="radio-select" id="radio_selfdefine" value="off"  >
+                    <label for="radio_selfdefine">自定义时间段</label>  
+                </fieldset>
+            </div>
+            <form id="hours-select">
+                <select name="select-native-2" id="hours-menu" data-mini="false" width='100%'>
+                    <option value="3">3小时</option>
+                    <option value="6">6小时</option>
+                    <option value="9">9小时</option>
+                    <option value="12">12小时</option>
+                </select>
+            </form>
+            <div class="ui-grid-b" id="history-select" style="display: none;">             
+                <div  class="ui-block-a" ><div class="ui-bar ui-bar-e" style="text-align:center;height:25px; line-height:25px;overflow:hidden;">开始</div></div>
+                <div class="ui-block-b" >
+                    <input name="start" id="start_date" type="text" data-role="datebox" data-options='{"mode":"calbox"}' readonly="readonly" class="">
+                </div>
+                <div class="ui-block-c" >
+                    <input name="start" id="start_time" type="text" data-role="datebox" data-options='{"mode":"timeflipbox"}' readonly="readonly" class="">
+                </div>
+                <div  class="ui-block-a" ><div class="ui-bar ui-bar-e" style="text-align:center;height:25px; line-height:25px;overflow:hidden;">结束</div></div>
+                <div class="ui-block-b" >
+                    <input name="end" id="end_date" type="text" data-role="datebox" data-options='{"mode":"calbox"}' readonly="readonly" class="">
+                </div> 
+                <div class="ui-block-c" >  
+                <input name="mode7" id="end_time" type="text" data-role="datebox" data-options='{"mode":"timeflipbox"}' readonly="readonly" class="">
+			</div>
+                <!--div class="ui-block-c" >
+                    <input name="end" id="end_time" type="text" data-role="datebox" data-options="{&quot;mode&quot;:&quot;timebox&quot;}" readonly="readonly" class="">
+                </div-->
+            </div>
+        </div>        
+        <div data-role="footer" data-position="fixed">
+          <div data-role="navbar">
+            <ul> 
+              <li><button id='history-map2' style="font-size:110%"  class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-camera">历史轨迹</button>
+              </li>
+              <li><button id='history-stat2' style="font-size:110%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-grid">运营统计</button>
+              </li>
+            </ul>
+          </div>
+        </div>
+    </div>
+    </body>
+    </html>

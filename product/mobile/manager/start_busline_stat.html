@@ -1,0 +1,217 @@
+$def with (cfgPara,jdksign,sharePara)
+    <!doctype HTML>
+    <html>
+    <head>
+        <title id="title">车辆座位状态</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.8">
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+    
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+          
+    </head>
+    
+    <script>
+        var _cfgPara = $:cfgPara;
+        \$(document).on("pagebeforeshow","#HomePage",function(e){ // 当进入页面二时
+            \$("#title").html(_cfgPara["line_name"]+"线路批量统计")
+            \$("#task").attr("href","/ptool/bktask?act=SHOW-LINE-STAT-TASK&openid="+_cfgPara["openid"]+"&busline_id="+_cfgPara["busline_id"]+"&company_id="+_cfgPara["company_id"])
+            show_busline(_cfgPara["buses"])
+            \$("#start-stat").click(function(e){
+                var from_time = \$("#from_time").val().replace('T'," ")+":00";
+                var to_time   = \$("#to_time").val().replace('T'," ")+":00";
+                var dh = GetDateDiff(from_time,to_time,'hour')
+                if (dh<0) {
+                    alert('开始时间不能早于结束时间，请重新选择')
+                } else {
+                
+                    \$.post("/ptool/bktask",
+                    {
+                        act       :"add-line-stat-task",
+                        openid    :_cfgPara["openid"],
+                        busline_id:_cfgPara["busline_id"],
+                        from_time :from_time,
+                        to_time   :to_time,
+                        imeis     :get_stat_imei(),
+                    },
+                    function(data,status){
+                        window.location.href="/ptool/bktask?act=SHOW-LINE-STAT-TASK&openid="+_cfgPara["openid"]+"&company_id="+_cfgPara["company_id"]+"&busline_id="+_cfgPara["busline_id"],target="_blank";
+                    });
+                }
+            });
+            function get_stat_imei(){
+                var imeis = []
+                for(var i = 0;i<_cfgPara["buses"].length;i++)
+                {
+                   imeis.push(_cfgPara["buses"][i]["imei"])
+                }
+                return imeis.join(",")
+            }
+            function show_busline(buses){
+                \$('#group-member').empty();
+                \$('#group-member').append('<caption>统计车辆列表</caption>')
+                \$('#group-member').append('<tr><th width="10%">No.</th><th>车牌/imei</th><th>位置</th><th width="20%">速度(km/h)</th></tr>')
+                for(var i = 0;i<buses.length;i++)
+                {
+                    var tr ="<tr>"
+                    tr +='<td id="'+buses[i]["imei"]+'">'+(i+1).toString()+'</td>'
+                    tr +='<td>'+buses[i]["name"]+'<br>'+buses[i]["imei"]+'</td>'
+                    tr +='<td>'+buses[i]["addr"].substr(0,5)+'</td>'
+                    tr +='<td>'+buses[i]["speed"]+'</td>'
+                    tr +='</tr>'
+                    \$('#group-member').append(tr);
+                }
+            }
+        })
+        var jdksign  = $:jdksign;
+        wx.config({
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                appId:     jdksign['appid'] , // 必填，公众号的唯一标识
+                timestamp: jdksign['timestamp'], // 必填，生成签名的时间戳
+                nonceStr:  jdksign['nonceStr'], // 必填，生成签名的随机串
+                signature: jdksign['signature'],// 必填，签名，见附录1
+                jsApiList: ['onMenuShareAppMessage',
+                            'onMenuShareTimeline',
+                            "onMenuShareQQ",
+                            "onMenuShareWeibo",
+                            "onMenuShareQZone"] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            });
+            
+        wx.ready(function(){
+            $if sharePara.has_key("title"):
+                wx.onMenuShareTimeline({
+                    title  : '$sharePara["catchword"]', // 分享标题
+                    desc   : "$sharePara["advertising_word"]", // 分享描述
+                    link   : '$sharePara["show_url"]',   //分享链接
+                    imgUrl : '$sharePara["logo_url"]', // 分享图标
+                    type   : '', // 分享类型,music、video或link，不填默认为link
+                    dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                    success: function () {
+                        // 用户确认分享后执行的回调函数
+                        alert("分享成功")
+                        },
+                        cancel: function () { 
+                            // 用户取消分享后执行的回调函数
+                            //alert("取消了分享")
+                        }
+                });
+            $else:
+                wx.onMenuShareAppMessage({
+                    title  : '$sharePara["catchword"]', // 分享标题
+                    desc   : "$sharePara["advertising_word"]", // 分享描述
+                    link   : '$sharePara["show_url"]',   //分享链接
+                    imgUrl : '$sharePara["logo_url"]', // 分享图标
+                    type   : '', // 分享类型,music、video或link，不填默认为link
+                    dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                    success: function () {
+                        // 用户确认分享后执行的回调函数
+                        alert("分享成功")
+                    },
+                    cancel: function () { 
+                        // 用户取消分享后执行的回调函数
+                        //alert("取消了分享")
+                    }
+                });
+            wx.onMenuShareTimeline({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                    alert("分享成功")
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQQ({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                    alert("分享成功")
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareWeibo({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                    alert("分享成功")
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQZone({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                    alert("分享成功")
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+        }); 
+    </script>
+    <body>
+        <div data-role="page" id="HomePage" style="background-color:#fffffff"  >
+            <div data-role="header" >
+                <a id="DeviceBack" href='/m/device?act=seat-status-auto&openid=$sharePara["openid"]' target='_blank' data-role="button" data-icon="back"  data-iconpos="left">返回</a>
+                <h1 id="arm-name" style="font-size:100%"></h1>
+                <a id="task" href="#"  target="_blank" data-role="button" data-icon="grid"  data-iconpos="left">任务进展</a>
+            </div>
+
+            <div id="bar-member" class="ui-content">
+                <table><tr><td><strong>开始时间</strong></td>
+                       <td><input  id="from_time" type="datetime-local" data-clear-btn="true" value=""></td>
+                </tr></table>
+                <table><tr><td><strong>截止时间</strong></td>
+                       <td><input  id="to_time" type="datetime-local" data-clear-btn="true" value=""></td>
+                </tr></table>
+                
+                <table width="100%" id='group-member'  border='1' cellspacing="0" cellpadding="10" style='font-size:100%;text-align:center'>
+                
+                
+                </table>
+            </div>
+            <div id="ifooter" data-role="footer" data-position="fixed" data-fullscreen="false">
+                <div data-role="navbar" id ="ifooter-navbar">
+                    <ul>
+                        <li><a id="start-stat" href="#"  target="_blank" style="font-size:100%;" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-grid">启动统计</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>  
+    </body>
+    </html>
+    
+    

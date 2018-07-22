@@ -1,0 +1,352 @@
+$def with (cfgPara,fixPara,jdkSign)
+    <!doctype HTML>
+    <html>
+    <head>
+        <title id="title"></title>
+        <meta name="viewport" content="width=device-width, initial-scale=0.9">
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+        <link rel="stylesheet" href="/static/stylesheets/iwaiter.css" />    
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+        <style type="text/css"> 
+
+        div#device-info.ui-grid-a .ui-block-a { width: 40% }
+        div#device-info.ui-grid-a .ui-block-b { width: 60% }
+        div#share-group.ui-grid-a .ui-block-a { width: 40% }
+        div#share-group.ui-grid-a .ui-block-b { width: 60% }        
+        </style>   
+<style>
+div.img
+  {
+  margin:3px;
+  border:1px solid #bebebe;
+  height:auto;
+  width:auto;
+  float:left;
+  text-align:center;
+  }
+div.img img
+  {
+  display:inline;
+  margin:3px;
+  border:1px solid #bebebe;
+  }
+div.img a:hover img
+  {
+  border:1px solid #333333;
+  }
+div.desc
+  {
+  text-align:center;
+  font-weight:normal;
+  width:150px;
+  font-size:12px;
+  margin:10px 5px 10px 5px;
+  }
+</style>        
+    </head>
+    
+    <script>
+        var  cfgPara     = $:cfgPara
+        var _openid      = cfgPara["openid"];
+        var devs         = cfgPara["items"];     
+        var jdksign      = $:jdkSign;
+        var sltNo;
+        var _ids;
+        var _grpname ;
+        wx.config({
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                appId:     jdksign['appid'] , // 必填，公众号的唯一标识
+                timestamp: jdksign['timestamp'], // 必填，生成签名的时间戳
+                nonceStr:  jdksign['nonceStr'], // 必填，生成签名的随机串
+                signature: jdksign['signature'],// 必填，签名，见附录1
+                jsApiList: ['hideAllNonBaseMenuItem','hideOptionMenu',
+                            'onMenuShareAppMessage',
+                            'onMenuShareTimeline',
+                            "onMenuShareQQ",
+                            "onMenuShareWeibo",
+                            "onMenuShareQZone"] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            });
+
+        wx.ready(function(){
+            wx.hideOptionMenu();
+            wx.onMenuShareAppMessage({
+                title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareTimeline({
+                title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQQ({
+                title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareWeibo({
+                title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQZone({
+                title  : '天网守护-唯天网 守护更贴心', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://eqxiu.com/s/02L4LMtk",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+        });      
+    
+
+
+
+        \$(document).on("pagebeforeshow","#HomePage",function(e){
+            
+            if (cfgPara["type"]=="transfer"){
+                \$("#title").html("设备转让确认");
+                \$("#arm-name").html("扫一扫完成确认");
+            }
+            if (cfgPara["type"]=="share_seats_view" || cfgPara["type"]=="share_view"){
+                \$("#title").html("设备共享确认");
+                \$("#arm-name").html("扫一扫完成确认");
+            }
+            
+            //添加元素
+            \$('#share-member').empty();
+            \$('#share-member').append('<tr style="text-align:center;Bgcolor:PowderBlue;"><th>序号</th><th>名称</th><th>类型</th><th>位置</th></tr>')
+            //把选定的元素添加到表格中
+            for (var j =0;j<devs.length;j++) {
+                \$('#share-member').append(appendItem(j,"no"));
+            }
+
+            \$("#share-member").click(function(e){
+                if(e.target.name=='device'){
+                    sltNo = e.target.id.substring(9);
+                }
+            });
+            \$("#accept-share").click(function(e){
+                \$.post("/m/order",
+                    {
+                       act      :"ACCEPT_SHARE",
+                       openid   :_openid,
+                       out_trade_no     :cfgPara["out_trade_no"],
+                    },
+                    function(data,status){
+                        if (data["result"]=="success") {
+                            \$("#accept-share").hide()
+                            alert("你已经完成了分享确认，快去看看视图吧")
+                        }
+                });                
+            })
+        });    
+
+        function appendItem(i,fistType) {
+            var tr ="<tr>"
+            var j = i+1;
+            if (fistType == "no"){
+               tr = tr+'<td>'+j.toString()+'</td>';
+            } else {
+               tr = tr+'<td><input type="checkbox" name="checkbox-device"  id="checkbox-'+j.toString() +'" data-theme="b"></td>';
+            } 
+           
+            $if fixPara["openid"] =="error":
+                tr = tr+'<td>'+devs[i]['name']+'</td>';
+            $else:
+                tr = tr+"<td><a name='device' id='about-btn" + i.toString() +"' style='font-size:100%' href='#About' >"+devs[i]['name']+"</a></td>";
+            //tr = tr+"<td>"+devs[i]['last_time']+"</td>"; 
+            tr = tr+'<td><img id="arm_type" width="20" height="20" src="/static/img/'+devs[i]['arm_type']+'.png"></td>';
+            var addr;
+            if (devs[i]['addr'].length > 5) {
+                addr = devs[i]['addr'].slice(0,5)+"..";
+            } else {
+                addr = devs[i]['addr'];
+            }           
+            
+            
+            $if fixPara["openid"] =="error":
+                tr = tr+'<td>'+addr+'</td>';
+            $else:
+                tr = tr+"<td ><a href='/m/bustrack?act=MINE_TRACK&openid="+_openid+"&imei="+devs[i]['imei']+"' target='_blank'>"+addr+"</a></td>";
+            //tr = tr+"<td >"+devs[i]['expired_at']+"</td>";
+            tr = tr + "</tr>";
+            return tr;
+        }       
+       
+        //设备信息
+        \$(document).on("pagebeforeshow","#About",function(e){
+            \$.post("/m/device",
+                {
+                   act      :"ABOUT",
+                   openid   :_openid,
+                   imei     :devs[sltNo]['imei'],
+                },
+                function(data,status){
+                    \$('#about-name').html(data['name']);
+                    \$('#about-type').html(data['devType']);
+                    \$('#about-imei').html(data['imei']);
+                    \$('#about-phone').html(data['phone']);
+                    \$('#about-create_at').html(data['create_at']);
+                    \$('#about-service-start').html(data['service_start']);
+                    \$('#about-service-end').html(data['expired_at']);
+            });
+        });         
+                    
+    </script>
+    <body>
+       <!-- Start of second page: #two -->
+        <div data-role="page" id="HomePage" class="background">
+            <div data-role="header" >
+                <h1 id="arm-name" style="font-size:100%"></h1>
+            </div>
+            
+            <div role="main" class="ui-content"> 
+                <table width="100%" id='share-member'  border='1' cellpadding="5" style='font-size:100%;text-align:center;background-color:#E0FFFF'>
+                    
+                </table>
+                <br><br>
+                $if fixPara["openid"] =="error": 
+                    <section class="yidao-com" style="">
+                        <fieldset style="margin: 0px 10px 10px; padding: 10px 0px; max-width: 100%; min-width: 0px; box-shadow: rgb(204, 204, 204) 0px 0px 10px; border: 1px solid rgb(170, 170, 170); border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; text-align: center; background-color: rgb(250, 250, 239); box-sizing: border-box !important; word-wrap: break-word !important;">
+                        
+                        <span style="margin: 0px; padding: 5px 0px; max-width: 100%; display: block; color: rgb(75, 172, 198); font-weight: 700; box-sizing: border-box !important; word-wrap: break-word !important;">长按二维码完成确认</span>
+                        <span style="text-align:center;margin: 0px; padding: 10px 0px; max-width: 100%; display: block; color: rgb(75, 172, 198); font-weight: 700; box-sizing: border-box !important; word-wrap: break-word !important;">
+                            $if fixPara["trusting"] =="no":
+                                <img height="152" src="$fixPara['qrcode_url']" width="153">
+                            $else:
+                                <img height="152" src="$fixPara['qrcode_trusting']" width="153">
+                        </span>
+                        <br>
+                        <span style="text-align:left;">注：扫一扫后，出现以下图直接点击<strong style="color:red">关注</strong>
+                            <img height="152" src="/static/img/focus.png" width="253">
+                        </span>
+                        </fieldset>
+                    </section>
+            </div><!-- /content -->
+            $if fixPara["openid"] !="error" and fixPara["state"]!="finished": 
+                <div data-role="footer" data-position="fixed">
+                    <div data-role="navbar">
+                        <ul> 
+                        <li><a id='accept-share' style="font-size:100%"  class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-star">接受分享</a>
+                        </li>
+                        <!--li><a id='cancel-share' style="font-size:100%"  class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-star">残忍拒绝</a>
+                        </li-->
+                        <!--li><button id='history-stat2' style="font-size:110%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-grid">管理共享</button>
+                        </li-->
+                        </ul>
+                    </div>
+                </div>               
+            <div data-role="popup" id="popupPermit" class="ui-content" style="max-width:280px">
+                <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
+            <p>访问限制:扫二维码，接受分享，才可以获得查看权限！</p>
+            </div>
+        </div>  
+        <!-- Start of second page: #two -->
+        <div data-role="page" id="About" data-theme="a">
+            <div data-role="header">
+                <a id="back" href="#HomePage" data-role="button" data-icon="back"  data-iconpos="left">返回</a>
+                <h1 style="font-size:100%">设备信息</h1>
+            </div><!-- /header -->
+            <div role="main" class="ui-content"> 
+                <div class="ui-grid-a" id="device-info" >
+                    <div  class="ui-block-a" >
+                        <div class="ui-bar ui-bar-a" style="">名称</div>
+                    </div>
+                    <div class="ui-block-b" >
+                        <div id='about-name' class="ui-bar ui-bar-a" style="">
+                        </div>
+                    </div>
+                    <div  class="ui-block-a" >
+                        <div id='type' class="ui-bar ui-bar-a" style="">设备型号</div>
+                    </div>
+                    <div class="ui-block-b" >
+                        <div id='about-type' class="ui-bar ui-bar-a" style=""></div>
+                    </div>
+                    <div  class="ui-block-a" >
+                        <div class="ui-bar ui-bar-a" style="">IMEI</div>
+                    </div>
+                    <div class="ui-block-b" >
+                        <div  id='about-imei' class="ui-bar ui-bar-a" style=""></div>
+                    </div>
+                    <div  class="ui-block-a" >
+                        <div class="ui-bar ui-bar-a" style="">绑定手机号</div>
+                    </div>
+                    <div class="ui-block-b">
+                        <div  id='about-phone' class="ui-bar ui-bar-a" style=""></div>
+                    </div>
+                    <div  class="ui-block-a" >
+                        <div class="ui-bar ui-bar-a" style="">服务开始日</div>
+                    </div>
+                    <div class="ui-block-b">
+                        <div id='about-service-start' class="ui-bar ui-bar-a" style=""></div>
+                    </div> 
+                    <div  class="ui-block-a" >
+                        <div class="ui-bar ui-bar-a" style="">服务到期日</div>
+                    </div>
+                    <div class="ui-block-b">
+                        <div id='about-service-end' class="ui-bar ui-bar-a" style=""></div>
+                    </div>                 
+                    <div  class="ui-block-a" >
+                        <div class="ui-bar ui-bar-a" style="">上线时间</div>
+                    </div>
+                    <div class="ui-block-b">
+                        <div id='about-create_at' class="ui-bar ui-bar-a" style=""></div>
+                    </div>
+                </div>
+            </div><!-- /content -->
+        </div><!-- /page two -->       
+    </body>
+    </html>
+    
+    

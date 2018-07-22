@@ -1,0 +1,101 @@
+$def with (cfgPara,jdksign,fixPara)
+    <!doctype HTML>
+    <html>
+    <head>
+        <title id="title"></title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="/static/stylesheets/iwaiter.css" />
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+      
+    </head>
+    <style type="text/css">
+
+    </style>
+    <script>
+        var cfgPara  = $:cfgPara;
+        var jdksign  = $:jdksign;
+        var _sites   = cfgPara["sites"]["manual"];
+        var _prices  = cfgPara["prices"];
+        \$(document).ready(function(){ 
+            \$("#title").html(cfgPara["line_name"])
+            \$("#DeviceBack").attr("href",'/m/manager?act2=home_comanyid_$fixPara["company_id"]&openid='+cfgPara["openid"])
+            showPrice();
+            function showPrice() {
+                \$("#sites").empty();
+                var html =[];
+                for(var r=0;r<_sites.length+1;r++){ 
+                    //横标题
+                    if (r ==0) {
+                        html.push("<tr><td></td>")
+                        for(var c=0;c<_sites.length;c++){                  
+                            html.push("<td>"+_sites[c]["name"]+"</td>")
+                        }
+                        html.push("</tr>")
+                    } else {
+                        
+                        html.push("<tr><td>"+_sites[r-1]["name"]+"</td>")
+                        for(var c=0;c<_sites.length;c++){
+                            col_prices = _prices[_sites[c]["site_id"]]
+                            if (r-1==c) {
+                                html.push('<td>-</td>')
+                            } else if (typeof(col_prices)!="undefined" && typeof(col_prices[_sites[r-1]["site_id"]])!="undefined") {
+                                html.push('<td><input id="'+_sites[c]["site_id"].toString()+"-"+_sites[r-1]["site_id"].toString()+'" type="number"  value="'+col_prices[_sites[r-1]["site_id"]].toString()+'"></td>')
+                            }else {
+                                html.push('<td><input id="'+_sites[c]["site_id"].toString()+"-"+_sites[r-1]["site_id"].toString()+'" type="number"  value="0"></td>')
+                            }
+                        }
+                        html.push("</tr>")
+                    }
+                }
+                \$("#sites").append(html.join("\r\n"))
+                return 
+            }
+            
+            \$('input').change(function(e){
+                \$.post("/m/manager",
+                {
+                    act       :"UPDATE-LINE-PRICE",
+                    openid    :cfgPara["openid"],
+                    busline_id:cfgPara["busline_id"],
+                    site_id   :e.target.id,
+                    price     :e.target.value,
+                },
+                function(data,status){
+                    //alert(data["msg"])
+                });
+            })
+        })
+        
+    </script>
+
+    <body>
+        <div data-role="page" id="HomePage" class=""  >
+            <div data-role="header"  >
+                <a id="DeviceBack" href='' target="_blank" data-role="button" data-icon="back"  data-iconpos="left">服务中心</a>
+                <h1 id="arm-name" style="font-size:100%">线路票价</h1>  
+            </div>
+            <br>
+            <!--div role="main" class="ui-content jqm-content" -->
+                <table id ="sites" width="100%" border="1" cellpadding="10" style="font-size:100%;text-align:center" >
+                    
+                </table>
+
+                <div id="ifooter" data-role="footer" data-position="fixed" data-fullscreen="true">
+                    <div data-role="navbar" id ="ifooter-navbar">
+                        <ul>
+                        <li><a id="buses" href="/m/manager?act=LINE-BUSES&openid=$fixPara['openid']&busline_id=$fixPara['busline_id']"  target="_blank" style="font-size:100%;" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-grid">价格调整</a></li>
+                        <li><a id="line" href="/m/manager?act=design-line-site-qq&openid=$fixPara['openid']&busline_id=$fixPara['busline_id']"  target="_blank" style="font-size:100%;" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-user">线路规划</a></li>
+                        </ul>
+                    </div>
+                </div><!-- /footer -->
+        </div>
+       
+    </body>
+    </html>
+    
+    

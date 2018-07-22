@@ -1,0 +1,134 @@
+$def with (cfgPara,jdksign,sharePara)
+    <!doctype HTML>
+    <html>
+    <head>
+        <title>公司运营管理</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.9">
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="/static/stylesheets/iwaiter.css" />        
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+      
+    </head>
+    <style type="text/css">
+    </style>
+    <script>
+        var jdksign  = $:jdksign;
+        wx.config({
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                appId:     jdksign['appid'] , // 必填，公众号的唯一标识
+                timestamp: jdksign['timestamp'], // 必填，生成签名的时间戳
+                nonceStr:  jdksign['nonceStr'], // 必填，生成签名的随机串
+                signature: jdksign['signature'],// 必填，签名，见附录1
+                jsApiList: ['onMenuShareAppMessage',
+                            'onMenuShareTimeline',
+                            "onMenuShareQQ",
+                            "onMenuShareWeibo",
+                            "onMenuShareQZone"] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            });
+            
+        wx.ready(function(){
+            wx.onMenuShareAppMessage({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : '$sharePara["advertising_word"]', // 分享描述
+                link   : "$sharePara["advertising_word"]",   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareTimeline({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : '$sharePara["advertising_word"]', // 分享描述
+                link   : "$sharePara["show_url"]",   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQQ({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : '$sharePara["advertising_word"]', // 分享描述
+                link   : "$sharePara["show_url"]",   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareWeibo({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : '$sharePara["advertising_word"]', // 分享描述
+                link   : "$sharePara["show_url"]",   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQZone({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : '$sharePara["advertising_word"]', // 分享描述
+                link   : "$sharePara["show_url"]",   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+        }); 
+
+    </script>
+
+    <body>
+        <div data-role="page" id="HomePage" class="background" >
+            <div data-role="header"  >
+                <a data-role="none"><img src="$cfgPara['user']['headimgurl']" width="40" height="40"></a>
+                <h1 style="font-size:100%">$cfgPara['user']["nickname"]</h1>
+                <a href="https://open.weixin.qq.com/connect/oauth2/authorize?appid=$cfgPara['appid']&redirect_uri=$cfgPara['homedomain']/m/device?act=home-device-nogroup&response_type=code&scope=snsapi_base&state=123#wechat_redirect" target="_blank" class="ui-btn ui-icon-home ui-btn-icon-right">服务中心</a>
+            </div>
+            <br>
+            <table width="100%" cellspacing="10">
+                <tr><td><a href="/m/company?act=REGEDIT-COMPANY&openid=$cfgPara['openid']" target="_blank"  style="font-size:80%;width:85%"   class="ui-shadow ui-btn ui-corner-all ui-btn-icon-top ui-icon-edit table-b1">客运公司注册</a></td>
+                    <td width="33%"><a href="/m/company?act=MANAGE-COMPANY&openid=$cfgPara['openid']"  target="_blank"   style="font-size:80%;width:85%" class="ui-shadow ui-btn ui-corner-all ui-btn-icon-top ui-icon-user table-b1">客运公司管理</a></td>
+                    <td><a href="/logstat?act=user-stat&openid=$cfgPara['openid']&product=gxsaiwei" target="_blank" style="font-size:80%;width:85%" class="ui-shadow ui-btn ui-corner-all ui-btn-icon-top ui-icon-cloud table-b1">用户访问统计</a></td>
+                </tr> 
+                <tr><td><a href="/logstat?act=user-url-stat&openid=$cfgPara['openid']&product=gxsaiwei" target="_blank" style="font-size:80%;width:85%" class="ui-shadow ui-btn ui-corner-all ui-btn-icon-top ui-icon-cloud table-b1">功能访问统计</a></td>
+                </tr>                 
+            </table>
+                <!--div class="ui-block-a"><a href="/m/device?act=ADD-NEW-DEVICE&openid=$cfgPara['openid']" target="_blank" style="font-size:80%" class="ui-shadow ui-btn ui-corner-all ui-btn-icon-top ui-icon-plus">录入新设备</a></div-->                              
+        </div>            
+    </body>
+    </html>
+    
+    

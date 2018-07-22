@@ -1,0 +1,220 @@
+$def with (cfgPara,jdksign,sharePara)
+    <!doctype HTML>
+    <html>
+    <head>
+        <title id="title"></title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.8">
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+    
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+          
+    </head>
+    
+    <script>
+        var _cfgPara = $:cfgPara;
+        \$(document).on("pagebeforeshow","#HomePage",function(e){ // 当进入页面二时
+            var title = _cfgPara["name"]+"乘客统计详情"
+            \$("#title").html(title)
+            \$("#arm-name").html(title)
+            \$("#from_time").html(_cfgPara["from_time"])
+            \$("#from_site").html(_cfgPara["from_site"])
+            \$("#to_time").html(_cfgPara["to_time"])
+            \$("#to_site").html(_cfgPara["to_site"])
+            showGroupMember(_cfgPara["items"])
+            
+            function showGroupMember(items){
+                //不是完整的一个数据包，不显示
+                \$('#group-member').empty();
+                \$('#group-member').append('<caption>座号持续里程统计(<span style="background-color:#00FF00">绿色</span>为判定结论)</caption>')
+                \$('#group-member').append('<tr><th>座号</th><th>有人</th><th>空座</th><th>超时</th><th>未知</th></tr>')
+                for(var i = 0;i<items.length;i++)
+                {
+                    var tr ="<tr>";
+                    tr+='<td  bgcolor="#F0F8FF">'+(i+1).toString()+'</td>'
+                    if (items[i]["state"]=="seated") {
+                        tr+='<td  bgcolor="#00FF00">'+items[i]["mileage_seated"]+'</td>'
+                    } else {
+                        tr+='<td>'+items[i]["mileage_seated"]+'</td>'
+                    }
+                    if (items[i]["state"]=="idle") {
+                        tr+='<td  bgcolor="#00FF00">'+items[i]["mileage_idle"]+'</td>'
+                    } else {
+                        tr+='<td>'+items[i]["mileage_idle"]+'</td>'
+                    }
+                    if (items[i]["state"]=="timeout") {
+                        tr+='<td  bgcolor="#00FF00">'+items[i]["mileage_timeout"]+'</td>'
+                    } else {
+                        tr+='<td>'+items[i]["mileage_timeout"]+'</td>'
+                    }
+                    if (items[i]["state"]=="unknown") {
+                        tr+='<td  bgcolor="#00FF00">'+items[i]["mileage_unknown"]+'</td>'
+                    } else {
+                        tr+='<td>'+items[i]["mileage_unknown"]+'</td>'
+                    }
+                    //tr +='<td bgcolor="#FFFFFF">'+seats[i*3 + j][1]+'</td>';
+                    tr +="</tr>"
+                    \$('#group-member').append(tr);
+                }
+            }
+        })
+        var jdksign  = $:jdksign;
+        wx.config({
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                appId:     jdksign['appid'] , // 必填，公众号的唯一标识
+                timestamp: jdksign['timestamp'], // 必填，生成签名的时间戳
+                nonceStr:  jdksign['nonceStr'], // 必填，生成签名的随机串
+                signature: jdksign['signature'],// 必填，签名，见附录1
+                jsApiList: ['onMenuShareAppMessage',
+                            'onMenuShareTimeline',
+                            "onMenuShareQQ",
+                            "onMenuShareWeibo",
+                            "onMenuShareQZone"] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            });
+            
+        wx.ready(function(){
+            $if sharePara.has_key("title"):
+                wx.onMenuShareTimeline({
+                    title  : '$sharePara["catchword"]', // 分享标题
+                    desc   : "$sharePara["advertising_word"]", // 分享描述
+                    link   : '$sharePara["show_url"]',   //分享链接
+                    imgUrl : '$sharePara["logo_url"]', // 分享图标
+                    type   : '', // 分享类型,music、video或link，不填默认为link
+                    dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                    success: function () {
+                        // 用户确认分享后执行的回调函数
+                        alert("分享成功")
+                        },
+                        cancel: function () { 
+                            // 用户取消分享后执行的回调函数
+                            //alert("取消了分享")
+                        }
+                });
+            $else:
+                wx.onMenuShareAppMessage({
+                    title  : '你的朋友 $sharePara["user"] 给你分享了1个设备，注意确认！', // 分享标题
+                    desc   : "$sharePara["advertising_word"]", // 分享描述
+                    link   : '$sharePara["share_url"]',   //分享链接
+                    imgUrl : '$sharePara["logo_url"]', // 分享图标
+                    type   : '', // 分享类型,music、video或link，不填默认为link
+                    dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                    success: function () {
+                        // 用户确认分享后执行的回调函数
+                        \$.post("/m/order",
+                        {
+                        act         :"GEN_SEATS_SHARE",
+                        openid      :'$sharePara["openid"]',
+                        imei        :'$sharePara["imei"]',
+                        out_trade_no:'$sharePara["out_trade_no"]',
+                        share_url   :'$sharePara["share_url"]', 
+                        
+                        },
+                        function(data,status){
+                            if (data["result"]=="success") {
+                                window.location.href ='$sharePara["share_url"]&trusting=yes';
+                            }
+                        });
+                    },
+                    cancel: function () { 
+                        // 用户取消分享后执行的回调函数
+                        //alert("取消了分享")
+                    }
+                });
+            wx.onMenuShareTimeline({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                    alert("分享成功")
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQQ({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                    alert("分享成功")
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareWeibo({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                    alert("分享成功")
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQZone({
+                title  : '$sharePara["catchword"]', // 分享标题
+                desc   : "$sharePara["advertising_word"]", // 分享描述
+                link   : '$sharePara["show_url"]',   //分享链接
+                imgUrl : '$sharePara["logo_url"]', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                    alert("分享成功")
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+        }); 
+    </script>
+    <body>
+        <div data-role="page" id="HomePage" style="background-color:#fffffff"  >
+            <div data-role="header" >
+                <a id="DeviceBack" href="/m/manager?act=line-buses&openid=$sharePara["openid"]&imei=$sharePara["imei"]&company_id=$sharePara['company_id']" target='_blank' data-role="button" data-icon="back"  data-iconpos="left">班车队</a>
+                <h1 id="arm-name" style="font-size:100%"></h1>
+                <a href="/m/bustrack?act=MINE_TRACK&openid=$sharePara['openid']&imei=$sharePara['imei']&company_id=$sharePara['company_id']"  target="_blank" data-role="button" data-icon="grid"  data-iconpos="left">当前位置</a>
+            </div>
+
+            <div id="bar-member" class="ui-content">
+                <p><strong>统计阶段:</strong></p>
+                <p style="font-size:90%">&nbsp&nbsp&nbsp&nbsp<strong id="from_time"></strong>&nbsp<span id='from_site' style="color:#000066"></span></p>
+                <p style="font-size:90%">&nbsp&nbsp&nbsp&nbsp<strong id="to_time"></strong>&nbsp<span id='to_site' style="color:#000066"></span></p>
+                <p style="font-size:90%">&nbsp&nbsp&nbsp&nbsp<strong >行程</strong>&nbsp<span id='mileage' style="color:#000066"></span>公里</p>
+                <table width="100%" frame="hsides"  cellspacing="0" cellpadding="10" style='font-size:100%;text-align:center'>
+                <caption>统计结果</caption>
+                    <tr><th>乘客数</th><th>空座数</th><th>超时数</th><th>未知数</th></tr>
+                    <tr><td id = "num_seated"></td id = "num_idle"><td></td id = "num_timeout"><td></td id = "num_unknown"><td></td></tr>
+                </table>
+                <br><br>
+                <table width="100%" id='group-member'  border='1' cellspacing="0" cellpadding="10" style='font-size:100%;text-align:center'>
+                
+                </table>
+            </div>
+        </div>  
+    </body>
+    </html>
+    
+    

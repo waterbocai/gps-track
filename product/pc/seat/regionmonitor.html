@@ -1,0 +1,376 @@
+$def with (cfgPara,fixPara)
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>赛微，为智能客运而生</title>
+        <link rel="stylesheet" type="text/css" href="/easyui/jquery-easyui/themes/bootstrap/easyui.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/jquery-easyui/themes/icon.css">
+        <link rel="stylesheet" type="text/css" href="/easyui/css/layout.css">
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.min.js"></script>
+        <script type="text/javascript" src="/easyui/jquery-easyui/jquery.easyui.min.js"></script>
+        <script type="text/javascript" src="/static/js/utility.js"></script>
+        <script type="text/javascript" src="/easyui/datagrid-filter.js"></script>
+        <script type="text/javascript" src="/easyui/datagrid-groupview.js"></script>
+        <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp"></script>
+
+    </head>
+    
+    <body id="content" class="easyui-layout" style="height:650px;">
+        <div data-options="region:'center',split:true,collapsed:false" style="height:200px;width:100%">
+            <table id="region" class="easyui-datagrid"  style="width:auto;height:auto" data-options="
+                singleSelect: true,
+                rownumbers: true,
+                toolbar: '#tb',
+                showFooter: true,
+                fitColumns:true">
+                <thead>
+                    <tr>
+                        <th data-options="field:'from_time',align:'center'">开始时间</th>
+                        <th data-options="field:'to_time',align:'center'">截止时间</th>
+                        <th data-options="field:'duration_time',align:'center'">耗时</th>
+                        <th data-options="field:'from_name',align:'center'">起点站</th>
+                        <th data-options="field:'to_name',align:'center'">终点站</th>
+                        
+                        <th data-options="field:'duration_mileage',align:'center'">行程(公里)</th>
+                        <th data-options="field:'speed',align:'center'">车速(M/H)</th>
+                        <th data-options="field:'time_sum',align:'center'">次数占比人数</th>
+                        <th data-options="field:'times_percent',align:'center'">次数比门限</th>
+                        <th data-options="field:'mileage_sum',align:'center'">里程占比人数</th>
+                        <th data-options="field:'mileage_percent',align:'center'">里程比门限</th>
+                        <th data-options="field:'checked_sum',align:'center'">核对人数</th>
+                    </tr>
+                </thead>
+            </table>
+            <div id="tb" style="height:auto">
+                从:<input id="from_time" type="text" class="easyui-datetimebox" data-options="formatter:myformatter,parser:myparser" required="required" style="padding:5px;">
+                到:<input id="to_time" type="text" class="easyui-datetimebox" data-options="formatter:myformatter,parser:myparser" required="required" style="padding:5px;">
+                <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-mini-refresh',plain:true" onclick="loadMonitorRegionData()">查询</a>
+                <!--a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-large-chart',plain:true" onclick="checkResult()">核对结果</a-->
+            </div>
+        </div>
+        <div  style="height:440px;padding:0px;" 
+             data-options="region:'south',
+                           collapsed:true,
+                           split:true,
+                           title:'统计报表'">
+            <div id="tt" class="easyui-tabs" fit="true" border="false" pill="true">
+                <div title="详情报表" style="padding:0px">
+                    <table id="monitor-detail" class="easyui-datagrid"  style="width:auto;height:100%" 
+                        data-options="singleSelect: true,
+                           remoteSort:false,
+                           multiSort:false,
+                           toolbar:'#mr-tb',
+                        "
+                        sortName='seat_no' sortOrder="asc"
+                        rownumbers="true" fitColumns="true" 
+                        >
+                        
+                        
+                        <thead>
+                            <tr>
+                                <th data-options="field:'seat_no',align:'center'"    rowspan="2"  sortable="true">座位号</th>
+                                <th data-options="field:'sensor_no',align:'center'"  rowspan="2"  sortable="true">蓝牙号</th>
+                                <th colspan="6">次数比例统计</th>
+                                <th colspan="6">里程统计</th>
+                                <th data-options="field:'checked_result',align:'center',
+                                            editor:{
+                                                type:'combobox',
+                                                options:{
+                                                    valueField:'seatid',
+                                                    textField:'seatName',
+                                                    method:'get',
+                                                    url:'/pc/seat?act=get-seat-type&openid=$fixPara["openid"]',
+                                                    required:true
+                                                }
+                                            }"  rowspan="2"   sortable="true">审核结论</th>
+                            </tr>
+                            <tr>
+                                <th data-options="field:'times_seated',align:'center'"   sortable="true">在位</th>
+                                <th data-options="field:'times_idle',align:'center'"     sortable="true">空座</th>
+                                <th data-options="field:'times_unknown',align:'center'"  sortable="true">未知</th>
+                                <th data-options="field:'times_timeout',align:'center'"  sortable="true">超时</th>
+                                <th data-options="field:'times_percent',align:'center'"  sortable="true">在位比例</th>
+                                <th data-options="field:'times_result',align:'center'"   sortable="true">结论</th>
+                                
+                                <th data-options="field:'mileage_seated',align:'center'"  sortable="true">在位</th>
+                                <th data-options="field:'mileage_idle',align:'center'"    sortable="true">空座</th>
+                                <th data-options="field:'mileage_unknown',align:'center'" sortable="true">未知</th>
+                                <th data-options="field:'mileage_timeout',align:'center'" sortable="true">超时</th>
+                                <th data-options="field:'mileage_percent',align:'center'" sortable="true">在位比例</th>
+                                <th data-options="field:'mileage_result',align:'center'" sortable="true">结论</th>
+                            </tr>
+                        </thead>
+                    </table>
+                    <div id="mr-tb" style="height:auto">
+                        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-save',plain:true" onclick="updateChange()">提交更新</a>
+                        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-redo',plain:true" onclick="notify2CustomerDlg()">通知客户</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div id="notify-customer-dlg" class="easyui-dialog"  closed="true"   title="通知客户" style="width:640px;height:350px;padding:0px;" data-options="
+                iconCls: 'icon-redo',
+                autoOpen: false,
+                buttons: [{
+                    text:'发送',
+                    iconCls:'icon-ok',
+                    handler:function(){notify2Customer()}
+                },{
+                    text:'取消',
+                    handler:function(){
+                        \$('#notify-customer-dlg').dialog('close');
+                    }
+                }]
+            ">
+            <div class="easyui-layout" data-options="fit:true" style="width:620px;height:auto;">
+                <div data-options="region:'center',split:true,title:'消息内容'"  style="width:300px;height:auto;">
+                    <input id="msg" class="easyui-textbox" data-options="multiline:true" value="" style="width:100%;height:100%;padding:5px 5px">
+                </div>
+                <div data-options="region:'east',split:true,title:'接收人员'"  style="width:300px;height:auto;">
+                    <table id="receivers-dg" class="easyui-datagrid" fit="true" style="width:100%;height:auto"
+                            data-options="
+                                singleSelect:false,
+                                rownumbers:true,
+                                view:groupview,                
+                                groupField:'group',
+                                groupFormatter:function(value,rows){
+                                    return value + ' - ' + rows.length + ' 个';
+                                }
+                            " >
+                            
+                        <thead>
+                            <tr>
+                                <th data-options="field:'group',editor:'textbox'">分组</th>
+                                <th data-options="field:'remark'"  sortable="true">名称</th>
+                                <!--th data-options="field:'no',width:100">耗时(小时)</th-->
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!--div id="stat-tb" style="height:auto">
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="statStatusDithering()">座位统计</a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-remove',plain:true" onclick="travelSite()"></a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-sum',plain:true" onclick="historyTrack()"></a>
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-sum',plain:true" onclick="statStatus()"></a>
+        </div-->
+        <script type="text/javascript">
+            var cfgPara  = $:cfgPara;
+            var _openid =cfgPara["openid"];
+            \$(document).ready(function () {
+                \$("#from_time").datetimebox("setValue",cfgPara["from_time"])
+                \$("#to_time").datetimebox("setValue",cfgPara["to_time"])
+                \$("#region").datagrid("loadData",cfgPara)
+
+            });
+        </script>
+        <!--script type="text/javascript" src="/easyui/datagrid-cellediting.js"></script-->
+        <script id="region-datagrid-script">
+            function loadMonitorRegionData(){
+                var from_time = \$("#from_time").datetimebox("getValue")+":00";
+                var to_time   = \$("#to_time").datetimebox("getValue")+":00";
+                \$.post("/pc/seat",
+                {
+                    act       :"get-monitor-region-result",
+                    openid    :cfgPara["openid"],
+                    imei      :cfgPara["dev"]["imei"],
+                    from_time :from_time,
+                    to_time   :to_time,
+                },
+                function(data,status){
+                    \$("#region").datagrid("loadData",data)
+                })
+            }
+            \$("#region").datagrid({
+                onClickRow:function(index,row) {
+                    \$.post("/pc/seat",
+                    {
+                        act       :"get-region-result-detail",
+                        openid    :cfgPara["openid"],
+                        region_result_id  :row["id"],
+                    },
+                    function(data,status){
+                        \$("#monitor-detail").datagrid("loadData",data)
+                    })
+                }
+            })
+            
+
+        </script>
+        <script name="monitor-detail-script">
+            var editIndex = undefined;
+            function endEditing(){
+                if (editIndex == undefined){return true}
+                if (\$('#monitor-detail').datagrid('validateRow', editIndex)){
+                    \$('#monitor-detail').datagrid('endEdit', editIndex);
+                    editIndex = undefined;
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            \$("#monitor-detail").datagrid({
+                onEndEdit:function(index, row){
+                    var ed = \$(this).datagrid('getEditor', {
+                        index: index,
+                        field: 'checked_result'
+                    });
+                    row.checked_result = \$(ed.target).combobox('getValue');
+                    //acceptGroup(index,row);
+                },
+                onUnselect:function(index, row){
+                    if (editIndex!=undefined){
+                        \$('#monitor-detail').datagrid('endEdit', editIndex)
+                        //onEndEdit(index, row);
+                        //editIndex=undefined;
+                        //acceptGroup();
+                    }
+                },
+                onDblClickCell:function(index, field){
+                    if (editIndex != index){
+                        if (endEditing()){
+                            \$('#monitor-detail').datagrid('selectRow', index)
+                                    .datagrid('beginEdit', index);
+                            var ed = \$('#monitor-detail').datagrid('getEditor', {index:index,field:field});
+                            if (ed){
+                                (\$(ed.target).data('textbox') ? \$(ed.target).textbox('textbox') : \$(ed.target)).focus();
+                            }
+                            editIndex = index;
+                        } else {
+                            setTimeout(function(){
+                                \$('#monitor-detail').datagrid('selectRow', editIndex);
+                            },0);
+                        }
+                    }
+                }
+            })
+            
+            \$(function(){
+                var detail = \$("#monitor-detail").datagrid()
+                detail.datagrid('enableFilter', [{
+                    field:'times_percent',
+                    type:'numberbox',
+                    options:{precision:1},
+                    op:['equal','notequal','less','greater']
+                },{
+                    field:'mileage_percent',
+                    type:'numberbox',
+                    options:{precision:1},
+                    op:['equal','notequal','less','greater']
+                }]);
+            })
+        </script>
+        <script name="customer-dlg">
+            function notify2CustomerDlg() {
+                endEditing();
+                \$("#notify-customer-dlg").dialog("open")
+                var region =\$("#region").datagrid("getSelected")
+                var msg = "统计时间：\r\n   开始时间-"+region["from_time"].slice(5)+"\r\n   结束时间-"+region["to_time"].slice(5)+"\r\n";
+                msg    += "统计地域：\r\n   开始位置-"+region["from_name"]+"\r\n    结束位置-"+region["to_name"]+"\r\n";
+                
+                var rows = \$("#monitor-detail").datagrid("getRows");
+                var customer_sum =0;
+                \$.each(rows,function(index,row){
+                    if (row.checked_result=="有人"){
+                        customer_sum+=1
+                    }
+                })
+                msg    += "乘客人数:"+customer_sum+"\r\n";
+                \$("#msg").textbox("setValue",msg)
+                \$.post("/pc/seat",
+                {
+                    act       :"get-msg-receiver",
+                    openid    :cfgPara["openid"],
+                    imei      :cfgPara["dev"]["imei"]
+                },
+                function(data,status){
+                    \$("#receivers-dg").datagrid("loadData",data)
+                }) 
+            }
+            function notify2Customer() {
+                var row  = \$("#region").datagrid("getSelected")
+                var rows = \$("#monitor-detail").datagrid("getChanges")
+                var param = [];
+                \$.each(rows,function(index,item){
+                    param.push(item["sensor_no"]+":"+item["checked_result"])
+                 
+                })
+                var rows = \$("#receivers-dg").datagrid("getSelections")
+                var openids =[];
+                \$.each(rows,function(index,item){
+                    openids.push(item.openid)
+                })
+                \$.post("/pc/seat",
+                {
+                    act       :"notify-customer-region-result",
+                    openid    :cfgPara["openid"],
+                    region_result_id  :row["id"],
+                    param     :param.join("_"),
+                    msg       :\$("#msg").textbox("getValue"), 
+                    openids   :openids.join(";"),
+                },
+                function(data,status){
+                    loadMonitorRegionData();
+                    \$.messager.alert("温馨提醒","发送成功")
+                })
+            }
+            
+            function updateChange() {
+                endEditing()
+                var row  = \$("#region").datagrid("getSelected")
+                var rows = \$("#monitor-detail").datagrid("getChanges")
+                if (rows.length==0) {return;}
+                var param = [];
+                \$.each(rows,function(index,item){
+                    param.push(item["sensor_no"]+":"+item["checked_result"])
+                })
+                \$.post("/pc/seat",
+                {
+                    act       :"update-region-result-detail",
+                    openid    :cfgPara["openid"],
+                    region_result_id  :row["id"],
+                    param     :param.join("_")
+                },
+                function(data,status){
+                    \$.messager.alert("温馨提醒","更新成功")
+                    \$("#monitor-detail").datagrid("loadData",data)
+                    loadMonitorRegionData();
+                })
+            }
+        </script>
+        <script type="text/javascript">
+            function myformatter(datetime){
+                var y = datetime.getFullYear();
+                var m = datetime.getMonth()+1;
+                var d = datetime.getDate();
+                var H = datetime.getHours();
+                var M = datetime.getMinutes();
+                //var S = datetime.getSeconds();
+                
+                return y+'-'+(m<10?('0'+m):m)+'-'+(d<10?('0'+d):d) +" "+(H<10?('0'+H):H)+":"+(M<10?('0'+M):M);
+            }
+            function myparser(s){
+                if (!s) return new Date();
+                var ss0 = (s.split(' '));
+                var ss = (ss0[0].split('-'));
+                var y = parseInt(ss[0],10);
+                var m = parseInt(ss[1],10);
+                var d = parseInt(ss[2],10);
+                var ss = (ss0[1].split(':'));
+                var H = parseInt(ss[0],10);
+                var M = parseInt(ss[1],10);
+                //var S = parseInt(ss[2],10);
+                if (!isNaN(y) && !isNaN(m) && !isNaN(d) && !isNaN(H) && !isNaN(M)){
+                    return new Date(y,m-1,d,H,M,0);
+                } else {
+                    return new Date();
+                }
+            }
+        </script>
+    </body>
+    </html>
+    

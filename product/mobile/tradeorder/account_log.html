@@ -1,0 +1,170 @@
+$def with (cfgPara,jdkSign)
+    <!doctype HTML>
+    <html>
+    <head>
+        <title id="title">服务中心</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.8">
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+    
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>        
+    </head>
+<style type="text/css">
+#customers
+  {
+  font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
+  width:100%;
+  border-collapse:collapse;
+  }
+
+#customers td, #customers th 
+  {
+  font-size:1em;
+  text-align:left;
+  border:1px solid #3399FF;
+  padding:3px 7px 2px 7px;
+  }
+
+#customers th 
+  {
+  font-size:1.1em;
+  text-align:left;
+  padding-top:5px;
+  padding-bottom:4px;
+  background-color:#3399FF;
+  color:#ffffff;
+  }
+
+#customers tr.alt td 
+  {
+  color:#000000;
+  background-color:#EAF2D3;
+  }
+</style>    
+    <script>
+        var jdksign  = $:jdkSign;
+        wx.config({
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                appId:     jdksign['appid'] , // 必填，公众号的唯一标识
+                timestamp: jdksign['timestamp'], // 必填，生成签名的时间戳
+                nonceStr:  jdksign['nonceStr'], // 必填，生成签名的随机串
+                signature: jdksign['signature'],// 必填，签名，见附录1
+                jsApiList: ['onMenuShareAppMessage',
+                            'onMenuShareTimeline',
+                            "onMenuShareQQ",
+                            "onMenuShareWeibo",
+                            "onMenuShareQZone"] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            });
+            
+        wx.ready(function(){
+            wx.onMenuShareAppMessage({
+                title  : '天网守护-慧特币账户详情', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://gps.iwaiter.cn/m/order?act=account-log&openid=$cfgPara['openid']",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareTimeline({
+                title  : '天网守护-慧特币账户详情', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://gps.iwaiter.cn/m/order?act=account-log&openid=$cfgPara['openid']",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQQ({
+                title  : '天网守护-慧特币账户详情', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://gps.iwaiter.cn/m/order?act=account-log&openid=$cfgPara['openid']",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareWeibo({
+                title  : '天网守护-慧特币账户详情', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://gps.iwaiter.cn/m/order?act=account-log&openid=$cfgPara['openid']",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+            wx.onMenuShareQZone({
+                title  : '天网守护-慧特币账户详情', // 分享标题
+                desc   : "唯天网 守护更贴心", // 分享描述
+                link   : "http://gps.iwaiter.cn/m/order?act=account-log&openid=$cfgPara['openid']",   //分享链接
+                imgUrl : 'http://iwaiter-img.stor.sinaapp.com/logo10.jpg', // 分享图标
+                type   : '', // 分享类型,music、video或link，不填默认为link
+                dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+                success: function () {
+                    // 用户确认分享后执行的回调函数
+                },
+                cancel: function () { 
+                    // 用户取消分享后执行的回调函数
+                    //alert("取消了分享")
+                }
+            });
+        });  
+    </script>
+    <body>
+        <div data-role="page" id="HomePage" style="background-color:#fffffff"  >
+            <div data-role="header" >
+                <!--a id="DeviceBack" href="" data-role="button" data-icon="back"  data-iconpos="left">管理中心</a-->
+                <h1 id="arm-name" style="font-size:100%">慧特币账户详情</h1>
+            </div>
+            <!--div role="main" class="ui-content"--> 
+            <div id="bar-member" class="ui-content">
+                <section class="yidao-com" style="width:100%;font-size:90%;">
+                    <fieldset style="margin: 0px 10px 10px; padding: 10px 0px; max-width: 100%; min-width: 0px; box-shadow: rgb(204, 204, 204) 0px 0px 10px; border: 1px solid rgb(170, 170, 170); border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; text-align: center; background-color: rgb(250, 250, 239); box-sizing: border-box !important; word-wrap: break-word !important;">
+                    
+                    <span style="margin: 0px; padding: 5px 0px; max-width: 100%; display: block; color: rgb(75, 172, 198); font-weight: 700; box-sizing: border-box !important; word-wrap: break-word !important;">慧特币总额:<strong style="font-size:200%;color:red">$cfgPara["logs"]["sum"]</strong></span>
+                    </fieldset>
+                </section>                    
+                <table width="100%" id='customers'  border='1' cellspacing="0" style='font-size:100%;text-align:center'>
+                    <tr><th width="40%">日期</th><th width="40%">事件</th><th>金额</th></tr>
+                    $for log in cfgPara["logs"]["logs"]:
+                        <tr>
+                            <td>$log["date"]</td>
+                            <td>$log["event"]</td>
+                            <td>$log["amount"]</td>
+                        </tr>
+                </table>
+            </div>                               
+
+        </div>  
+    </body>
+    </html>
+    
+    

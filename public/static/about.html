@@ -1,0 +1,59 @@
+<!doctype HTML>
+<html>
+<head>
+    <title>吴水田工作室</title>
+    <meta name="viewport" content="width=device-width, initial-scale=0.9">
+    <link rel="stylesheet" href="/static/stylesheets/jquery.mobile-1.4.2.min.css"/>
+	<script src="/static/javascripts/jquery-1.9.1.min.js"></script>
+    <script src="/static/javascripts/jquery.mobile-1.4.2.min.js"></script>
+    <script type="text/javascript" src="http://tjs.sjs.sinajs.cn/t3/platform/js/api/wb.js" charset="utf-8"></script>
+	<link type="text/css" rel="stylesheet" href="http://tjs.sjs.sinajs.cn/t3/style/css/common/card.css" />
+</head>
+<body>
+	<script type="text/javascript">
+		WB.core.load(['connect', 'client', 'widget.base', 'widget.atWhere'], function() {
+			var cfg = {
+				key: 'YOU APP KEY',
+				xdpath: 'http://mwaterbocai.sinaapp.com/static/xd.html'
+			};
+			WB.connect.init(cfg);
+			WB.client.init(cfg);
+			
+			//放置具体的组件代码
+			//connect with sina weibo
+			WB.widget.base.connectButton(document.getElementById("connectBtn"));
+			//follow you on sina weibo
+			WB.widget.base.followButton(1024554557, document.getElementById("followBtn"));	
+
+			//user card widget
+			WB.widget.atWhere.searchAndAt(document.getElementById("content"));			
+		});
+	</script>
+    <div data-role="page" id="blog" style="background-color:#000000"  >
+        <div data-role="header"  >
+            <a href="#main" data-rel="back" data-icon="back">back</a>
+            <h1>About</h1>
+    		<a href="/about" class="ui-btn ui-icon-star ui-btn-icon-right">About</a>
+        </div>
+        <div role="main" class="ui-content">
+			<p style="color:#FFFFFF"> 
+			汽车工程 软件测试/开发 云计算...一路向前<br><br>
+			执着、勤于思考,一个标本是的IT民工的本色<br><br>
+			也是一个热爱生活的男人<br><br>
+			喜欢旅游、运动、电影。。。<br><br>
+			当然 还有很多<br><br>
+			从下面的联系方式可以了解更多<br><br>
+			</p>
+			<span id="connectBtn"></span>
+			<span id=" followBtn"></span>
+			<p id=”content”>
+				@姚晨 //@微博新鲜人：@waterbocai 开微博啦。
+			</p>
+        </div>
+		
+    	<div data-role="footer" data-position="fixed"  style="width: 100%;">
+            <h4>吴水田工作室 | © 2013-2014</h4>
+        </div><!-- /footer -->
+    </div>
+</body>
+</html>

@@ -1,0 +1,291 @@
+$def with (cfgPara,jdksign,fixPara)
+    <!doctype HTML>
+    <html>
+    <head>
+        <title>运输公司$cfgPara["actionCH"]</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.9">
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+        <link rel="stylesheet" href="/static/stylesheets/iwaiter.css" />    
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"></script>
+        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+        <style type="text/css"> 
+
+        div#device-info.ui-grid-a .ui-block-a { width: 40% }
+        div#device-info.ui-grid-a .ui-block-b { width: 60% }
+        div#share-group.ui-grid-a .ui-block-a { width: 40% }
+        div#share-group.ui-grid-a .ui-block-b { width: 60% } 
+        div#group-select.ui-grid-b .ui-block-a { width: 20% }
+        div#group-select.ui-grid-b .ui-block-b { width: 35% }
+        div#group-select.ui-grid-b .ui-block-c { width: 45% }        
+        </style>   
+    <style id="custom-size-flipswitch">
+        /* Custom indentations are needed because the length of custom labels differs from
+           the length of the standard labels */
+        .custom-size-flipswitch.ui-flipswitch .ui-btn.ui-flipswitch-on {
+        	text-indent: -6.9em;
+        }
+        .custom-size-flipswitch.ui-flipswitch .ui-flipswitch-off {
+        	text-indent: 0em;
+        }
+        /* Custom widths are needed because the length of custom labels differs from
+           the length of the standard labels */
+        .custom-size-flipswitch.ui-flipswitch {
+        	width: 8.875em;
+        }
+        .custom-size-flipswitch.ui-flipswitch.ui-flipswitch-active {
+        	padding-left: 7em;
+        	width: 1.875em;
+        }
+        @media (min-width: 28em) {
+        	/*Repeated from rule .ui-flipswitch above*/
+        	.ui-field-contain > label + .custom-size-flipswitch.ui-flipswitch {
+        		width: 1.875em;
+        	}
+        }
+	</style>        
+    </head>
+    
+    <script>
+        var cfgPara = $:cfgPara;
+        var _openid  ="$cfgPara["openid"]";
+        var jdksign=$:jdksign;
+        var _action = "$cfgPara['actionEN']";
+        var sltNo;
+        wx.config({
+                debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                appId:     jdksign['appid'] , // 必填，公众号的唯一标识
+                timestamp: jdksign['timestamp'], // 必填，生成签名的时间戳
+                nonceStr:  jdksign['nonceStr'], // 必填，生成签名的随机串
+                signature: jdksign['signature'],// 必填，签名，见附录1
+                jsApiList: ['onMenuShareAppMessage','scanQRCode'] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+            });
+        
+        \$(document).on("pagebeforeshow","#HomePage",function(e){
+            if (_action=="update"){
+                \$("#name").val(distributor['name']);     
+                //\$("#idCard").val(distributor['idCard']);  
+                //\$("#idCard").addClass("ui-state-disabled");
+                \$("#phone").val(distributor['phone']);     
+                \$("#weixin").val(distributor['weixin']);    
+                //\$("#alipay").val(distributor['alipay']);    
+                \$("#qq").val(distributor['qq']);       
+                \$("#province").val(distributor['province']);  
+                \$("#city").val(distributor['city']);      
+                \$("#district").val(distributor['district']);  
+                \$("#address").val(distributor['workAddr']);   
+                \$("#company").val(distributor['company']); 
+            }
+            
+            
+            checkResult ={}
+            
+            \$('#add-new-distributor').click(function(e){
+                \$.post("/m/company",
+                    {
+                        act      :'$cfgPara["actionEN"]-COMPANY',
+                        regedit_openid :_openid,
+                        name     :\$("#name").val(),
+                        company  :\$("#company").val(),
+                        phone    :\$("#phone").val(),
+                        weixin   :\$("#weixin").val(),
+                        qq       :\$("#qq").val(),
+                        province :\$("#province").val(),
+                        city     :\$("#city").val(),
+                        district :\$("#district").val(),
+                        address  :\$("#address").val(),
+                    },
+                    function(data,status){
+                        if (data["result"]=="success"){
+                            window.location.href="https://open.weixin.qq.com/connect/oauth2/authorize?appid=$cfgPara['appid']&redirect_uri=$cfgPara['homedomain']/m/company?act2=cert-COMPANY_id_"+data["company_id"].toString()+"&response_type=code&scope=snsapi_base&state=123#wechat_redirect",target="_blank";
+                            //window.location.href="$cfgPara['homedomain']/m/company?act=cert-company-trusting&company_id="+data["company_id"].toString()+"&response_type=code&scope=snsapi_base&state=123#wechat_redirect",target="_blank";} else {
+                            //alert("很遗憾，添加失败。。")
+                        }
+                })
+            });
+            \$("#phone").blur(function(e){
+                type = "phone"
+                emptyCheck(type);
+                var val= \$("#"+type).val();
+                if (val.length!=11 ){
+                    checkResult[type]=false;
+                    alert("手机号码位数不正确！");
+                    return;
+                }
+                checkSubmitState();
+                //serviceCheck("phone","手机号已被注册");
+            });
+            \$("#weixin").blur(function(e){
+                emptyCheck("weixin");
+                checkSubmitState();
+                //serviceCheck("weixin","微信号已被注册"); 
+            });
+            //\$("#qq").blur(function(e){
+            //    emptyCheck("qq");
+            //    serviceCheck("qq","QQ号已被注册");
+            //});
+            //\$("#alipay").blur(function(e){
+            //    emptyCheck("alipay");
+            //    serviceCheck("alipay","支付宝账号已被注册");
+            //});
+            \$("#address").blur(function(e){
+                emptyCheck("address");
+                checkSubmitState();
+            });            
+            \$("#province").blur(function(e){
+                emptyCheck("province");
+                checkSubmitState();
+            }); 
+            \$("#city").blur(function(e){
+                emptyCheck("city");
+                checkSubmitState();
+            }); 
+            \$("#company").blur(function(e){
+                checkSubmitState();
+            }); 
+            \$("#district").blur(function(e){
+                checkSubmitState();
+            }); 
+            //更新处理函数
+            var updateChanged = false;
+            \$("#phone,#weixin,#city,#province,#district,#address,#qq,#name").change(function(e){
+                updateChanged= true;
+            });
+            
+            function serviceCheck(type,prompt){
+                var value = \$("#"+type).val();
+                \$.post("/m/company",
+                    {
+                        act      :"VALID-COMAPNY",
+                        openid   :_openid,
+                        idCard   :\$("#idCard").val(),
+                        value    :value,
+                        type     :type
+                    },
+                    function(data,status){
+                        if (data["result"]=="invalid"){
+                            checkResult[type]=false;
+                            alert(prompt);
+                            \$(type).focus();
+                            return;
+                        } else {
+                            checkResult[type]=true;
+                            checkSubmitState();
+                        }
+                })               
+            }
+            function emptyCheck(type) {
+                if (\$("#"+type).val()==""){
+                    \$("#"+type).focus();
+                    return;
+                } else {
+                    checkResult[type]=true;
+                }
+            }
+            function checkSubmitState() {
+                //根据 update/regedit类型的不同，设定使能提交的条件
+                var submitEnable = false;
+                if (_action=="update"){
+                    submitEnable =  updateChanged;
+                }else{
+                    submitEnable=regeditIsValid();
+                }
+
+                if (submitEnable==true) {
+                    \$('#add-new-distributor').removeClass("ui-state-disabled");//添加disabled属性                 
+                } else {
+                    \$('#add-new-distributor').addClass("ui-state-disabled");//添加disabled属性                 
+                }
+            }
+            
+            function regeditIsValid() {
+                var sum = 0;
+                var ret = true;
+                for(key in checkResult) {
+                    sum+=1
+                    ret = ret && checkResult[key]
+                }
+                return sum >= 4 && ret == true
+            }
+        });        
+    </script>
+    <body>
+    <div data-role="page" id="HomePage" data-theme="a" class="background">
+        <div data-role="header">
+            <a id="DeviceBack" href="/m/company?act=manager-home&openid=$cfgPara['openid']" data-role="button" data-icon="back"  data-iconpos="left">公司运营管理</a>
+            <h1 style="font-size:100%">运输公司$cfgPara["actionCH"]</h1>
+        </div><!-- /header -->
+        <!--div role="main" class="ui-content"--> 
+            <table width="100%" style="font-size:80%" border="0" cellspacing="0" cellpadding="0">
+                <tr> 
+                  <td><div class="ui-bar ui-bar-a" style="text-align:left">公司名称<font style="color:red">*</font></div></td>
+                  <td><input type="text" data-clear-btn="false" data-mini="true"   id="company" value="" placeholder="公司名称" ></td>
+                </tr>
+                <!--tr> 
+                  <td><div class="ui-bar ui-bar-a" style="text-align:left">身份证号<font style="color:red">*</font></div></td>
+                  <td><input type="tel" data-clear-btn="false" data-mini="true"   id="idCard" value="" placeholder="一旦注册，不能再修改" ></td>
+                </tr-->
+                <tr> 
+                  <td style="bgColor:gray"><div class="ui-bar ui-bar-a" style="text-align:left">工作地址</div></td>
+                  <td>
+                        <table  width="100%" border="0" cellspacing="0" cellpadding="0">
+                            <tr> 
+                              <td><div class="ui-bar ui-bar-a" style="text-align:left">省<font style="color:red">*</font></div></td>
+                              <td><input type="text" data-clear-btn="false" data-mini="true"   id="province" value="" placeholder="如广东省" ></td>
+                            </tr>
+                            
+                            <tr> 
+                              <td><div class="ui-bar ui-bar-a" style="text-align:left">市/县<font style="color:red">*</font></div></td>
+                              <td><input type="text" data-clear-btn="false" data-mini="true"   id="city" value="" placeholder="如深圳市，注意填写完整" ></td>
+                            </tr>
+                            <tr > 
+                              <td><div class="ui-bar ui-bar-a" style="text-align:left">地区</div></td>
+                              <td><input type="text" data-clear-btn="false" data-mini="true"   id="district" value="" placeholder="如罗湖区" ></td>
+                            </tr>
+                            <tr> 
+                              <td><div class="ui-bar ui-bar-a" style="text-align:left">详细地址<font style="color:red">*</font></div></td>
+                              <td><input type="text" data-clear-btn="false" data-mini="true"   id="address" value="" placeholder="确保快递员能找得到" ></td>
+                            </tr>
+                        </table>
+                  </td>
+                </tr> 
+                <tr> 
+                  <td><div class="ui-bar ui-bar-a" style="text-align:left">公司老板<font style="color:red">*</font></div></td>
+                  <td><input type="text" data-clear-btn="false" data-mini="true"   id="name" value="" placeholder="公司老板姓名" ></td>
+                </tr>                
+                <tr> 
+                  <td><div class="ui-bar ui-bar-a" style="text-align:left">QQ</div></td>
+                  <td><input type="tel" data-clear-btn="false" data-mini="true"   id="qq" value="" placeholder="" ></td>
+                </tr> 
+                <tr> 
+                  <td><div class="ui-bar ui-bar-a" style="text-align:left">微信<font style="color:red">*</font></div></td>
+                  <td><input type="text" data-clear-btn="false" data-mini="true"   id="weixin" value="" placeholder="" ></td>
+                </tr>
+                <tr> 
+                  <td><div class="ui-bar ui-bar-a" style="text-align:left">手机号<font style="color:red">*</font></div></td>
+                  <td><input type="tel" data-clear-btn="false" data-mini="true"   id="phone" value="" placeholder="中国大陆手机号码" ></td>
+                </tr>
+                <!--tr> 
+                  <td><div class="ui-bar ui-bar-a" style="text-align:left">支付宝账号</div></td>
+                  <td><input type="text" data-clear-btn="false" data-mini="true"   id="alipay" value="" placeholder="确保正确，用于提取返利" ></td>
+                </tr-->                
+            </table>
+        <!--/div--><!-- /content -->
+        <div data-role="footer" data-position="fixed">
+          <div data-role="navbar" id="navbar-bind-user">
+            <ul> 
+              <li><a id='add-new-distributor' style="font-size:100%"  class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-action ui-state-disabled">提交$cfgPara["actionCH"]</a>
+              </li>
+              <!--li><button id='history-stat2' style="font-size:110%" class="ui-btn ui-shadow ui-corner-all ui-btn-a ui-btn-icon-left ui-icon-grid">管理共享</button>
+              </li-->
+            </ul>
+          </div>
+        </div>         
+    </div><!-- /page two -->    
+    </body>
+    </html>
+    
+    

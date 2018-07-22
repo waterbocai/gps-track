@@ -1,0 +1,32 @@
+.left {
+    float:left !important;
+    margin:0px;
+}
+
+.right {
+    float:right !important;
+    margin:0px;
+}
+
+.center {
+    float:center !important;
+    margin:0px;
+}
+
+*{
+    margin:0px;
+    padding:0px;
+}
+button, input, select, textarea {
+    font: 12px/16px Verdana, Helvetica, Arial, sans-serif;
+}
+#container{
+    min-width:600px;
+    min-height:767px;
+}
+.tree-title{
+	font-size: 14px;
+}
+.tree-title a{
+	text-decoration: none;
+}

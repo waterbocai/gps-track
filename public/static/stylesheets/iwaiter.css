@@ -1,0 +1,69 @@
+
+.table-b1 {
+    font-size:80%;
+    width:85%;
+    background-image:url(/static/img/background_wide2.png);
+    background-repeat:no-repeat;
+    background-size:105% 105%;
+}
+.table-a {
+    margin: 0px 10px 10px; 
+    padding: 0px 0px;
+    max-width: 100%; 
+    min-width: 0px; 
+    box-shadow: rgb(204, 204, 204) 0px 0px 10px; 
+    border: 1px solid rgb(170, 170, 170); 
+    border-top-left-radius: 5px; 
+    border-top-right-radius: 5px; 
+    border-bottom-right-radius: 5px; 
+    border-bottom-left-radius: 5px; 
+    text-align: center; 
+    background-color: #E0FFFF; 
+    box-sizing: border-box !important; 
+    word-wrap: break-word !important;}
+    
+.table-b {
+    margin: 0px 10px 10px; 
+    padding: 0px 0px;
+    width:100px;
+    height:70px;
+    max-width: 100%; 
+    min-width: 0px; 
+    box-shadow: rgb(204, 204, 204) 0px 0px 10px; 
+    border: 1px solid rgb(170, 170, 170); 
+    border-top-left-radius: 5px; 
+    border-top-right-radius: 5px; 
+    border-bottom-right-radius: 5px; 
+    border-bottom-left-radius: 5px; 
+    text-align: center; 
+    background-color: #E0FFFF; 
+    box-sizing: border-box !important; 
+    word-wrap: break-word !important;}
+.background {
+    background-image:url(/static/img/background2.jpg);
+    background-size:100% 100%;
+}
+
+.ui-icon-input:after {
+    background-image: url(/static/img/input.jpg);
+    /* Make your icon fit */
+    background-size: 24px 24px;
+}
+
+.ui-icon-output:after {
+    background-image: url(/static/img/output.jpg);
+    /* Make your icon fit */
+    background-size: 24px 24px;
+}
+.ui-icon-shop1:after {
+    background-image: url(/static/img/shop1.jpg);
+    /* Make your icon fit */
+    background-size: 24px 24px;
+}
+
+.ui-btn.my-tooltip-btn,
+.ui-btn.my-tooltip-btn:hover,
+.ui-btn.my-tooltip-btn:active {
+    background: none;
+    border: 0;
+}

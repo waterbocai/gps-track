@@ -1,0 +1,58 @@
+$def with (cfgPara)
+    <!DOCTYPE html>
+    <html>
+        <head>
+            <title>微信登录</title>
+            <meta charset="utf-8">		
+            <script type="text/javascript" src="/easyui/jquery-easyui/jquery.min.js"></script>
+            <script type="text/javascript">
+                \$.extend({
+                    getUrlVars: function () {
+                        var vars = {};
+                        var index = window.location.href.indexOf('?');
+                        if (index == -1) return vars;
+    
+                        var values = window.location.href.slice(index + 1).split('&');
+                        for (var i = 0; i < values.length; i++) {
+                            var items = values[i].split('=');
+                            vars[items[0]] = items[1];
+                        }
+                        return vars;
+                    },
+                    getUrlVar: function (name) {
+                        return \$.getUrlVars()[name];
+                    }
+                });
+            </script>
+            <script type="text/javascript">
+                var cfgPara = $:cfgPara;
+                \$(document).ready(function(){
+                    if (\$.getUrlVar("state") != "caronline") { //http://twsh1.iwaiter.cn/pc/user?act=login
+                        var redirect_uri = encodeURIComponent(cfgPara["login_url"]);
+                        //跳转到微信二维码的登录页面
+                        location.href = "https://open.weixin.qq.com/connect/qrconnect?appid="+cfgPara["appid"]+"&redirect_uri="+redirect_uri+"&response_type=code&scope=snsapi_login&state=car-online#wechat_redirect";		        	
+                    } else {
+                        var state = \$.getUrlVar("state");
+                        var code = \$.getUrlVar("code");
+                        \$.ajax({
+                            type: "get",
+                            dataType: "json",
+                            url: "/rest/stat/login?code="+code,
+                            success: function(data){
+                                if (data["success"] == true)
+                                {
+                                    var name = data["nickname"];
+                                    var headimgurl = encodeURIComponent(data["headimgurl"]);
+                                    var openid = data["openid"];
+                                    location.href = "/pc/monitor?act=car-online&name="+name+"&img="+headimgurl+"&openid="+openid;
+                                }
+                            }
+                        });
+                    }
+                });
+            </script>
+        </head>
+        <body>
+            
+        </body>
+    </html>

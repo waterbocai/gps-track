@@ -1,0 +1,188 @@
+$def with (cfgPara,sharePara)
+    $code:
+        def back_color(no):
+            if no=="":
+                return "#C0C0C0"
+            else:
+                return "#FFFFFF"
+    <!doctype HTML>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=0.8">
+        <title>赛微盒子</title>
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" />
+        <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="/static/js/utility.js"></script>
+        <style  type="text/css">
+            .seat {font-size:100%; 
+                border: 1px dash  #b5d6e6; 
+                border-right-color:#C0C0C0;
+                border-left-color:#C0C0C0;
+                border-top-color:#C0C0C0;
+                border-bottom-color:#C0C0C0;
+                text-align:center}
+            .port {font-size:70%; color:#A3D1D1}
+        </style>   
+    </head>
+    
+    <script>
+        var cfgPara = $:cfgPara
+        \$(document).ready(function(e){ // 当进入页面二时
+            setInterval(function(){
+                   \$.post("/pc/mgr",
+                   {
+                       act      :"GET-SEAT-STATE",
+                       seatType :cfgPara["seatType"],
+                   },
+                   function(data,status){
+                       showGroupMember(data);
+                   });
+            },3000);
+            
+            
+            
+            function showGroupMember(data){
+                //\$('#time').html(data["time"]);
+                \$('#time').html(data["param"]["gpsTime"]);
+                \$('#speed').html(data["param"]["speed"]);
+                \$('#addr').html(data["param"]["addr"]);
+                \$('#seated').html(data["sum"]['seated']);
+                \$('#unseated').html(data["sum"]['idle']);
+                //\$('#unknown').html(data["sum"]['未知']);
+                //\$('#outtime').html(data["sum"]['超时']);
+                updateHealth(data["health"]);
+                var seats = data["seats"];
+                var bgcolor ={"seated":"#339933","未知":"#C0C0C0","超时":"#FF0000","idle":"#FFFFFF"}
+                for(var i = 0;i<60;i++)
+                {
+                    if (typeof(seats[i])!="undefined") {
+                        //\$("#bed-"+i.toString()).css("background-color",bgcolor['idle'])
+                        //\$("#bed-"+i.toString()).css("color","#2F4F4F")
+                        if (seats[i]=="seated"){
+                            \$("#bed-"+i.toString()).css("color","#FFFFF0")
+                            \$("#bed-"+i.toString()).css("background-color","#339933")
+                        } else {
+                            \$("#bed-"+i.toString()).css("color","#2F4F4F")
+                            \$("#bed-"+i.toString()).css("background-color","#FFFFFF")
+                        }
+                    }
+                }
+            }
+            
+            function updateHealth(health){
+                var now = new Date()
+                \$.each(health,function(key,val){
+                    var diffSec = GetDateDiff(val,now,"second")
+                    var iconCls;
+                    if (diffSec<30){
+                        iconCls = "icon-ok"
+                    } else {
+                        iconCls = "icon-no"
+                    }
+                    var title ="";
+                    switch(key){
+                        case "ble_master":
+                            title ="主:"+val;
+                            break;
+                        case "ble_slave_1":
+                            title ="从1:"+val;
+                            break;
+                        case "ble_slave_2":
+                            title ="从2:"+val;
+                            break;
+                        case "ble_slave_3":
+                            title ="从3:"+val;
+                            break;
+                    }
+                    \$("#"+key).linkbutton({text:title,iconCls:iconCls})
+                    
+                })
+            
+            }
+        })
+    </script>
+    <body>
+        <div style="background-color:#fffffff"  >
+
+            <div>
+                <!--p style="font-size:100%"><strong>imei:</strong><span id='imei' style="color:#000066"></span></p-->
+                <p style="font-size:100%"><strong>时间:</strong><span id='time' style="color:#000066"></span></p>
+                <p style="font-size:100%"><strong>速度:</strong><span id='speed' style="color:#000066"></span> 公里/小时</p>
+                <p style="font-size:100%"><strong>位置:</strong><span id='addr' style="color:#000066"></span></p>
+                <p style="font-size:100%"><strong style="background-color:#FFFFFF">有人:</strong><span id='seated' style="color:#FF0000">0</span>
+                                          <strong style="background-color:#FFFFFF">空座:</strong><span id='unseated' style="color:#FF0000">29</span>
+                                          <!--strong>未知:</strong><span id='unknown'></span-->
+                                          <!--strong>超时:</strong><span id='outtime'></span--></p>
+                <div id="ports-tb" style="height:auto;">
+                    <strong>板上线状态:</strong>
+                    <a id="ble_master"  href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true">主</a>
+                    <a id="ble_slave_1" href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true">从1</a>
+                    <a id="ble_slave_2" href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true">从2</a>
+                    <a id="ble_slave_3" href="javascript:void(0)" class="easyui-linkbutton" data-options="plain:true">从3</a>
+                </div>
+                <table id ="group-member"  width="100%" border="1" class="seat" cellspacing="0" cellpadding="10" style="font-size:90%" >
+                    <tr style="background-color: #C0C0C0">
+                        <td colspan="3" rowspan="2" bgColor="#C0C0C0">驾驶室</td>
+                        <td id='bed-30'  bgColor='$back_color(sharePara["seat_template"][30][0])' >$sharePara["seat_template"][30][1]<span class='port'>$sharePara["seat_template"][30][2]</span></td>
+                        <td id='bed-0'  bgColor='$back_color(sharePara["seat_template"][0][0])' >$sharePara["seat_template"][0][1]<span class='port'>$sharePara["seat_template"][0][2]</span></td>
+                    </tr> 
+                    <tr>
+                        <td id='bed-31'  bgColor='$back_color(sharePara["seat_template"][31][0])' >$sharePara["seat_template"][31][1]<span class='port'>$sharePara["seat_template"][31][2]</span></td>
+                        <td id='bed-32'  bgColor='$back_color(sharePara["seat_template"][32][0])' >$sharePara["seat_template"][32][1] <span class='port'>$sharePara["seat_template"][32][2]</span></td>
+                    </tr>           
+                    <tr>                                                                                                                                              
+                        <td id="bed-1"  bgColor='$back_color(sharePara["seat_template"][1][0])' >$sharePara["seat_template"][1][1]<span class='port'>$sharePara["seat_template"][1][2]</span></td>
+                        <td id="bed-2"  bgColor='$back_color(sharePara["seat_template"][2][0])' >$sharePara["seat_template"][2][1]<span class='port'>$sharePara["seat_template"][2][2]</span></td>
+                        <td rowspan="6" bgColor="#C0C0C0">过<br>道</td>                                                                                                                              
+                        <td id="bed-3"  bgColor='$back_color(sharePara["seat_template"][3][0])' >$sharePara["seat_template"][3][1]<span class='port'>$sharePara["seat_template"][3][2]</span></td>
+                        <td id="bed-4"  bgColor='$back_color(sharePara["seat_template"][4][0])' >$sharePara["seat_template"][4][1]<span class='port'>$sharePara["seat_template"][4][2]</span></td>
+                    </tr>                                                                                                                                            
+                    <tr>                                                                                                                                             
+                        <td id="bed-5"  bgColor='$back_color(sharePara["seat_template"][5][0])' >$sharePara["seat_template"][5][1]<span class='port'>$sharePara["seat_template"][5][2]</span></td>
+                        <td id="bed-6"  bgColor='$back_color(sharePara["seat_template"][6][0])' >$sharePara["seat_template"][6][1]<span class='port'>$sharePara["seat_template"][6][2]</span></td>
+                        <td id="bed-7"  bgColor='$back_color(sharePara["seat_template"][7][0])' >$sharePara["seat_template"][7][1]<span class='port'>$sharePara["seat_template"][7][2]</span></td>
+                        <td id="bed-8"  bgColor='$back_color(sharePara["seat_template"][8][0])' >$sharePara["seat_template"][8][1]<span class='port'>$sharePara["seat_template"][8][2]</span></td>
+                    </tr>                                                                                                                                            
+                    <tr>                                                                                                                                             
+                        <td id="bed-9"  bgColor='$back_color(sharePara["seat_template"][9][0])' >$sharePara["seat_template"][9][1]<span class='port'>$sharePara["seat_template"][9][2]</span></td>
+                        <td id="bed-10" bgColor='$back_color(sharePara["seat_template"][10][0])'>$sharePara["seat_template"][10][1]<span class='port'>$sharePara["seat_template"][10][2]</td>
+                        <td id="bed-11" bgColor='$back_color(sharePara["seat_template"][11][0])'>$sharePara["seat_template"][11][1]<span class='port'>$sharePara["seat_template"][11][2]</td>
+                        <td id="bed-12" bgColor='$back_color(sharePara["seat_template"][12][0])'>$sharePara["seat_template"][12][1]<span class='port'>$sharePara["seat_template"][12][2]</td>
+                    </tr>                                                                                                          
+                    <tr>                                                                                                           
+                        <td id="bed-13" bgColor='$back_color(sharePara["seat_template"][13][0])'>$sharePara["seat_template"][13][1]<span class='port'>$sharePara["seat_template"][13][2]</span></td>
+                        <td id="bed-14" bgColor='$back_color(sharePara["seat_template"][14][0])'>$sharePara["seat_template"][14][1]<span class='port'>$sharePara["seat_template"][14][2]</span></td>
+                        <td id="bed-15" bgColor='$back_color(sharePara["seat_template"][15][0])'>$sharePara["seat_template"][15][1]<span class='port'>$sharePara["seat_template"][15][2]</span></td>
+                        <td id="bed-16" bgColor='$back_color(sharePara["seat_template"][16][0])'>$sharePara["seat_template"][16][1]<span class='port'>$sharePara["seat_template"][16][2]</span></td>
+                    </tr>                                                                                                                                             
+                    <tr>                                                                                                                                              
+                        <td id="bed-17" bgColor='$back_color(sharePara["seat_template"][17][0])'>$sharePara["seat_template"][17][1]<span class='port'>$sharePara["seat_template"][17][2]</span></td>
+                        <td id="bed-18" bgColor='$back_color(sharePara["seat_template"][18][0])'>$sharePara["seat_template"][18][1]<span class='port'>$sharePara["seat_template"][18][2]</span></td>
+                        <td id="bed-19" bgColor='$back_color(sharePara["seat_template"][19][0])'>$sharePara["seat_template"][19][1]<span class='port'>$sharePara["seat_template"][19][2]</span></td>
+                        <td id="bed-20" bgColor='$back_color(sharePara["seat_template"][20][0])'>$sharePara["seat_template"][20][1]<span class='port'>$sharePara["seat_template"][20][2]</span></td>
+                    </tr>                                                                                                                                             
+                    <tr>                                                                                                                                              
+                        <td id="bed-21" bgColor='$back_color(sharePara["seat_template"][21][0])'>$sharePara["seat_template"][21][1]<span class='port'>$sharePara["seat_template"][21][2]</span></td>
+                        <td id="bed-22" bgColor='$back_color(sharePara["seat_template"][22][0])'>$sharePara["seat_template"][22][1]<span class='port'>$sharePara["seat_template"][22][2]</span></td>
+                        <td id="bed-23" bgColor='$back_color(sharePara["seat_template"][23][0])'>$sharePara["seat_template"][23][1]<span class='port'>$sharePara["seat_template"][23][2]</span></td>
+                        <td id="bed-24" bgColor='$back_color(sharePara["seat_template"][24][0])'>$sharePara["seat_template"][24][1]<span class='port'>$sharePara["seat_template"][24][2]</span></td>
+                    </tr>                                                                                                                                             
+                    <tr>                                                                                                                                              
+                        <td id="bed-25" bgColor='$back_color(sharePara["seat_template"][25][0])'>$sharePara["seat_template"][25][1]<span class='port'>$sharePara["seat_template"][25][2]</span></td>
+                        <td id="bed-26" bgColor='$back_color(sharePara["seat_template"][26][0])'>$sharePara["seat_template"][26][1]<span class='port'>$sharePara["seat_template"][26][2]</span></td>
+                        <td id="bed-27" bgColor='$back_color(sharePara["seat_template"][27][0])'>$sharePara["seat_template"][27][1]<span class='port'>$sharePara["seat_template"][27][2]</span></td>
+                        <td id="bed-28" bgColor='$back_color(sharePara["seat_template"][28][0])'>$sharePara["seat_template"][28][1]<span class='port'>$sharePara["seat_template"][28][2]</span></td>
+                        <td id="bed-29" bgColor='$back_color(sharePara["seat_template"][29][0])'>$sharePara["seat_template"][29][1]<span class='port'>$sharePara["seat_template"][29][2]</span></td>
+                    </tr>
+
+                </table>
+                
+            </div>
+        </div>  
+    </body>
+    </html>
+    
+    
